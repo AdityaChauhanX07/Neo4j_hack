@@ -27,3 +27,16 @@ def test_invalid_wiring_leaves_store_empty(tmp_path):
         with pytest.raises(ValueError, match="invalid POWERED_BY"):
             load_topology(db, broken)
         assert db.execute("MATCH (n) RETURN count(n) AS nodes").fetchone()["nodes"] == 0
+
+
+def test_power_cycles_are_rejected(tmp_path):
+    topology = tmp_path / "cycle.yaml"
+    topology.write_text("""
+system: cycle
+rails:
+  - {id: a, fed_by: b}
+  - {id: b, fed_by: a}
+""")
+    with relate.connect() as db:
+        with pytest.raises(ValueError, match="Power dependency cycle"):
+            load_topology(db, topology)

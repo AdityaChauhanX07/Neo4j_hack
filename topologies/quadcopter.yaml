@@ -1,0 +1,68 @@
+system: quadcopter
+rails:
+  - {id: BATTERY, nominal_v: 11.1}
+  - {id: PDB, nominal_v: 11.1, fed_by: BATTERY}
+regulators:
+  - {id: BEC_5V, fed_by: PDB, vout: 5.0}
+buses:
+  - {id: I2C-FC, kind: i2c}
+  - {id: SPI-FC, kind: spi}
+  - {id: UART-GPS, kind: uart}
+  - {id: UART-RADIO, kind: uart}
+  - {id: ESC-TELEM, kind: uart}
+devices:
+  - id: fc
+    powered_by: BEC_5V
+    channels: [{id: fc.load, unit: percent, min: 0, max: 100, period_ms: 500}]
+  - id: compass
+    powered_by: BEC_5V
+    bus: I2C-FC
+    channels: [{id: compass.heading, unit: deg, min: 0, max: 360, period_ms: 500}]
+  - id: barometer
+    powered_by: BEC_5V
+    bus: I2C-FC
+    channels: [{id: barometer.pressure, unit: hPa, min: 300, max: 1100, period_ms: 500}]
+  - id: gyro
+    powered_by: BEC_5V
+    bus: SPI-FC
+    channels: [{id: gyro.rate, unit: dps, min: -250, max: 250, period_ms: 500}]
+  - id: gps
+    powered_by: BEC_5V
+    bus: UART-GPS
+    channels: [{id: gps.satellites, unit: count, min: 0, max: 40, period_ms: 500}]
+  - id: telemetry
+    powered_by: BEC_5V
+    bus: UART-RADIO
+    channels: [{id: telemetry.seq, unit: count, period_ms: 500}]
+  - id: power-monitor
+    powered_by: PDB
+    channels:
+      - {id: power.bec_voltage, unit: V, min: 4.5, max: 5.5, period_ms: 500, monitors: BEC_5V}
+  - id: esc.1
+    powered_by: PDB
+    bus: ESC-TELEM
+    channels: [{id: esc.1.current, unit: A, min: 0, max: 30, period_ms: 500}]
+  - id: esc.2
+    powered_by: PDB
+    bus: ESC-TELEM
+    channels: [{id: esc.2.current, unit: A, min: 0, max: 30, period_ms: 500}]
+  - id: esc.3
+    powered_by: PDB
+    bus: ESC-TELEM
+    channels: [{id: esc.3.current, unit: A, min: 0, max: 30, period_ms: 500}]
+  - id: esc.4
+    powered_by: PDB
+    bus: ESC-TELEM
+    channels: [{id: esc.4.current, unit: A, min: 0, max: 30, period_ms: 500}]
+  - id: motor.1
+    powered_by: esc.1
+    channels: [{id: motor.1.rpm, unit: rpm, min: 0, max: 30000, period_ms: 500}]
+  - id: motor.2
+    powered_by: esc.2
+    channels: [{id: motor.2.rpm, unit: rpm, min: 0, max: 30000, period_ms: 500}]
+  - id: motor.3
+    powered_by: esc.3
+    channels: [{id: motor.3.rpm, unit: rpm, min: 0, max: 30000, period_ms: 500}]
+  - id: motor.4
+    powered_by: esc.4
+    channels: [{id: motor.4.rpm, unit: rpm, min: 0, max: 30000, period_ms: 500}]

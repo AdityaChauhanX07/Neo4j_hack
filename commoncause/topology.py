@@ -14,7 +14,6 @@ PARTS = {
     "buses": "Bus",
     "devices": "Device",
 }
-DEPENDENCIES = {"PowerRail", "Regulator", "Bus", "Device", "Driver"}
 
 
 @dataclass(frozen=True)
@@ -60,6 +59,7 @@ def _wiring(topology):
     nodes = defaultdict(list)
     links = defaultdict(list)
     labels = {}
+    supplies = {}
 
     def add(label, props):
         part = props.get("id")
@@ -75,11 +75,17 @@ def _wiring(topology):
         if label not in allowed:
             raise ValueError(f"{source} has invalid {rel} target {target}")
         links[(labels[source], rel, label)].append([source, target])
+        if rel in {"FED_BY", "POWERED_BY"}:
+            supplies[source] = target
 
     wiring_keys = {"fed_by", "powered_by", "bus", "channels", "driver"}
     for group, label in PARTS.items():
         for item in topology.get(group, []):
             add(label, {key: value for key, value in item.items() if key not in wiring_keys})
+
+    for rail in topology.get("rails", []):
+        if "fed_by" in rail:
+            link(rail["id"], "FED_BY", rail["fed_by"], {"PowerRail"})
 
     for regulator in topology.get("regulators", []):
         link(regulator["id"], "FED_BY", regulator.get("fed_by"), {"PowerRail"})
@@ -87,7 +93,7 @@ def _wiring(topology):
     for device in topology.get("devices", []):
         device_id = device["id"]
         if "powered_by" in device:
-            link(device_id, "POWERED_BY", device["powered_by"], {"PowerRail", "Regulator"})
+            link(device_id, "POWERED_BY", device["powered_by"], {"PowerRail", "Regulator", "Device"})
         if "bus" in device:
             link(device_id, "ON_BUS", device["bus"], {"Bus"})
         if "driver" in device:
@@ -103,6 +109,14 @@ def _wiring(topology):
             link(channel_id, "READS", device_id, {"Device"})
             if "monitors" in channel:
                 link(channel_id, "MONITORS", channel["monitors"], {"Regulator"})
+    for part in supplies:
+        upstream = part
+        visited = set()
+        while upstream in supplies:
+            if upstream in visited:
+                raise ValueError(f"Power dependency cycle at {upstream}")
+            visited.add(upstream)
+            upstream = supplies[upstream]
     return nodes, links
 
 

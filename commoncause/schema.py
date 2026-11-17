@@ -30,10 +30,11 @@ def install_schema(db):
 
 
 def read_asset(folder, name):
+    packaged = files("commoncause").joinpath(folder).joinpath(name)
+    if packaged.is_file():
+        return packaged.read_text(encoding="utf-8")
     checkout = Path(__file__).resolve().parents[1] / folder / name
-    if checkout.is_file():
-        return checkout.read_text(encoding="utf-8")
-    return files("commoncause").joinpath(folder).joinpath(name).read_text(encoding="utf-8")
+    return checkout.read_text(encoding="utf-8")
 
 
 @contextmanager

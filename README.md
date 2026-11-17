@@ -84,3 +84,14 @@ samples at 1 Hz. A noisy channel becomes stuck after 10 identical readings.
 Stale samples are detected after three periods, heartbeat loss after 3
 seconds, and undervoltage below 90% of nominal. Recovery takes three
 consecutive OK readings on each affected channel.
+
+## Try another topology
+
+The quadcopter fixture uses the same loader and queries for the battery,
+distribution rail, BEC, ESCs, motors, and sensor buses. Its generated telemetry
+covers a BEC brownout, compass bus failure, and ESC 3 dropout.
+
+```sh
+python sim/quad.py > /tmp/commoncause-quad.jsonl
+commoncause matrix /tmp/commoncause-quad.jsonl --topology topologies/quadcopter.yaml
+```
