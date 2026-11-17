@@ -18,7 +18,7 @@ monitor reports undervoltage on `REG_B` and still counts as a responding device.
 
 ## Run the smoke test
 
-From the repository root, with Python 3.9 or later:
+Run these commands from the repository root with Python 3.9 or later.
 
 ```sh
 python3 -m venv .venv
@@ -29,4 +29,5 @@ python -m pytest -q
 
 The test builds the bench graph in memory and runs `queries/rank.cypher` against
 fixture readings. It checks that `REG_B` ranks first with a score of 1.00, ahead
-of the shared 5 V rail at 0.75 and `I2C-1` at 0.33.
+of the shared 5 V rail at 0.75 and `I2C-1` at 0.33. The query returns every
+candidate so callers can choose how many to show.
