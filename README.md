@@ -54,13 +54,14 @@ relate --database data/common-cause.rl --read-only \
   --topology topologies/cubesat-bench.yaml`. A reading has `run`, `seq`, `ts`,
   `channel`, `value`, `ok` and optional `error`. The timestamp is epoch milliseconds.
   Group readings by run and emit them with increasing sequence numbers and
-  nondecreasing timestamps. The matrix scorer uses `type: "fault"` injection
+  nondecreasing timestamps. The terminal view shows device status and paths
+  from affected devices to each suspect. The matrix scorer uses `type: "fault"` injection
   markers. Use `expected` on a marker when the expected part varies by test.
 - **Export.** Nodes contain `id`, `label`, and `props`. Relationships contain
   `type`, `from`, `to`, and `props`. Endpoints reference exported node IDs.
   For display or Cypher lookups, use the original `props.id` or `props.code`.
 - **Provenance.** Each run stores its topology SHA-256. Set
-  `COMMONCAUSE_CODE_SHA` to include the revision used by the recorder.
+  `COMMONCAUSE_CODE_SHA` to include the revision used to produce the verdicts.
 - **MCP.** `.mcp.json` points a compatible client at the fixture graph with
   `relate serve --mcp stdio --read-only`. The ground agent follows
   `AGENTS.md` to explain a verdict from its graph evidence.

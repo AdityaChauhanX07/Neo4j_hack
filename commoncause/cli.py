@@ -34,7 +34,7 @@ def parser():
 
     run = commands.add_parser("run", help="ingest live JSONL telemetry on stdin")
     run.add_argument("--db", type=Path, required=True)
-    run.add_argument("--tui", action="store_true", help="print diagnoses as they change")
+    run.add_argument("--tui", action="store_true", help="show wiring status and diagnoses as they change")
 
     last = commands.add_parser("diagnose", help="read the latest verdict")
     last.add_argument("--db", type=Path, default=DEFAULT_STORE)

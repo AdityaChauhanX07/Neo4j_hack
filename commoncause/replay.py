@@ -44,7 +44,7 @@ def replay(db, stream, *, source="replay", run_id=None, speed=None, on_frame=Non
                     sleep(max(0, timestamp - episode_engine.last_ts) / 1000 / speed)
                 episode_engine.ingest(frame)
                 if on_frame is not None:
-                    on_frame(db)
+                    on_frame(db, episode_engine)
             complete = True
         finally:
             episode_engine.finish(complete)
@@ -70,6 +70,7 @@ class Run:
         self.last_ts = None
         self.last_seq = -1
         self.saved = {}
+        self.latest = {}
         self.episode = None
         self.previous = None
         self.episode_count = 0
@@ -115,6 +116,7 @@ class Run:
         kept = []
         previous = []
         for event in events:
+            self.latest[event.channel] = event
             if event.status != "OK" and self.episode is None:
                 self.episode_count += 1
                 self.episode = Episode(f"dx:{self.id}:{self.episode_count}", event.ts)
