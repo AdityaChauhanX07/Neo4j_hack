@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "commoncause"
+version = "0.1.0"
+description = "Shared fault diagnosis for a CubeSat bench"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+dependencies = ["relate-db==1.0.1"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+include = ["commoncause", "commoncause.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
