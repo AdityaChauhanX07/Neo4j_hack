@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node third-party.js",
     "preview": "vite preview",
     "test": "node --test",
     "test:browser": "playwright test"

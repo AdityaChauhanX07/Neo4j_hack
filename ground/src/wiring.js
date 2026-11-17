@@ -88,7 +88,7 @@ export function createWiring(container, snapshot, onSelect) {
         "background-color": "#1d4148", "border-color": "#75bdba",
       } },
       { selector: "edge", style: {
-        width: 2, "curve-style": "bezier", "line-color": "#8fa8bf",
+        width: 2, "curve-style": "straight", "line-color": "#8fa8bf",
         "target-arrow-color": "#8fa8bf", "target-arrow-shape": "triangle", "arrow-scale": 0.7,
       } },
       { selector: "edge.bus-wire", style: {
@@ -108,6 +108,7 @@ export function createWiring(container, snapshot, onSelect) {
 
   function fit() {
     if (parts.length) cy.fit(cy.elements(), 23);
+    cy.forceRender();
   }
   const resize = new ResizeObserver(() => {
     cy.resize();

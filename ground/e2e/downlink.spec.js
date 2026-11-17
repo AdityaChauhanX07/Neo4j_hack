@@ -10,6 +10,20 @@ test("inspect an episode and run the shared query", async ({ page }, info) => {
   await expect(page.locator("#component")).toContainText("sun1");
   await expect(page.locator(".event-marker")).toHaveCount(1);
   await expect(page.locator("#notice")).toBeHidden();
+  await expect.poll(() => page.locator("#wiring canvas").evaluateAll(canvases => {
+    let power = 0;
+    let data = 0;
+    for (const canvas of canvases) {
+      const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+      for (let offset = 0; offset < pixels.length; offset += 4) {
+        if (pixels[offset + 3] < 230) continue;
+        const [r, g, b] = pixels.subarray(offset, offset + 3);
+        if (Math.abs(r - 143) + Math.abs(g - 168) + Math.abs(b - 191) < 12) power += 1;
+        if (Math.abs(r - 128) + Math.abs(g - 192) + Math.abs(b - 188) < 12) data += 1;
+      }
+    }
+    return Math.min(power, data);
+  })).toBeGreaterThan(5);
   await page.screenshot({ path: info.outputPath("desktop.png") });
 
   await page.locator(".console > summary").click();
