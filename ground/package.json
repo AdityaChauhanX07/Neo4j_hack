@@ -1,0 +1,21 @@
+{
+  "name": "common-cause-ground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node third-party.js",
+    "preview": "vite preview",
+    "test": "node --test",
+    "test:browser": "playwright test"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "5.3.0",
+    "@relate/relate-wasm": "1.0.1",
+    "cytoscape": "3.35.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "vite": "8.3.8"
+  }
+}

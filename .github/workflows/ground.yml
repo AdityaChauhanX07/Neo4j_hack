@@ -1,0 +1,74 @@
+name: Ground view
+
+on:
+  pull_request:
+    paths:
+      - "ground/**"
+      - "queries/**"
+      - "downlink/common-cause.json"
+      - ".github/workflows/ground.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ground/**"
+      - "queries/**"
+      - "downlink/common-cause.json"
+      - ".github/workflows/ground.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ground/package-lock.json
+      - run: npm --prefix ground ci
+      - run: npm --prefix ground test
+      - run: npm --prefix ground run build
+      - run: npx playwright install --with-deps chromium
+        working-directory: ground
+      - run: npm --prefix ground run test:browser
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: ground-browser-checks
+          path: ground/test-results
+          retention-days: 7
+      - uses: actions/upload-artifact@v6
+        if: github.event_name == 'pull_request'
+        with:
+          name: ground-preview
+          path: ground/dist
+          retention-days: 7
+      - uses: actions/upload-pages-artifact@v4
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: ground/dist
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - id: deploy
+        uses: actions/deploy-pages@v4

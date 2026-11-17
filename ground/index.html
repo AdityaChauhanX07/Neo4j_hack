@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Inspect CubeSat fault diagnoses, wiring paths, and telemetry in a Relate downlink.">
+    <title>Common Cause | Ground view</title>
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="masthead-inner">
+        <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Common Cause</div>
+        <a href="https://github.com/AdityaChauhanX07/Neo4j_hack">Repository <span aria-hidden="true">&#8599;</span></a>
+      </div>
+    </header>
+    <main class="shell">
+      <div class="page-heading">
+        <div>
+          <div class="source"><span class="source-dot"></span><span id="source">Synthetic fixture</span></div>
+          <h1>Ground view</h1>
+          <p id="metadata" class="metadata">Opening the CubeSat downlink</p>
+        </div>
+        <div class="page-actions">
+          <button id="restore" class="text-button" type="button" hidden>Restore fixture</button>
+          <input id="file" type="file" accept=".json,application/json" hidden>
+          <button id="browse" class="button primary" type="button">Open downlink</button>
+        </div>
+      </div>
+      <p id="notice" role="status" class="notice" hidden></p>
+      <section class="overview" aria-label="Fault overview">
+        <article class="wiring-card">
+          <header class="wiring-header">
+            <div>
+              <h2>Wiring</h2>
+              <p id="wiring-context">Power and data dependencies</p>
+            </div>
+            <button id="fit" class="button dark" type="button">Fit graph</button>
+          </header>
+          <div id="wiring" class="wiring" aria-label="Interactive power and data wiring graph"></div>
+          <footer class="wiring-footer">
+            <div class="legend" aria-label="Wiring legend">
+              <span><i class="swatch path"></i> Suspect path</span>
+              <span><i class="swatch power"></i> Power</span>
+              <span><i class="swatch bus"></i> Data</span>
+            </div>
+            <label class="focus-label" for="part">Inspect part
+              <select id="part"></select>
+            </label>
+          </footer>
+        </article>
+        <aside class="diagnosis-card">
+          <div class="diagnosis-head">
+            <h2>Diagnosis</h2>
+            <span id="diagnosis-state" class="state" hidden></span>
+          </div>
+          <label class="sr-only" for="episode">Episode</label>
+          <select id="episode" class="episode-select" hidden></select>
+          <div id="diagnosis" class="diagnosis-body"></div>
+          <div id="component" class="component" hidden></div>
+        </aside>
+      </section>
+      <section class="panel timeline" aria-labelledby="timeline-heading">
+        <header class="panel-header">
+          <div>
+            <h2 id="timeline-heading">Episode timeline</h2>
+            <p id="timeline-caption"></p>
+          </div>
+          <label for="channel" class="field-inline">Channel
+            <select id="channel"><option value="">All channels</option></select>
+          </label>
+        </header>
+        <div id="timeline" class="table-scroll"></div>
+        <details id="precursors" class="precursors" hidden>
+          <summary>Changes before the first fault</summary>
+          <div id="changes" class="table-scroll"></div>
+        </details>
+      </section>
+      <details class="panel console">
+        <summary><span>Cypher console</span><span class="console-kind">Read-only</span></summary>
+        <div class="console-body">
+          <div class="console-controls">
+            <label for="preset" class="field-inline">Query
+              <select id="preset">
+                <option value="verdict">Stored diagnosis</option>
+                <option value="rank">Rank this episode</option>
+                <option value="impact">Impact of selected part</option>
+                <option value="before">Before the first fault</option>
+                <option value="recovery">Recovery procedures</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+            <button id="execute" class="button primary" type="button">Run query</button>
+          </div>
+          <label class="sr-only" for="query">Cypher statement</label>
+          <textarea id="query" rows="5" spellcheck="false" autocapitalize="off"></textarea>
+          <details class="parameters">
+            <summary>Query parameters</summary>
+            <label class="sr-only" for="parameters">Query parameters in JSON</label>
+            <textarea id="parameters" rows="4" spellcheck="false" autocapitalize="off"></textarea>
+          </details>
+          <p id="query-status" role="status" class="query-status"></p>
+          <div id="query-result" class="table-scroll"></div>
+        </div>
+      </details>
+      <footer class="site-footer">
+        <span id="graph-size"></span>
+        <span>Relate &middot; WebAssembly</span>
+      </footer>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -6,3 +6,6 @@ build/
 dist/
 board/store/
 downlink/common-cause.rl
+node_modules/
+test-results/
+playwright-report/
