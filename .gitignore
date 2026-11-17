@@ -9,3 +9,4 @@ downlink/common-cause.rl
 node_modules/
 test-results/
 playwright-report/
+ground/public/simulations/

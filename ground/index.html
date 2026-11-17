@@ -21,10 +21,18 @@
           <p id="metadata" class="metadata">Opening the CubeSat downlink</p>
         </div>
         <div class="page-actions">
+          <label id="simulation-controls" class="simulation-picker" for="simulation" hidden>Simulated case
+            <select id="simulation"></select>
+          </label>
           <button id="restore" class="text-button" type="button" hidden>Restore fixture</button>
           <input id="file" type="file" accept=".json,application/json" hidden>
           <button id="browse" class="button primary" type="button">Open downlink</button>
         </div>
+      </div>
+      <div id="simulation-results" class="simulation-results" hidden>
+        <p id="simulation-score"></p>
+        <p id="simulation-case"></p>
+        <a id="simulation-recording" download>Download simulated readings</a>
       </div>
       <p id="notice" role="status" class="notice" hidden></p>
       <section class="overview" aria-label="Fault overview">

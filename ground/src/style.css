@@ -154,3 +154,30 @@ textarea { resize: vertical; width: 100%; min-height: 54px; padding: 11px; borde
   .panel-header { align-items: start; flex-direction: column; }
   .field-inline select { max-width: 200px; }
 }
+
+
+.simulation-picker {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 650;
+}
+.simulation-picker select { width: min(305px, 80vw); font-weight: 500; }
+.simulation-results {
+  display: flex;
+  align-items: baseline;
+  gap: 8px 20px;
+  flex-wrap: wrap;
+  padding: 11px 13px;
+  margin-bottom: 14px;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: .78rem;
+}
+#simulation-score { color: var(--ink); font-weight: 660; }
+#simulation-recording { color: var(--teal); white-space: nowrap; }
+.page-actions:has(.simulation-picker) { align-items: end; }

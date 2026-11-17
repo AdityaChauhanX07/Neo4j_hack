@@ -63,3 +63,27 @@ test("fit a small screen without page overflow", async ({ page }, info) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await page.screenshot({ path: info.outputPath("mobile.png") });
 });
+
+test("switch simulations and share a combined fault", async ({ page }) => {
+  await page.goto("./");
+  const picker = page.getByLabel("Simulated case");
+  await expect(picker).toHaveValue("cubesat:F1");
+  await expect(page.locator("#simulation-score")).toContainText("9/9");
+  await expect(page.locator("#simulation-score")).toContainText("2/9");
+
+  await picker.selectOption("cubesat:F2");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("I2C-1");
+  await picker.selectOption("cubesat:F9");
+  await expect(page.locator("#diagnosis .rank-table tbody tr")).toHaveCount(2);
+  await expect(page.locator("#diagnosis .rank-table tbody tr").nth(1)).toContainText("I2C-3");
+  await expect(page).toHaveURL(/case=cubesat%3AF9$/);
+  await page.reload();
+  await expect(picker).toHaveValue("cubesat:F9");
+  await expect(page.locator("#diagnosis .rank-table tbody tr")).toHaveCount(2);
+
+  await picker.selectOption("quadcopter:bec-brownout");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("BEC_5V");
+  await expect(page.locator("#simulation-score")).toContainText("3/3");
+  await expect(page.getByRole("link", { name: "Download simulated readings" }))
+    .toHaveAttribute("href", /simulations\/quadcopter\.jsonl$/);
+});
