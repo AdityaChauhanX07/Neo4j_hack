@@ -20,6 +20,7 @@ class BME280:
         self.calibration = unpack("<HhhH8h", self.port.read(0x88, 24))
         if not self.calibration[3]:
             raise OSError(errno.EIO, "BME280 pressure calibration is invalid")
+        self.port.write(0xF4, 0x00)
         self.port.write(0xF5, 0x40)
         self.port.write(0xF4, 0x27)
         sleep(0.01)

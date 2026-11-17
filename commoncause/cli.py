@@ -3,6 +3,7 @@ import json
 import subprocess
 import sys
 from collections import Counter
+from contextlib import ExitStack, closing
 from pathlib import Path
 
 import relate
@@ -17,6 +18,8 @@ from .topology import load_topology
 from .view import diagnosis, explain, live_view, summarize
 
 DEFAULT_STORE = Path("data/common-cause.rl")
+DEFAULT_TOPOLOGY = Path("topologies/cubesat-bench.yaml")
+DEFAULT_HARDWARE = Path("hardware/cubesat-pi4.yaml")
 
 
 def parser():
@@ -34,9 +37,18 @@ def parser():
     playback.add_argument("--run", help="store a single recording under a new run ID")
     playback.add_argument("--speed", type=float, help="pace replay at a multiple of recorded time")
 
-    run = commands.add_parser("run", help="ingest live JSONL telemetry on stdin")
+    run = commands.add_parser("run", help="diagnose live telemetry from the Pi or stdin")
     run.add_argument("--db", type=Path, required=True)
+    run.add_argument("--hardware", type=Path, help="read sensors using this Linux hardware map")
+    run.add_argument("--recording", type=Path, help="save raw JSONL while diagnosing")
     run.add_argument("--tui", action="store_true", help="show wiring status and diagnoses as they change")
+    capture_options(run)
+
+    record = commands.add_parser("record", help="record raw telemetry from the Pi")
+    record.add_argument("--hardware", type=Path, default=DEFAULT_HARDWARE)
+    record.add_argument("--out", required=True, help="new JSONL file, or - for stdout")
+    record.add_argument("--device", help="sample just this device during bench bring-up")
+    capture_options(record)
 
     last = commands.add_parser("diagnose", help="read the latest verdict")
     last.add_argument("--db", type=Path, default=DEFAULT_STORE)
@@ -59,7 +71,7 @@ def parser():
 
     score = commands.add_parser("matrix", help="score a labelled fault recording")
     score.add_argument("recording", type=Path)
-    score.add_argument("--topology", type=Path, default=Path("topologies/cubesat-bench.yaml"))
+    score.add_argument("--topology", type=Path, default=DEFAULT_TOPOLOGY)
     score.add_argument("--json", action="store_true")
     score.add_argument("--expect-count", type=int, help="require this many labeled injections")
     score.add_argument("--bench-repeats", type=int, help="require this many injections for each fault F1 through F9")
@@ -73,10 +85,19 @@ def parser():
     return root
 
 
+def capture_options(command):
+    command.add_argument("--topology", type=Path, default=DEFAULT_TOPOLOGY)
+    command.add_argument("--duration", type=float, help="stop after this many seconds")
+    command.add_argument("--run", help="recording ID, defaulting to the UTC start time")
+    command.add_argument("--interactive", action="store_true", help="read fault markers from the terminal")
+
+
 def main():
     args = parser().parse_args()
     try:
         dispatch(args)
+    except KeyboardInterrupt:
+        return 130
     except subprocess.CalledProcessError as error:
         print(f"commoncause: {error.stderr.strip() or error}", file=sys.stderr)
         return 1
@@ -87,6 +108,18 @@ def main():
 
 
 def dispatch(args):
+    if args.command == "record":
+        from .board.recorder import save_capture
+
+        with ExitStack() as stack:
+            feed = stack.enter_context(closing(board_feed(args)))
+            if args.out != "-":
+                feed = stack.enter_context(closing(save_capture(feed, Path(args.out))))
+            for line in feed:
+                if args.out == "-":
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+        return
     if args.command == "matrix":
         if args.min_top_one is not None and not 0 <= args.min_top_one <= 1:
             raise ValueError("Minimum top-1 fraction must be between 0 and 1")
@@ -119,7 +152,20 @@ def dispatch(args):
             with args.recording.open(encoding="utf-8") as feed:
                 replay(db, feed, run_id=args.run, speed=args.speed)
         elif args.command == "run":
-            replay(db, sys.stdin, source="live", on_frame=live_view() if args.tui else None)
+            on_frame = live_view() if args.tui else None
+            if args.hardware:
+                from .board.recorder import save_capture
+
+                with ExitStack() as stack:
+                    load_topology(db, args.topology)
+                    feed = stack.enter_context(closing(board_feed(args)))
+                    if args.recording:
+                        feed = stack.enter_context(closing(save_capture(feed, args.recording)))
+                    replay(db, feed, source="live", on_frame=on_frame)
+            else:
+                if args.recording or args.interactive or args.duration is not None or args.run is not None:
+                    raise ValueError("Capture options require --hardware; otherwise run reads JSONL on stdin")
+                replay(db, sys.stdin, source="live", on_frame=on_frame)
         elif args.command == "benchmark":
             timing = benchmark(db, args.db, args.id, args.samples)
             if args.json:
@@ -143,6 +189,18 @@ def dispatch(args):
                 print(explain(verdict))
             else:
                 print(summarize(verdict))
+
+
+def board_feed(args):
+    from .board.recorder import OperatorConsole, capture
+    from .board.settings import load_board
+
+    board = load_board(args.hardware, args.topology)
+    console = OperatorConsole(sys.stdin, sys.stderr) if args.interactive else None
+    return capture(
+        board, run_id=args.run, duration=args.duration, console=console,
+        device=getattr(args, "device", None),
+    )
 
 
 def show_matrix(rows, as_json):
