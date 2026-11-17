@@ -10,6 +10,7 @@ import relate
 import yaml
 
 from .benchmark import benchmark, percentiles
+from .check_capture import check_capture, show_check
 from .downlink import downlink
 from .matrix import matrix
 from .replay import replay
@@ -77,6 +78,13 @@ def parser():
     score.add_argument("--bench-repeats", type=int, help="require this many injections for each fault F1 through F9")
     score.add_argument("--min-top-one", type=float, help="require this top-1 fraction, from 0 to 1")
 
+    check = commands.add_parser("check-capture", help="check channel health and cadence in captured JSONL")
+    check.add_argument("recording", type=Path)
+    check.add_argument("--topology", type=Path, default=DEFAULT_TOPOLOGY)
+    check.add_argument("--min-seconds", type=float, default=0, help="require this span of recorded time")
+    check.add_argument("--min-rate", type=float, default=0, help="require this fraction of each channel's configured rate")
+    check.add_argument("--json", action="store_true")
+
     timing = commands.add_parser("benchmark", help="time the native rank query for a stored episode")
     timing.add_argument("--db", type=Path, default=DEFAULT_STORE)
     timing.add_argument("--id", help="diagnosis ID (default: latest)")
@@ -95,7 +103,7 @@ def capture_options(command):
 def main():
     args = parser().parse_args()
     try:
-        dispatch(args)
+        return dispatch(args) or 0
     except KeyboardInterrupt:
         return 130
     except subprocess.CalledProcessError as error:
@@ -104,10 +112,19 @@ def main():
     except (ValueError, OSError, relate.Error, yaml.YAMLError) as error:
         print(f"commoncause: {error}", file=sys.stderr)
         return 1
-    return 0
 
 
 def dispatch(args):
+    if args.command == "check-capture":
+        with args.recording.open(encoding="utf-8") as stream:
+            report = check_capture(
+                stream, args.topology, min_seconds=args.min_seconds, min_rate=args.min_rate,
+            )
+        if args.json:
+            print(json.dumps(report))
+        else:
+            show_check(report)
+        return int(not report["healthy"])
     if args.command == "record":
         from .board.recorder import save_capture
 
@@ -154,14 +171,15 @@ def dispatch(args):
         elif args.command == "run":
             on_frame = live_view() if args.tui else None
             if args.hardware:
-                from .board.recorder import save_capture
+                from .board.recorder import capture_clock, save_capture
 
+                clock = capture_clock()
                 with ExitStack() as stack:
                     load_topology(db, args.topology)
-                    feed = stack.enter_context(closing(board_feed(args)))
+                    feed = stack.enter_context(closing(board_feed(args, clock=clock)))
                     if args.recording:
                         feed = stack.enter_context(closing(save_capture(feed, args.recording)))
-                    replay(db, feed, source="live", on_frame=on_frame)
+                    replay(db, feed, source="live", on_frame=on_frame, commit_clock=clock)
             else:
                 if args.recording or args.interactive or args.duration is not None or args.run is not None:
                     raise ValueError("Capture options require --hardware; otherwise run reads JSONL on stdin")
@@ -175,6 +193,10 @@ def dispatch(args):
                 print(f"{timing['diagnosis']}  {timing['architecture']}  {timing['store_bytes']} bytes")
                 print(f"Rank latency  {rank_ms['samples']} samples  "
                       f"p50 {rank_ms['p50']:.3f} ms  p95 {rank_ms['p95']:.3f} ms")
+                live = timing["live_verdict_ms"]
+                if live["samples"]:
+                    print(f"Live time to verdict  {live['samples']} episodes  "
+                          f"p50 {live['p50']} ms  p95 {live['p95']} ms")
         elif args.command == "impact":
             query = read_asset("queries", "impact.cypher")
             for row in db.execute(query, {"part": args.part}):
@@ -191,7 +213,7 @@ def dispatch(args):
                 print(summarize(verdict))
 
 
-def board_feed(args):
+def board_feed(args, *, clock=None):
     from .board.recorder import OperatorConsole, capture
     from .board.settings import load_board
 
@@ -199,7 +221,7 @@ def board_feed(args):
     console = OperatorConsole(sys.stdin, sys.stderr) if args.interactive else None
     return capture(
         board, run_id=args.run, duration=args.duration, console=console,
-        device=getattr(args, "device", None),
+        device=getattr(args, "device", None), clock=clock,
     )
 
 

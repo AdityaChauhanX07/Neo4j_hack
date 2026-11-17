@@ -38,7 +38,13 @@ def benchmark(db, path, diagnosis_id=None, samples=100):
     size = path.stat().st_size if path.is_file() else sum(
         item.stat().st_size for item in path.rglob("*") if item.is_file()
     )
+    commits = db.execute("""
+        MATCH (dx:Diagnosis {run: $run})
+        WHERE dx.first_commit_ts IS NOT NULL
+        RETURN dx.first_commit_ts - dx.window_from AS elapsed
+    """, {"run": window["run"]})
     return {
-        "diagnosis": window["id"], "architecture": machine(),
+        "diagnosis": window["id"], "run": window["run"], "architecture": machine(),
         "rank_ms": percentiles(durations), "store_bytes": size,
+        "live_verdict_ms": percentiles(row["elapsed"] for row in commits),
     }

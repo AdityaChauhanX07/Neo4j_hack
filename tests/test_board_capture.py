@@ -141,7 +141,7 @@ def test_record_cli_preserves_raw_bus_error_and_recovers(tmp_path, monkeypatch):
 def test_run_cli_saves_capture_and_persists_the_verdict(tmp_path, monkeypatch):
     stream = [json.dumps(row) + "\n" for row in records("F1")]
 
-    def sensor_feed(_args):
+    def sensor_feed(_args, *, clock):
         yield from stream
 
     monkeypatch.setattr(cli, "board_feed", sensor_feed)
@@ -264,6 +264,12 @@ def test_two_buses_and_uart_record_a_complete_f1_episode(tmp_path, monkeypatch):
 
     with relate.connect(str(store), read_only=True) as db:
         result = diagnosis(db)
+        timing = db.execute("""
+            MATCH (dx:Diagnosis {id: $id})
+            RETURN dx.first_commit_ts AS committed, dx.window_from AS started
+        """, {"id": result["id"]}).fetchone()
+    assert timing["committed"] - timing["started"] >= 1000
+    assert timing["committed"] <= rows[-1]["ts"]
     assert result["state"] == "resolved"
     suspect = result["suspects"][0]
     assert (suspect["id"], suspect["covered"], suspect["contradicted"]) == ("REG_B", 3, 0)

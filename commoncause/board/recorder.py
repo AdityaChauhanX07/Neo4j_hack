@@ -19,18 +19,24 @@ from .i2c import I2CDevice
 FAULT = re.compile(r"F[1-9]")
 
 
+def capture_clock():
+    epoch = time_ns()
+    started = monotonic_ns()
+
+    def milliseconds():
+        return (epoch + monotonic_ns() - started) // 1_000_000
+
+    return milliseconds
+
+
 class Recorder:
-    def __init__(self, run_id, stall_channel=None, stall_driver=None):
+    def __init__(self, run_id, stall_channel=None, stall_driver=None, clock=None):
         self.run_id = run_id
         self.stall_channel = stall_channel
         self.stall_driver = stall_driver
         self.seq = 0
         self.active = set()
-        self.epoch = time_ns()
-        self.started = monotonic_ns()
-
-    def _timestamp(self):
-        return (self.epoch + monotonic_ns() - self.started) // 1_000_000
+        self.clock = clock or capture_clock()
 
     def _line(self, timestamp, fields):
         self.seq += 1
@@ -39,7 +45,7 @@ class Recorder:
         }, separators=(",", ":"), allow_nan=False) + "\n"
 
     def readings(self, frame):
-        timestamp = self._timestamp()
+        timestamp = self.clock()
         for channel, value, error in frame:
             if channel == self.stall_channel and "F7" in self.active:
                 continue
@@ -69,7 +75,7 @@ class Recorder:
                 fields["expected"] = expected
         else:
             self.active.remove(fault)
-        return self._line(self._timestamp(), fields)
+        return self._line(self.clock(), fields)
 
 
 class OperatorConsole:
@@ -133,7 +139,7 @@ def _poll_serial(channel, serial, emit, stop):
             emit([(channel, counter, None)])
 
 
-def capture(board, *, run_id=None, duration=None, console=None, device=None):
+def capture(board, *, run_id=None, duration=None, console=None, device=None, clock=None):
     if duration is not None and (not isfinite(duration) or duration <= 0):
         raise ValueError("Capture duration must be positive")
     if run_id is not None and not run_id.strip():
@@ -168,7 +174,8 @@ def capture(board, *, run_id=None, duration=None, console=None, device=None):
                 driver = I2C_DRIVERS[sensor.chip]
                 chip = driver(port, sensor.shunt_ohms) if sensor.chip == "ina219" else driver(port)
                 producers.append(partial(_poll_sensor, sensor, chip))
-        yield from _collect(producers, Recorder(name, stall, board.stall_driver), duration, console)
+        recorder = Recorder(name, stall, board.stall_driver, clock)
+        yield from _collect(producers, recorder, duration, console)
 
 
 def _collect(producers, recorder, duration, console):
