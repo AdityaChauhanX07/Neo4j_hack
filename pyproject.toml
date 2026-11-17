@@ -17,9 +17,13 @@ commoncause = "commoncause.cli:main"
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
+board = ["smbus2>=0.5,<1", "pyserial>=3.5,<4"]
 
 [tool.setuptools]
-packages = ["commoncause", "commoncause.queries", "commoncause.catalog"]
+packages = [
+    "commoncause", "commoncause.board", "commoncause.board.drivers",
+    "commoncause.queries", "commoncause.catalog",
+]
 package-dir = {"commoncause.queries" = "queries", "commoncause.catalog" = "catalog"}
 
 [tool.setuptools.package-data]

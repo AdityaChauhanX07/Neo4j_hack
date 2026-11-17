@@ -71,9 +71,9 @@ relate --database data/common-cause.rl --read-only \
   can declare a driver with an `id`, `module`, and optional `version`. Set
   `heartbeat: true` on a heartbeat channel. Pass the same topology file when
   reopening a store. Use a fresh store for a changed wiring file.
-- **Telemetry.** Pipe the recorder's JSONL into
-  `commoncause run --db board/store --tui` after `commoncause init --db board/store
-  --topology topologies/cubesat-bench.yaml`. A reading has `run`, `seq`, `ts`,
+- **Telemetry.** `commoncause run --hardware hardware/cubesat-pi4.yaml
+  --db board/store --tui` captures and diagnoses on the Pi. Give it
+  `--recording` to save the raw stream. A reading has `run`, `seq`, `ts`,
   `channel`, `value`, `ok` and optional `error`. The timestamp is epoch milliseconds.
   Group readings by run and emit them with increasing sequence numbers and
   nondecreasing timestamps. The terminal view shows device status and paths
@@ -136,5 +136,15 @@ and deploys the site through GitHub Pages.
 
 ## Optional hardware setup
 
-The [bench run guide](hardware/bench-run.md) describes a setup for future
-physical validation. The demo and both simulation suites run on a laptop.
+The demo and both simulation suites run on a laptop. The
+[bench wiring guide](hardware/bench-wiring.md) describes the Pi 4 hardware
+map and Pico heartbeat for future physical validation. The
+[bench run guide](hardware/bench-run.md) covers the recorder and procedures
+for collecting a healthy capture, an F1 episode, and a physical fault matrix.
+
+Install `.[board]` to use the Pi recorder. `commoncause check-capture` checks
+channel health and sampling cadence before an injection. Direct capture
+records time through the first committed verdict, which
+`commoncause benchmark` reports alongside native query latency. CI checks
+synthetic fault replays, register conversions, and capture behavior with
+simulated I/O on x64 and ARM64 Linux.

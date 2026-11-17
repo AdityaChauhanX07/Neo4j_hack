@@ -3,12 +3,14 @@ import json
 import subprocess
 import sys
 from collections import Counter
+from contextlib import ExitStack, closing
 from pathlib import Path
 
 import relate
 import yaml
 
 from .benchmark import benchmark, percentiles
+from .check_capture import check_capture, show_check
 from .downlink import downlink
 from .matrix import matrix
 from .replay import replay
@@ -17,6 +19,8 @@ from .topology import load_topology
 from .view import diagnosis, explain, live_view, summarize
 
 DEFAULT_STORE = Path("data/common-cause.rl")
+DEFAULT_TOPOLOGY = Path("topologies/cubesat-bench.yaml")
+DEFAULT_HARDWARE = Path("hardware/cubesat-pi4.yaml")
 
 
 def parser():
@@ -34,9 +38,18 @@ def parser():
     playback.add_argument("--run", help="store a single recording under a new run ID")
     playback.add_argument("--speed", type=float, help="pace replay at a multiple of recorded time")
 
-    run = commands.add_parser("run", help="ingest live JSONL telemetry on stdin")
+    run = commands.add_parser("run", help="diagnose live telemetry from the Pi or stdin")
     run.add_argument("--db", type=Path, required=True)
+    run.add_argument("--hardware", type=Path, help="read sensors using this Linux hardware map")
+    run.add_argument("--recording", type=Path, help="save raw JSONL while diagnosing")
     run.add_argument("--tui", action="store_true", help="show wiring status and diagnoses as they change")
+    capture_options(run)
+
+    record = commands.add_parser("record", help="record raw telemetry from the Pi")
+    record.add_argument("--hardware", type=Path, default=DEFAULT_HARDWARE)
+    record.add_argument("--out", required=True, help="new JSONL file, or - for stdout")
+    record.add_argument("--device", help="sample just this device during bench bring-up")
+    capture_options(record)
 
     last = commands.add_parser("diagnose", help="read the latest verdict")
     last.add_argument("--db", type=Path, default=DEFAULT_STORE)
@@ -59,11 +72,18 @@ def parser():
 
     score = commands.add_parser("matrix", help="score a labelled fault recording")
     score.add_argument("recording", type=Path)
-    score.add_argument("--topology", type=Path, default=Path("topologies/cubesat-bench.yaml"))
+    score.add_argument("--topology", type=Path, default=DEFAULT_TOPOLOGY)
     score.add_argument("--json", action="store_true")
     score.add_argument("--expect-count", type=int, help="require this many labeled injections")
     score.add_argument("--bench-repeats", type=int, help="require this many injections for each fault F1 through F9")
     score.add_argument("--min-top-one", type=float, help="require this top-1 fraction, from 0 to 1")
+
+    check = commands.add_parser("check-capture", help="check channel health and cadence in captured JSONL")
+    check.add_argument("recording", type=Path)
+    check.add_argument("--topology", type=Path, default=DEFAULT_TOPOLOGY)
+    check.add_argument("--min-seconds", type=float, default=0, help="require this span of recorded time")
+    check.add_argument("--min-rate", type=float, default=0, help="require this fraction of each channel's configured rate")
+    check.add_argument("--json", action="store_true")
 
     timing = commands.add_parser("benchmark", help="time the native rank query for a stored episode")
     timing.add_argument("--db", type=Path, default=DEFAULT_STORE)
@@ -73,20 +93,50 @@ def parser():
     return root
 
 
+def capture_options(command):
+    command.add_argument("--topology", type=Path, default=DEFAULT_TOPOLOGY)
+    command.add_argument("--duration", type=float, help="stop after this many seconds")
+    command.add_argument("--run", help="recording ID, defaulting to the UTC start time")
+    command.add_argument("--interactive", action="store_true", help="read fault markers from the terminal")
+
+
 def main():
     args = parser().parse_args()
     try:
-        dispatch(args)
+        return dispatch(args) or 0
+    except KeyboardInterrupt:
+        return 130
     except subprocess.CalledProcessError as error:
         print(f"commoncause: {error.stderr.strip() or error}", file=sys.stderr)
         return 1
     except (ValueError, OSError, relate.Error, yaml.YAMLError) as error:
         print(f"commoncause: {error}", file=sys.stderr)
         return 1
-    return 0
 
 
 def dispatch(args):
+    if args.command == "check-capture":
+        with args.recording.open(encoding="utf-8") as stream:
+            report = check_capture(
+                stream, args.topology, min_seconds=args.min_seconds, min_rate=args.min_rate,
+            )
+        if args.json:
+            print(json.dumps(report))
+        else:
+            show_check(report)
+        return int(not report["healthy"])
+    if args.command == "record":
+        from .board.recorder import save_capture
+
+        with ExitStack() as stack:
+            feed = stack.enter_context(closing(board_feed(args)))
+            if args.out != "-":
+                feed = stack.enter_context(closing(save_capture(feed, Path(args.out))))
+            for line in feed:
+                if args.out == "-":
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+        return
     if args.command == "matrix":
         if args.min_top_one is not None and not 0 <= args.min_top_one <= 1:
             raise ValueError("Minimum top-1 fraction must be between 0 and 1")
@@ -119,7 +169,21 @@ def dispatch(args):
             with args.recording.open(encoding="utf-8") as feed:
                 replay(db, feed, run_id=args.run, speed=args.speed)
         elif args.command == "run":
-            replay(db, sys.stdin, source="live", on_frame=live_view() if args.tui else None)
+            on_frame = live_view() if args.tui else None
+            if args.hardware:
+                from .board.recorder import capture_clock, save_capture
+
+                clock = capture_clock()
+                with ExitStack() as stack:
+                    load_topology(db, args.topology)
+                    feed = stack.enter_context(closing(board_feed(args, clock=clock)))
+                    if args.recording:
+                        feed = stack.enter_context(closing(save_capture(feed, args.recording)))
+                    replay(db, feed, source="live", on_frame=on_frame, commit_clock=clock)
+            else:
+                if args.recording or args.interactive or args.duration is not None or args.run is not None:
+                    raise ValueError("Capture options require --hardware; otherwise run reads JSONL on stdin")
+                replay(db, sys.stdin, source="live", on_frame=on_frame)
         elif args.command == "benchmark":
             timing = benchmark(db, args.db, args.id, args.samples)
             if args.json:
@@ -129,6 +193,10 @@ def dispatch(args):
                 print(f"{timing['diagnosis']}  {timing['architecture']}  {timing['store_bytes']} bytes")
                 print(f"Rank latency  {rank_ms['samples']} samples  "
                       f"p50 {rank_ms['p50']:.3f} ms  p95 {rank_ms['p95']:.3f} ms")
+                live = timing["live_verdict_ms"]
+                if live["samples"]:
+                    print(f"Live time to verdict  {live['samples']} episodes  "
+                          f"p50 {live['p50']} ms  p95 {live['p95']} ms")
         elif args.command == "impact":
             query = read_asset("queries", "impact.cypher")
             for row in db.execute(query, {"part": args.part}):
@@ -143,6 +211,18 @@ def dispatch(args):
                 print(explain(verdict))
             else:
                 print(summarize(verdict))
+
+
+def board_feed(args, *, clock=None):
+    from .board.recorder import OperatorConsole, capture
+    from .board.settings import load_board
+
+    board = load_board(args.hardware, args.topology)
+    console = OperatorConsole(sys.stdin, sys.stderr) if args.interactive else None
+    return capture(
+        board, run_id=args.run, duration=args.duration, console=console,
+        device=getattr(args, "device", None), clock=clock,
+    )
 
 
 def show_matrix(rows, as_json):

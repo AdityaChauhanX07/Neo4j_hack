@@ -82,3 +82,26 @@ def test_interleaved_replies_reduce_confidence():
             MATCH (:Diagnosis)-[:MATCHES]->(fm:FailureMode)
             RETURN fm.id AS mode
         """).fetchone() == {"mode": "connector-intermittent"}
+
+
+def test_first_commit_timestamp_survives_live_reranking():
+    readings = list(records("F5"))
+    run = readings[0]["run"]
+    epoch = readings[0]["ts"]
+    committed = []
+
+    def commit_clock():
+        committed.append(epoch + 2020)
+        return committed[-1]
+
+    with relate.connect() as db:
+        load_topology(db, BENCH)
+        replay(db, io.StringIO("\n".join(map(json.dumps, readings))), source="live", commit_clock=commit_clock)
+        row = db.execute("""
+            MATCH (dx:Diagnosis {run: $run})
+            RETURN dx.first_commit_ts AS committed, dx.ts AS updated, dx.first_verdict_ts AS first
+        """, {"run": run}).fetchone()
+
+    assert committed == [epoch + 2020]
+    assert row["committed"] == committed[0]
+    assert row["updated"] > row["first"]

@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
-      - run: python -m pip install ".[test]"
+      - run: python -m pip install ".[board,test]"
       - run: python -m pytest -q
       - name: Verify the recorded fault fixtures
         run: |
