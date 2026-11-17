@@ -1,0 +1,111 @@
+symptoms:
+  NO_RESPONSE: Device read failed.
+  OUT_OF_RANGE: Reading is outside the channel limits.
+  STUCK: A noisy channel keeps returning the same value.
+  STALE: The driver missed its reading deadline.
+  UNDERVOLTAGE: Regulator output fell below its threshold.
+  HEARTBEAT_LOST: No radio heartbeat arrived by its deadline.
+
+failure_modes:
+  - id: regulator-dropout
+    name: Regulator dropout
+    applies_to: Regulator
+    symptoms: [UNDERVOLTAGE, NO_RESPONSE]
+    recovery:
+      id: power-cycle-regulator
+      title: Restore regulator power
+      steps:
+        - Inspect the input supply and regulator wiring on the bench.
+        - Once output is stable, reinitialize the affected drivers.
+      risk: Interrupts the attached devices.
+  - id: rail-loss
+    name: Power rail loss
+    applies_to: PowerRail
+    symptoms: [NO_RESPONSE, HEARTBEAT_LOST]
+    recovery:
+      id: inspect-power-rail
+      title: Inspect the power rail
+      steps:
+        - Check the supply and connections upstream of the rail.
+        - Confirm output is stable before restoring attached loads.
+      risk: Interrupts every load on the rail.
+  - id: bus-held-low
+    name: I2C bus held low
+    applies_to: Bus
+    bus_kind: i2c
+    symptoms: [NO_RESPONSE]
+    recovery:
+      id: inspect-i2c-bus
+      title: Inspect the I2C bus
+      steps:
+        - Check SDA and SCL at the controller and attached devices.
+        - Reinitialize the bus and verify replies from each device.
+      risk: Interrupts the entire bus.
+  - id: device-dead
+    name: Device stopped responding
+    applies_to: Device
+    symptoms: [NO_RESPONSE]
+    recovery:
+      id: recheck-device
+      title: Check the device and harness
+      steps:
+        - Inspect the device's power and data connector.
+        - Reinitialize the device and verify its readings.
+      risk: Interrupts this device.
+  - id: sensor-stuck
+    name: Sensor reading stuck
+    applies_to: Device
+    symptoms: [STUCK, OUT_OF_RANGE]
+    recovery:
+      id: recheck-sensor
+      title: Check the sensor output
+      steps:
+        - Check the sensor against a known input.
+        - Reinitialize it and check whether its readings change.
+      risk: Interrupts this sensor.
+  - id: driver-hang
+    name: Driver stopped sampling
+    applies_to: Driver
+    symptoms: [STALE]
+    recovery:
+      id: restart-driver
+      title: Restart the sampler driver
+      steps:
+        - Inspect the driver logs and restart the affected driver.
+        - Confirm the channel meets its sampling period again.
+      risk: Interrupts channels using the driver.
+  - id: uart-link-lost
+    name: UART heartbeat lost
+    applies_to: Bus
+    bus_kind: uart
+    symptoms: [HEARTBEAT_LOST]
+    recovery:
+      id: inspect-uart-link
+      title: Inspect the UART link
+      steps:
+        - Check the radio power and the UART connection.
+        - Confirm heartbeat frames resume at the receiver.
+      risk: Can interrupt radio telemetry.
+  - id: connector-intermittent
+    name: Intermittent connector
+    applies_to: Device
+    symptoms: [NO_RESPONSE]
+    recovery:
+      id: inspect-connector
+      title: Inspect the loose connection
+      steps:
+        - Inspect the harness and connectors for a loose contact.
+        - Check whether readings remain stable after securing the connection.
+      risk: Interrupts this device.
+  - id: unpowered-device-clamps-bus
+    name: Unpowered device clamps the bus
+    applies_to: Bus
+    bus_kind: i2c
+    symptoms: [NO_RESPONSE]
+    recovery:
+      id: isolate-i2c-device
+      title: Isolate the affected I2C segment
+      steps:
+        - Inspect the bus with the suspect device isolated.
+        - Check that each device can reply before returning the segment to service.
+      risk: Interrupts the affected bus segment.

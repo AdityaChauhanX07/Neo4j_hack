@@ -10,13 +10,21 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-dependencies = ["relate-db==1.0.1"]
+dependencies = ["relate-db==1.0.1", "PyYAML>=6"]
+
+[project.scripts]
+commoncause = "commoncause.cli:main"
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
 
-[tool.setuptools.packages.find]
-include = ["commoncause", "commoncause.*"]
+[tool.setuptools]
+packages = ["commoncause", "commoncause.queries", "commoncause.catalog"]
+package-dir = {"commoncause.queries" = "queries", "commoncause.catalog" = "catalog"}
+
+[tool.setuptools.package-data]
+"commoncause.queries" = ["*.cypher"]
+"commoncause.catalog" = ["*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

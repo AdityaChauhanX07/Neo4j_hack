@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "commoncause": {
+      "command": "relate",
+      "args": ["serve", "--mcp", "stdio", "--read-only", "--database", "data/common-cause.rl"]
+    }
+  }
+}
