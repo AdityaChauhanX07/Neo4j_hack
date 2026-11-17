@@ -158,3 +158,113 @@ def test_run_cli_saves_capture_and_persists_the_verdict(tmp_path, monkeypatch):
         result = diagnosis(db)
     assert result["suspects"][0]["id"] == "REG_B"
     assert result["state"] == "resolved"
+
+
+def test_two_buses_and_uart_record_a_complete_f1_episode(tmp_path, monkeypatch):
+    calibration = pack("<HhhH8h", 27504, 26435, -1000, 36477, -10685, 3024, 2855, 140, -7, 15500, -14600, 6000)
+    adc = (415148 << 4).to_bytes(3, "big") + (519888 << 4).to_bytes(3, "big")
+    bme = {0xD0: b"\x60", 0xF3: b"\x00", 0x88: calibration, 0xF7: adc}
+    registers = {
+        (1, 0x68): {0x75: b"\x68", 0x3B: pack(">7h", 0, 0, 8192, 0, 131, 0, 0)},
+        (1, 0x0D): {0x0D: b"\xff", 0x06: b"\x01", 0x00: pack("<3h", 120, -240, 360)},
+        (1, 0x40): {0x01: b"\x00\x6e"},
+        (1, 0x76): bme,
+        (3, 0x77): bme,
+    }
+    powered_by_reg_b = {(1, 0x68), (1, 0x0D), (3, 0x23)}
+    opened = set()
+    started = None
+
+    def undervoltage():
+        return 0.8 <= time.monotonic() - started < 2.9
+
+    class IlluminanceRead:
+        def __init__(self, address, size):
+            assert size == 2
+            self.address = address
+
+        def __bytes__(self):
+            return pack(">H", 180)
+
+    class Bus:
+        def __init__(self, number):
+            nonlocal started
+            self.number = number
+            if started is None:
+                started = time.monotonic()
+
+        def __enter__(self):
+            opened.add(self.number)
+            return self
+
+        def __exit__(self, *args):
+            opened.remove(self.number)
+
+        def check_power(self, address):
+            if undervoltage() and (self.number, address) in powered_by_reg_b:
+                raise OSError(errno.EREMOTEIO, "REG_B disconnected")
+
+        def read_i2c_block_data(self, address, register, size):
+            self.check_power(address)
+            if (address, register) == (0x40, 0x02):
+                reading = pack(">H", (40 if undervoltage() else 825) << 3)
+            else:
+                reading = registers[self.number, address][register]
+            assert len(reading) == size
+            return list(reading)
+
+        def write_i2c_block_data(self, address, register, values):
+            self.check_power(address)
+
+        def write_byte(self, address, command):
+            self.check_power(address)
+
+        def i2c_rdwr(self, message):
+            self.check_power(message.address)
+
+    class Uart:
+        in_waiting = 0
+
+        def __init__(self, port, **options):
+            assert port == "/dev/serial0" and options["baudrate"] == 115200
+            self.counter = 0
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return None
+
+        def read(self, size):
+            time.sleep(0.10)
+            self.counter += 1
+            if self.counter % 5 == 1:
+                return f"CC1 {self.counter}\n".encode()
+            return b""
+
+    monkeypatch.setitem(sys.modules, "smbus2", SimpleNamespace(
+        SMBus=Bus, i2c_msg=SimpleNamespace(read=IlluminanceRead),
+    ))
+    monkeypatch.setitem(sys.modules, "serial", SimpleNamespace(Serial=Uart))
+    store = tmp_path / "board"
+    recording = tmp_path / "physical-shape.jsonl"
+    monkeypatch.setattr(sys, "argv", [
+        "commoncause", "run", "--db", str(store), "--hardware", str(HARDWARE),
+        "--topology", str(TOPOLOGY), "--recording", str(recording), "--duration", "4.8",
+    ])
+
+    assert cli.main() == 0
+    assert not opened
+    rows = list(map(json.loads, recording.read_text().splitlines()))
+    failed = {row["channel"] for row in rows if row["error"] == "EREMOTEIO"}
+    assert failed == {"imu.gyro", "imu.accel", "mag.field", "sun1.lux"}
+    assert len({row["channel"] for row in rows if row["ok"]}) == 11
+    assert [row["seq"] for row in rows] == list(range(1, len(rows) + 1))
+    assert [row["ts"] for row in rows] == sorted(row["ts"] for row in rows)
+
+    with relate.connect(str(store), read_only=True) as db:
+        result = diagnosis(db)
+    assert result["state"] == "resolved"
+    suspect = result["suspects"][0]
+    assert (suspect["id"], suspect["covered"], suspect["contradicted"]) == ("REG_B", 3, 0)
+    assert any(event["status"] == "UNDERVOLTAGE" for event in result["evidence"])
