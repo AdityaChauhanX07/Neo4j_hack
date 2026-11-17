@@ -1,8 +1,30 @@
 # Common Cause
 
-Common Cause is a CubeSat bench demonstrator. When several sensors stop
-responding, it uses their shared power and data paths to rank the components
-that could explain the fault. Healthy devices help rule out suspects.
+Common Cause is a fault diagnosis demo for a simulated CubeSat. When several
+sensors stop responding, it uses their shared power and data paths to rank
+the components that could explain the fault. Healthy devices help rule out
+suspects.
+
+## Try the browser demo
+
+Open the [live ground view](https://adityachauhanx07.github.io/Neo4j_hack/)
+and choose a fault from **Simulated case**. The ground view reconstructs the
+graph with embedded Relate WASM and runs the shared Cypher queries locally.
+Start with the regulator dropout, then open the
+[combined regulator and bus fault](https://adityachauhanx07.github.io/Neo4j_hack/?case=cubesat%3AF9)
+to see a diagnosis with two suspects. A JSON downlink can also be opened from
+disk. The console accepts read-only graph queries.
+
+| Simulation | Cases | Correct first suspect | First failed device |
+| --- | ---: | ---: | ---: |
+| CubeSat | 9 | 9/9 | 2/9 |
+| Quadcopter | 3 | 3/3 | 1/3 |
+
+These counts come from deterministic simulated telemetry. The baseline
+picks the first device that reports a failure. The combined case also shows
+the second ranked suspect. Use **Download simulated readings** to get the
+JSONL for the selected suite. The [demo walkthrough](docs/demo.md) covers a
+laptop-only run and the commands to reproduce both scores.
 
 ## Try the F1 replay
 
@@ -99,23 +121,20 @@ commoncause matrix /tmp/commoncause-quad.jsonl --topology topologies/quadcopter.
 
 ## Ground view
 
-The browser opens the bundled F1 fixture or a JSON downlink. It reconstructs
-the graph with the bundled Relate WASM package and runs the shared Cypher
-queries locally. The console supports graph reads and reports a validation
-error for operators it cannot verify as read-only.
+With the Python environment set up, build the simulated downlinks before
+starting Vite.
 
 ```sh
+python -m sim.demo
 npm ci --prefix ground
 npm run dev --prefix ground
 ```
 
 GitHub Actions builds a downloadable `ground-preview` artifact on ground-view
-pull requests. To publish the site, set **Settings**, **Pages**, **Source** to
-**GitHub Actions**. A push to `main` with ground view, query, or downlink changes
-then builds and deploys the site.
+pull requests. A push to `main` with changes to the demo or its inputs builds
+and deploys the site through GitHub Pages.
 
-## Bench validation
+## Optional hardware setup
 
-The [bench run guide](hardware/bench-run.md) covers recorder input, the 36
-physical injections, and Pi measurements. CI verifies the nine synthetic
-bench cases and three quadcopter cases on x64 and ARM64 Linux.
+The [bench run guide](hardware/bench-run.md) describes a setup for future
+physical validation. The demo and both simulation suites run on a laptop.
