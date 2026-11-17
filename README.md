@@ -49,9 +49,9 @@ relate --database data/common-cause.rl --read-only \
   can declare a driver with an `id`, `module`, and optional `version`. Set
   `heartbeat: true` on a heartbeat channel. Pass the same topology file when
   reopening a store. Use a fresh store for a changed wiring file.
-- **Telemetry.** Pipe the recorder's JSONL into
-  `commoncause run --db board/store --tui` after `commoncause init --db board/store
-  --topology topologies/cubesat-bench.yaml`. A reading has `run`, `seq`, `ts`,
+- **Telemetry.** `commoncause run --hardware hardware/cubesat-pi4.yaml
+  --db board/store --tui` captures and diagnoses on the Pi. Give it
+  `--recording` to save the raw stream. A reading has `run`, `seq`, `ts`,
   `channel`, `value`, `ok` and optional `error`. The timestamp is epoch milliseconds.
   Group readings by run and emit them with increasing sequence numbers and
   nondecreasing timestamps. The terminal view shows device status and paths
@@ -102,7 +102,7 @@ commoncause matrix /tmp/commoncause-quad.jsonl --topology topologies/quadcopter.
 The browser opens the bundled F1 fixture or a JSON downlink. It reconstructs
 the graph with the bundled Relate WASM package and runs the shared Cypher
 queries locally. The console supports graph reads and reports a validation
-error for operators it cannot verify as read-only.
+error for operators it cannot verify as read-only. [Live ground view](https://adityachauhanx07.github.io/Neo4j_hack/)
 
 ```sh
 npm ci --prefix ground
@@ -116,6 +116,8 @@ then builds and deploys the site.
 
 ## Bench validation
 
-The [bench run guide](hardware/bench-run.md) covers recorder input, the 36
-physical injections, and Pi measurements. CI verifies the nine synthetic
-bench cases and three quadcopter cases on x64 and ARM64 Linux.
+The [bench wiring guide](hardware/bench-wiring.md) covers the Pi 4 hardware
+map and the Pico heartbeat. The [bench run guide](hardware/bench-run.md)
+covers the raw recorder, the first physical F1 episode, and the 36-injection
+matrix. CI verifies the synthetic fault cases, driver register conversions,
+and capture behavior on x64 and ARM64 Linux.
