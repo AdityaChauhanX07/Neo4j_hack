@@ -5,14 +5,26 @@ on:
     paths:
       - "ground/**"
       - "queries/**"
+      - "sim/**"
+      - "topologies/**"
+      - "catalog/**"
+      - "commoncause/**"
+      - "recordings/**"
       - "downlink/common-cause.json"
+      - "pyproject.toml"
       - ".github/workflows/ground.yml"
   push:
     branches: [main]
     paths:
       - "ground/**"
       - "queries/**"
+      - "sim/**"
+      - "topologies/**"
+      - "catalog/**"
+      - "commoncause/**"
+      - "recordings/**"
       - "downlink/common-cause.json"
+      - "pyproject.toml"
       - ".github/workflows/ground.yml"
   workflow_dispatch:
 
@@ -26,6 +38,11 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: python -m pip install .
+      - run: python -m sim.demo
       - uses: actions/setup-node@v6
         with:
           node-version: 24
