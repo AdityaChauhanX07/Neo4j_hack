@@ -11,7 +11,7 @@ DEVICE_FAULTS = ["NO_RESPONSE", "OUT_OF_RANGE", "STUCK", "STALE", "HEARTBEAT_LOS
 RECORD = """
 UNWIND $readings AS reading
 MATCH (ch:TelemetryChannel {id: reading.channel})
-CREATE (:Event {ts: reading.ts, status: reading.status})-[:ON]->(ch)
+CREATE (:Event {ts: reading.ts, status: reading.status, run: 'fixture'})-[:ON]->(ch)
 """
 
 
@@ -41,7 +41,10 @@ def test_regulator_input_loss():
             },
         )
         ranked = db.execute(
-            RANK, {"from": 1000, "to": 2000, "device_faults": DEVICE_FAULTS}
+            RANK, {
+                "run": "fixture", "from": 1000, "to": 2000,
+                "device_faults": DEVICE_FAULTS, "exclude_devices": [],
+            }
         ).fetchall()
 
     assert ranked[0] == {
@@ -50,7 +53,9 @@ def test_regulator_input_loss():
         "covered": 3,
         "contradicted": 0,
         "score": 1.0,
+        "covered_devices": ranked[0]["covered_devices"],
     }
+    assert set(ranked[0]["covered_devices"]) == {"imu", "mag", "sun1"}
     assert ranked[1]["suspect"] == "RAIL_5V"
     assert ranked[1]["contradicted"] == 1
     assert ranked[1]["score"] == pytest.approx(0.75)
