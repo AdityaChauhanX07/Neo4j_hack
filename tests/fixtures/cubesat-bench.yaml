@@ -1,0 +1,64 @@
+system: cubesat-bench
+rails:
+  - {id: RAIL_PI, nominal_v: 5.0}
+  - {id: RAIL_5V, nominal_v: 5.0}
+regulators:
+  - {id: REG_A, part: pi-3v3, fed_by: RAIL_PI, vout: 3.3}
+  - {id: REG_B, part: AMS1117-3.3, fed_by: RAIL_5V, vout: 3.3}
+buses:
+  - {id: I2C-1, kind: i2c}
+  - {id: I2C-3, kind: i2c}
+  - {id: UART0, kind: uart}
+devices:
+  - id: imu
+    part: MPU-6050
+    bus: I2C-1
+    powered_by: REG_B
+    driver: {id: drv.imu, module: mpu6050}
+    channels:
+      - {id: imu.gyro, unit: dps, min: -250, max: 250, period_ms: 500}
+      - {id: imu.accel, unit: g, min: -4, max: 4, period_ms: 500}
+  - id: mag
+    part: QMC5883L
+    bus: I2C-1
+    powered_by: REG_B
+    channels:
+      - {id: mag.field, unit: uT, min: -250, max: 250, period_ms: 500}
+  - id: epsmon
+    part: INA219
+    bus: I2C-1
+    powered_by: REG_A
+    channels:
+      - {id: eps.regb.voltage, unit: V, min: 3.0, max: 3.6, period_ms: 500, monitors: REG_B}
+      - {id: eps.regb.current, unit: mA, min: 0, max: 500, period_ms: 500}
+  - id: thermal
+    part: BME280
+    bus: I2C-1
+    powered_by: REG_A
+    channels:
+      - {id: thermal.temp, unit: C, min: -20, max: 60, period_ms: 500}
+  - id: sun1
+    part: BH1750
+    bus: I2C-3
+    powered_by: REG_B
+    channels:
+      - {id: sun1.lux, unit: lx, min: 0, max: 100000, period_ms: 500}
+  - id: sun2
+    part: BH1750
+    bus: I2C-3
+    powered_by: REG_A
+    channels:
+      - {id: sun2.lux, unit: lx, min: 0, max: 100000, period_ms: 500}
+  - id: payload
+    part: BME280
+    bus: I2C-3
+    powered_by: REG_A
+    channels:
+      - {id: payload.temp, unit: C, min: -20, max: 60, period_ms: 500}
+      - {id: payload.pressure, unit: hPa, min: 300, max: 1100, period_ms: 500}
+  - id: radio
+    part: Pico
+    bus: UART0
+    powered_by: RAIL_5V
+    channels:
+      - {id: radio.heartbeat, unit: seq, period_ms: 1000, heartbeat: true}
