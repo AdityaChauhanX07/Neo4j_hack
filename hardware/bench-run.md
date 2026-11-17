@@ -26,13 +26,15 @@ commoncause record --device radio --duration 6 --out -
 
 Then save ten minutes of healthy telemetry. The writer records one line
 per channel, with an increasing sequence number and a timestamp in Unix
-milliseconds. Check that all 11 channels appear and that the values are
-plausible for the bench. Capture commands open new output files and refuse
-an existing path.
+milliseconds. The check reports all 11 channels, their observed cadence,
+the longest gap, and hardware faults. The 595-second floor allows for
+startup and the time between the final reading and capture shutdown.
+Capture commands open new output files and refuse an existing path.
 
 ```sh
 commoncause run --db board/store --hardware hardware/cubesat-pi4.yaml \
   --recording recordings/bench-healthy.jsonl --duration 600 --tui
+commoncause check-capture recordings/bench-healthy.jsonl --min-seconds 595 --min-rate 0.9
 ```
 
 ## Record the first F1 episode
@@ -46,7 +48,8 @@ finish the recording.
 ```sh
 commoncause run --db board/store --hardware hardware/cubesat-pi4.yaml \
   --recording recordings/bench-f1.jsonl --interactive --tui
-commoncause matrix recordings/bench-f1.jsonl --expect-count 1
+commoncause matrix recordings/bench-f1.jsonl --expect-count 1 --min-top-one 1
+commoncause benchmark --db board/store --samples 100
 ```
 
 For raw capture without a graph, use `commoncause record --out` with a new
@@ -71,9 +74,15 @@ commoncause downlink --db board/store --out downlink
 ```
 
 The scorer reports top-1, the first-failed-device baseline, and coverage of
-all expected causes. For F9, inspect both ranked causes. It also reports
-p50 and p95 of recorded time from first anomaly to first verdict. The
-benchmark separately measures the warm native rank query in wall time
-and reports the store size. Run it on the Pi for Pi measurements. Use
-the same topology when replaying sessions and a fresh store after changes
-to the wiring.
+all expected causes. For F9, inspect both ranked causes. The recorded
+time to verdict uses the timestamps in the JSONL replay.
+
+Direct Pi capture also records the elapsed time from the first observed
+anomaly through the first committed verdict. The benchmark reports
+p50 and p95 for those live episodes in the selected diagnosis's run.
+It times the warm native rank query separately on the machine running the
+benchmark and reports the store size. Use `--id` to select a diagnosis
+from a specific run. Run the benchmark on the Pi for Pi query timings.
+
+Use the same topology when replaying sessions and a fresh store after
+changes to the wiring.

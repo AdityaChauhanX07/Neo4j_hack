@@ -119,5 +119,8 @@ then builds and deploys the site.
 The [bench wiring guide](hardware/bench-wiring.md) covers the Pi 4 hardware
 map and the Pico heartbeat. The [bench run guide](hardware/bench-run.md)
 covers the raw recorder, the first physical F1 episode, and the 36-injection
-matrix. CI verifies the synthetic fault cases, driver register conversions,
+matrix. Use `commoncause check-capture` to check channel health and sampling
+cadence before fault injection. Direct Pi capture measures time through the
+first committed verdict, reported by `commoncause benchmark` alongside native
+query latency. CI verifies the synthetic fault cases, register conversions,
 and capture behavior on x64 and ARM64 Linux.

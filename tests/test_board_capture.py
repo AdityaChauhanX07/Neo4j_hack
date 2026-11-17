@@ -12,6 +12,7 @@ import relate
 import yaml
 
 from commoncause import cli
+from commoncause.benchmark import benchmark
 from commoncause.board.heartbeat import Heartbeats
 from commoncause.board.recorder import Recorder
 from commoncause.board.settings import load_board
@@ -268,8 +269,12 @@ def test_two_buses_and_uart_record_a_complete_f1_episode(tmp_path, monkeypatch):
             MATCH (dx:Diagnosis {id: $id})
             RETURN dx.first_commit_ts AS committed, dx.window_from AS started
         """, {"id": result["id"]}).fetchone()
-    assert timing["committed"] - timing["started"] >= 1000
+        report = benchmark(db, store, samples=3)
+    elapsed = timing["committed"] - timing["started"]
+    assert elapsed >= 1000
     assert timing["committed"] <= rows[-1]["ts"]
+    assert report["live_verdict_ms"] == {"samples": 1, "p50": elapsed, "p95": elapsed}
+    assert report["rank_ms"]["samples"] == 3
     assert result["state"] == "resolved"
     suspect = result["suspects"][0]
     assert (suspect["id"], suspect["covered"], suspect["contradicted"]) == ("REG_B", 3, 0)
