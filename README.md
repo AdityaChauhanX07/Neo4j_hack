@@ -96,3 +96,26 @@ covers a BEC brownout, compass bus failure, and ESC 3 dropout.
 python sim/quad.py > /tmp/commoncause-quad.jsonl
 commoncause matrix /tmp/commoncause-quad.jsonl --topology topologies/quadcopter.yaml
 ```
+
+## Ground view
+
+The browser opens the bundled F1 fixture or a JSON downlink. It reconstructs
+the graph with the bundled Relate WASM package and runs the shared Cypher
+queries locally. The console supports graph reads and reports a validation
+error for operators it cannot verify as read-only.
+
+```sh
+npm ci --prefix ground
+npm run dev --prefix ground
+```
+
+GitHub Actions builds a downloadable `ground-preview` artifact on ground-view
+pull requests. To publish the site, set **Settings**, **Pages**, **Source** to
+**GitHub Actions**. A push to `main` with ground view, query, or downlink changes
+then builds and deploys the site.
+
+## Bench validation
+
+The [bench run guide](hardware/bench-run.md) covers recorder input, the 36
+physical injections, and Pi measurements. CI verifies the nine synthetic
+bench cases and three quadcopter cases on x64 and ARM64 Linux.

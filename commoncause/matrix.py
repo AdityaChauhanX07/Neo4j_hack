@@ -48,7 +48,9 @@ def _score(db, run, marker, cutoff):
     expected = marker.get("expected", EXPECTED.get(fault))
     if isinstance(expected, str):
         expected = [expected]
-    if not expected:
+    if not isinstance(expected, (list, tuple)) or not expected or any(
+        not isinstance(item, str) or not item for item in expected
+    ):
         raise ValueError(f"Injection {fault} needs an expected component")
     params = {"run": run, "start": marker["ts"], "end": cutoff, "faults": list(DEVICE_FAULTS)}
     ranked = db.execute("""
@@ -56,7 +58,8 @@ def _score(db, run, marker, cutoff):
         WHERE dx.window_from >= $start AND ($end IS NULL OR dx.window_from < $end)
         WITH dx ORDER BY dx.window_from LIMIT 1
         MATCH (dx)-[s:SUSPECTS]->(c)
-        RETURN c.id AS id
+        RETURN c.id AS id, dx.window_from AS first_bad,
+               coalesce(dx.first_verdict_ts, dx.ts) AS first_verdict, dx.ts AS latest_verdict
         ORDER BY s.rank
     """, params).fetchall()
     naive = db.execute("""
@@ -66,8 +69,11 @@ def _score(db, run, marker, cutoff):
         ORDER BY e.ts, e.seq, e.id
         LIMIT 1
     """, params).fetchone()
+    first = ranked[0] if ranked else None
     return {
         "run": run, "fault": fault, "expected": list(expected),
+        "decision_ms": first["first_verdict"] - first["first_bad"] if first else None,
+        "latest_verdict_ms": first["latest_verdict"] - first["first_bad"] if first else None,
         "ranked": [row["id"] for row in ranked],
         "baseline": naive["id"] if naive else None,
     }

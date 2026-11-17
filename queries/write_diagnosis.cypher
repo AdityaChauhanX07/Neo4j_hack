@@ -1,4 +1,5 @@
 MERGE (dx:Diagnosis {id: $id})
+ON MATCH SET dx.first_verdict_ts = coalesce(dx.first_verdict_ts, dx.ts)
 SET dx.run = $run, dx.ts = $now, dx.window_from = $from, dx.window_to = $now,
     dx.confidence = $confidence, dx.state = 'open'
 WITH dx

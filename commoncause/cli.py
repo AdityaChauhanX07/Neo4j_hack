@@ -2,11 +2,13 @@ import argparse
 import json
 import subprocess
 import sys
+from collections import Counter
 from pathlib import Path
 
 import relate
 import yaml
 
+from .benchmark import benchmark, percentiles
 from .downlink import downlink
 from .matrix import matrix
 from .replay import replay
@@ -59,6 +61,15 @@ def parser():
     score.add_argument("recording", type=Path)
     score.add_argument("--topology", type=Path, default=Path("topologies/cubesat-bench.yaml"))
     score.add_argument("--json", action="store_true")
+    score.add_argument("--expect-count", type=int, help="require this many labeled injections")
+    score.add_argument("--bench-repeats", type=int, help="require this many injections for each fault F1 through F9")
+    score.add_argument("--min-top-one", type=float, help="require this top-1 fraction, from 0 to 1")
+
+    timing = commands.add_parser("benchmark", help="time the native rank query for a stored episode")
+    timing.add_argument("--db", type=Path, default=DEFAULT_STORE)
+    timing.add_argument("--id", help="diagnosis ID (default: latest)")
+    timing.add_argument("--samples", type=int, default=100)
+    timing.add_argument("--json", action="store_true")
     return root
 
 
@@ -77,13 +88,28 @@ def main():
 
 def dispatch(args):
     if args.command == "matrix":
-        show_matrix(matrix(args.recording, args.topology), args.json)
+        if args.min_top_one is not None and not 0 <= args.min_top_one <= 1:
+            raise ValueError("Minimum top-1 fraction must be between 0 and 1")
+        rows = matrix(args.recording, args.topology)
+        top_one = show_matrix(rows, args.json)
+        if args.expect_count is not None and len(rows) != args.expect_count:
+            raise ValueError(f"Expected {args.expect_count} injections, found {len(rows)}")
+        if args.bench_repeats is not None:
+            if args.bench_repeats <= 0:
+                raise ValueError("Bench repeats must be positive")
+            counts = Counter(row["fault"] for row in rows)
+            expected = {f"F{index}": args.bench_repeats for index in range(1, 10)}
+            if counts != expected:
+                counted = ", ".join(f"{fault}={count}" for fault, count in sorted(counts.items()))
+                raise ValueError(f"Expected {args.bench_repeats} injections per F1 through F9, found {counted}")
+        if args.min_top_one is not None and top_one / len(rows) < args.min_top_one:
+            raise ValueError(f"Top-1 fraction is below {args.min_top_one:.2f}")
         return
     if args.command == "downlink":
         downlink(args.db, args.out, args.relate)
         return
 
-    read_only = args.command in {"diagnose", "explain", "impact"}
+    read_only = args.command in {"diagnose", "explain", "impact", "benchmark"}
     with relate.connect(str(args.db), read_only=read_only) as db:
         if args.command == "init":
             load_topology(db, args.topology)
@@ -94,6 +120,15 @@ def dispatch(args):
                 replay(db, feed, run_id=args.run, speed=args.speed)
         elif args.command == "run":
             replay(db, sys.stdin, source="live", on_frame=live_view() if args.tui else None)
+        elif args.command == "benchmark":
+            timing = benchmark(db, args.db, args.id, args.samples)
+            if args.json:
+                print(json.dumps(timing))
+            else:
+                rank_ms = timing["rank_ms"]
+                print(f"{timing['diagnosis']}  {timing['architecture']}  {timing['store_bytes']} bytes")
+                print(f"Rank latency  {rank_ms['samples']} samples  "
+                      f"p50 {rank_ms['p50']:.3f} ms  p95 {rank_ms['p95']:.3f} ms")
         elif args.command == "impact":
             query = read_asset("queries", "impact.cypher")
             for row in db.execute(query, {"part": args.part}):
@@ -114,13 +149,20 @@ def show_matrix(rows, as_json):
     top_one = sum(row["ranked"][:1] == row["expected"][:1] for row in rows)
     baseline = sum(row["baseline"] == row["expected"][0] for row in rows)
     all_causes = sum(set(row["ranked"]) == set(row["expected"]) for row in rows)
-    totals = {"injections": len(rows), "top_one": top_one, "baseline": baseline, "all_causes": all_causes}
+    recorded = percentiles(row["decision_ms"] for row in rows if row["decision_ms"] is not None)
+    totals = {
+        "injections": len(rows), "top_one": top_one, "baseline": baseline,
+        "all_causes": all_causes, "recorded_decision_ms": recorded,
+    }
     if as_json:
         print(json.dumps({"totals": totals, "injections": rows}))
-        return
+        return top_one
     for row in rows:
         ranked = ", ".join(row["ranked"]) or "none"
         expected = ", ".join(row["expected"])
         print(f"{row['run']} {row['fault']}  expected {expected}  ranked {ranked}  baseline {row['baseline']}")
     count = len(rows)
     print(f"Top-1 {top_one}/{count}  baseline {baseline}/{count}  all causes {all_causes}/{count}")
+    if recorded["samples"]:
+        print(f"Recorded time to verdict  p50 {recorded['p50']} ms  p95 {recorded['p95']} ms")
+    return top_one

@@ -25,11 +25,15 @@ LIMIT 1
 """
 
 
-def rank(db, run, start, now):
-    params = {
+def rank_params(run, start, now):
+    return {
         "run": run, "from": start, "to": now,
         "device_faults": list(DEVICE_FAULTS), "exclude_devices": [],
     }
+
+
+def rank(db, run, start, now):
+    params = rank_params(run, start, now)
     ranked = db.execute(RANK, params).fetchall()
     if not ranked:
         monitored = db.execute(MONITORED, params).fetchall()
