@@ -150,7 +150,7 @@ textarea { resize: vertical; width: 100%; min-height: 54px; padding: 11px; borde
 @media (max-width: 425px) {
   .page-heading { align-items: flex-start; flex-direction: column; gap: 13px; margin-bottom: 17px; }
   .wiring-header, .wiring-footer, .panel-header { padding-left: 13px; padding-right: 13px; }
-  .wiring { height: 305px; }
+  .wiring { height: 335px; }
   .panel-header { align-items: start; flex-direction: column; }
   .field-inline select { max-width: 200px; }
 }

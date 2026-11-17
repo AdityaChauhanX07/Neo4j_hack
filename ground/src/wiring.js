@@ -15,30 +15,41 @@ export function createWiring(container, snapshot, onSelect) {
   ));
   const choices = [...parts].sort((a, b) => partName(a).localeCompare(partName(b)));
   const buses = new Map(wires.filter(rel => rel.type === "ON_BUS").map(rel => [rel.from, rel.to]));
-  const elements = [];
-  let y = 0;
+  const layers = tiers.map(tier => parts.filter(node => node.label === tier).sort((a, b) => (
+    (buses.get(a.id) ?? "").localeCompare(buses.get(b.id) ?? "") ||
+    partName(a).localeCompare(partName(b))
+  )));
+  const columnCount = () => container.clientWidth < 340 ? 3 : container.clientWidth < 540 ? 4 : 8;
 
-  for (const tier of tiers) {
-    const nodes = parts.filter(node => node.label === tier).sort((a, b) => (
-      (buses.get(a.id) ?? "").localeCompare(buses.get(b.id) ?? "") ||
-      partName(a).localeCompare(partName(b))
-    ));
-    for (let offset = 0; offset < nodes.length; offset += 8) {
-      const row = nodes.slice(offset, offset + 8);
-      row.forEach((node, index) => elements.push({
-        data: { id: node.id, name: partName(node), kind: node.label },
-        position: { x: (index - (row.length - 1) / 2) * 105, y },
-      }));
-      y += 77;
+  function positions(columns) {
+    const compact = columns < 8;
+    const gap = compact ? 92 : 105;
+    const cells = new Map();
+    let y = 0;
+    for (const layer of layers) {
+      for (let offset = 0; offset < layer.length; offset += columns) {
+        const row = layer.slice(offset, offset + columns);
+        row.forEach((node, index) => cells.set(node.id, { x: (index - (row.length - 1) / 2) * gap, y }));
+        y += compact ? 62 : 77;
+      }
     }
+    return cells;
   }
+
+  let columns = columnCount();
+  const initial = positions(columns);
+  const elements = parts.map(node => ({
+    data: { id: node.id, name: partName(node), kind: node.label },
+    position: initial.get(node.id),
+  }));
+  container.setAttribute("aria-label", `Wiring graph with ${parts.length} components and ${wires.length} connections`);
 
   const wireIds = wires.map((wire, index) => {
     let id = `wire-${index}`;
     while (partIds.has(id)) id = `_${id}`;
     elements.push({
       data: { id, source: wire.from, target: wire.to },
-      classes: wire.type === "ON_BUS" ? "bus-wire" : "",
+      classes: wire.type === "ON_BUS" ? "bus-wire" : "power-wire",
     });
     return id;
   });
@@ -77,11 +88,11 @@ export function createWiring(container, snapshot, onSelect) {
         "background-color": "#1d4148", "border-color": "#75bdba",
       } },
       { selector: "edge", style: {
-        width: 1.3, "curve-style": "bezier", "line-color": "#7898b7",
-        "target-arrow-color": "#7898b7", "target-arrow-shape": "triangle", "arrow-scale": 0.65,
+        width: 2, "curve-style": "bezier", "line-color": "#8fa8bf",
+        "target-arrow-color": "#8fa8bf", "target-arrow-shape": "triangle", "arrow-scale": 0.7,
       } },
       { selector: "edge.bus-wire", style: {
-        "line-color": "#6faaa9", "target-arrow-color": "#6faaa9", "line-style": "dashed",
+        "line-color": "#80c0bc", "target-arrow-color": "#80c0bc", "line-style": "dashed",
       } },
       { selector: "edge.fault-path", style: {
         width: 2.7, "line-style": "solid", "line-color": "#ff9d83",
@@ -100,6 +111,12 @@ export function createWiring(container, snapshot, onSelect) {
   }
   const resize = new ResizeObserver(() => {
     cy.resize();
+    const next = columnCount();
+    if (next !== columns) {
+      columns = next;
+      const cells = positions(columns);
+      cy.nodes().positions(node => cells.get(node.id()));
+    }
     fit();
   });
   resize.observe(container);

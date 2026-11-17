@@ -52,6 +52,7 @@ async function load(snapshot, name, bundled = false) {
     current = { engine, graph: createWiring(ui.wiring, snapshot, inspectPart), rows };
     ui.restore.hidden = bundled;
     ui.source.textContent = bundled ? "Synthetic fixture" : "Imported downlink";
+    ui.source.title = name;
     ui["graph-size"].textContent = `${snapshot.nodes.length} nodes · ${snapshot.rels.length} relationships`;
     const system = snapshot.nodes.find(node => node.label === "Topology")?.props.id;
     current.system = system ?? name;
