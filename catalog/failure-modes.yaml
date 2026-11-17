@@ -86,3 +86,26 @@ failure_modes:
         - Check the radio power and the UART connection.
         - Confirm heartbeat frames resume at the receiver.
       risk: Can interrupt radio telemetry.
+  - id: connector-intermittent
+    name: Intermittent connector
+    applies_to: Device
+    symptoms: [NO_RESPONSE]
+    recovery:
+      id: inspect-connector
+      title: Inspect the loose connection
+      steps:
+        - Inspect the harness and connectors for a loose contact.
+        - Check whether readings remain stable after securing the connection.
+      risk: Interrupts this device.
+  - id: unpowered-device-clamps-bus
+    name: Unpowered device clamps the bus
+    applies_to: Bus
+    bus_kind: i2c
+    symptoms: [NO_RESPONSE]
+    recovery:
+      id: isolate-i2c-device
+      title: Isolate the affected I2C segment
+      steps:
+        - Inspect the bus with the suspect device isolated.
+        - Check that each device can reply before returning the segment to service.
+      risk: Interrupts the affected bus segment.

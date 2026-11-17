@@ -1,6 +1,9 @@
 import json
+import os
 from dataclasses import asdict, replace
 from itertools import groupby
+from math import isfinite
+from time import sleep
 
 from .classify import ChannelState, Reading
 from .diagnose import resolve, write_verdict
@@ -25,7 +28,9 @@ def records(stream):
             raise ValueError(f"Line {line_no}: {error}") from error
 
 
-def replay(db, stream, *, source="replay", run_id=None):
+def replay(db, stream, *, source="replay", run_id=None, speed=None, on_frame=None):
+    if speed is not None and (not isfinite(speed) or speed <= 0):
+        raise ValueError("Replay speed must be a positive number")
     run_ids = []
     for recorded_run, readings in groupby(records(stream), key=lambda reading: reading.run):
         if run_id is not None and run_ids:
@@ -33,8 +38,13 @@ def replay(db, stream, *, source="replay", run_id=None):
         episode_engine = Run(db, run_id or recorded_run, source)
         complete = False
         try:
-            for _, batch in groupby(readings, key=lambda reading: reading.ts):
-                episode_engine.ingest([replace(item, run=episode_engine.id) for item in batch])
+            for timestamp, batch in groupby(readings, key=lambda reading: reading.ts):
+                frame = [replace(item, run=episode_engine.id) for item in batch]
+                if speed is not None and episode_engine.last_ts is not None:
+                    sleep(max(0, timestamp - episode_engine.last_ts) / 1000 / speed)
+                episode_engine.ingest(frame)
+                if on_frame is not None:
+                    on_frame(db)
             complete = True
         finally:
             episode_engine.finish(complete)
@@ -81,6 +91,7 @@ class Run:
                 merge_nodes(self.db, "Run", [{
                     "id": self.id, "source": self.source, "started": now,
                     "topology_sha": self.topology["sha"],
+                    "code_sha": os.environ.get("COMMONCAUSE_CODE_SHA"),
                 }])
                 self.states = {key: ChannelState(now) for key in self.channels}
 
@@ -131,7 +142,7 @@ class Run:
             ])
 
         if self.episode and self.episode.ready(now):
-            write_verdict(self.db, self.episode, self.id, now, self.previous)
+            write_verdict(self.db, self.episode, self.id, now, self.previous, self.channels)
         if self.episode and self.episode.written and self.episode.resolved_at:
             resolve(self.db, self.episode)
             self.previous = self.episode.id

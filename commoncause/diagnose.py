@@ -18,6 +18,7 @@ MATCH_MODE = """
 MATCH (c {id: $suspect})<-[:APPLIES_TO]-(fm:FailureMode)-[:PRODUCES]->(sym:Symptom)
 WHERE sym.code IN $symptoms
 WITH fm, count(DISTINCT sym) AS matched
+WHERE fm.id <> 'connector-intermittent' OR $intermittent
 RETURN fm.id AS mode
 ORDER BY matched DESC, mode
 LIMIT 1
@@ -56,10 +57,13 @@ def _confidence(ranked):
     return "medium" if top >= 0.75 else "low"
 
 
-def write_verdict(db, episode, run, now, previous):
+def write_verdict(db, episode, run, now, previous, channels):
     suspects, confidence = rank(db, run, episode.opened, now)
     if not suspects:
         return
+    intermittent_devices = {channels[key].device for key in episode.intermittent}
+    if suspects[0]["suspect"] in intermittent_devices and confidence == "high":
+        confidence = "medium"
     db.execute("""
         MATCH (:Diagnosis {id: $id})-[r:SUSPECTS|MATCHES]->()
         DELETE r
@@ -71,7 +75,9 @@ def write_verdict(db, episode, run, now, previous):
     })
     for index, suspect in enumerate(suspects, start=1):
         mode = db.execute(MATCH_MODE, {
-            "suspect": suspect["suspect"], "symptoms": list(set(episode.statuses.values())),
+            "suspect": suspect["suspect"],
+            "symptoms": sorted(set(episode.statuses.values())),
+            "intermittent": suspect["suspect"] in intermittent_devices,
         }).fetchone()
         if mode:
             db.execute("""

@@ -8,8 +8,8 @@ import relate
 from commoncause.replay import replay
 from commoncause.topology import load_topology
 
-BENCH = Path(__file__).with_name("fixtures") / "cubesat-bench.yaml"
-F1 = BENCH.parents[2] / "recordings" / "f1-fixture.jsonl"
+BENCH = Path(__file__).resolve().parents[1] / "topologies" / "cubesat-bench.yaml"
+F1 = BENCH.parents[1] / "recordings" / "f1-fixture.jsonl"
 REG_B = {"imu.gyro", "imu.accel", "mag.field", "sun1.lux"}
 BUS_1 = {"imu.gyro", "imu.accel", "mag.field", "eps.regb.voltage", "eps.regb.current", "thermal.temp"}
 BUS_3 = {"sun1.lux", "sun2.lux", "payload.temp", "payload.pressure"}
@@ -91,3 +91,31 @@ def test_fixture_faults(failed, silent, undervoltage, expected):
         load_topology(db, BENCH)
         replay(db, io.StringIO("\n".join(rows)))
         assert [row["suspect"] for row in snapshot(db)] == expected
+
+
+def test_interleaved_replies_reduce_confidence():
+    rows = []
+    for line in F1.read_text().splitlines():
+        row = json.loads(line)
+        if row.get("type") == "fault":
+            continue
+        offset = row["ts"] - 1794873600000
+        channel = row["channel"]
+        if channel in REG_B:
+            row.update(ok=True, error=None, value=0)
+        if channel == "eps.regb.voltage":
+            row["value"] = 3.28
+        if channel == "sun2.lux" and offset in {1000, 2000}:
+            row.update(ok=False, error="EREMOTEIO", value=None)
+        rows.append(json.dumps(row))
+
+    with relate.connect() as db:
+        load_topology(db, BENCH)
+        replay(db, io.StringIO("\n".join(rows)))
+        verdict, = snapshot(db)
+        assert verdict["suspect"] == "sun2"
+        assert verdict["confidence"] == "medium"
+        assert db.execute("""
+            MATCH (:Diagnosis)-[:MATCHES]->(fm:FailureMode)
+            RETURN fm.id AS mode
+        """).fetchone() == {"mode": "connector-intermittent"}

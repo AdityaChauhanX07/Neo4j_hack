@@ -5,7 +5,7 @@ import relate
 
 from commoncause.topology import load_topology, read_channels
 
-BENCH = Path(__file__).with_name("fixtures") / "cubesat-bench.yaml"
+BENCH = Path(__file__).resolve().parents[1] / "topologies" / "cubesat-bench.yaml"
 
 
 def test_load_topology_twice():
