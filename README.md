@@ -5,6 +5,21 @@ sensors stop responding, it uses their shared power and data paths to rank
 the components that could explain the fault. Healthy devices help rule out
 suspects.
 
+## How it uses Relate
+
+The graph connects devices to their power rails, regulators, buses, and
+drivers. Telemetry events link to channels and devices. Diagnoses link to
+the events behind each verdict and to matching recovery procedures.
+Cypher traversals rank shared dependencies by the failed devices they
+explain and the healthy devices that contradict them.
+
+Python embeds Relate for ingestion and replay. A directory store keeps
+the writable graph between runs, and a single-file snapshot at
+`data/common-cause.rl` lets judges inspect the bundled F1 replay. The browser
+loads an exported graph into in-memory Relate WASM so the ground view can
+run Cypher locally. The same loader and query files support both the
+CubeSat and quadcopter examples.
+
 ## Try the browser demo
 
 Open the [live ground view](https://adityachauhanx07.github.io/Neo4j_hack/)
