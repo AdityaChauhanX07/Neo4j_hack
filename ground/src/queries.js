@@ -39,4 +39,4 @@ RETURN e.ts AS ts
 
 export const presetQueries = { verdict, before, impact, rank, recovery };
 
-export const deviceFaults = ["NO_RESPONSE", "OUT_OF_RANGE", "STUCK", "STALE", "HEARTBEAT_LOST"];
+export { contradictions, deviceFaults, precursorCutoff } from "./evidence.js";

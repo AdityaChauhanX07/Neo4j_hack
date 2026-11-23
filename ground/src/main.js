@@ -4,7 +4,9 @@ import fixture from "../../downlink/common-cause.json";
 import { openEngine } from "./engine.js";
 import { validateSnapshot } from "./graph-data.js";
 import { createWiring, partName } from "./wiring.js";
-import { deviceFaults, episodes, events, evidence, presetQueries, resolved } from "./queries.js";
+import {
+  contradictions, deviceFaults, episodes, events, evidence, precursorCutoff, presetQueries, resolved,
+} from "./queries.js";
 import { element, options, show, showDiagnosis, table } from "./render.js";
 
 const ids = [
@@ -26,7 +28,8 @@ let current;
 let loadId = 0;
 let episodeId = 0;
 let partId = 0;
-let lastExample;
+let restoreView;
+const committed = "downlink";
 const examples = new Map();
 const graphs = new Map();
 const simulationRoot = new URL("simulations/", location.href);
@@ -60,7 +63,10 @@ async function load(input, name, { bundled = false, example } = {}) {
 
     current?.engine.close();
     current?.graph.dispose();
-    current = { engine, graph: createWiring(ui.wiring, snapshot, inspectPart), rows, example };
+    current = {
+      engine, graph: createWiring(ui.wiring, snapshot, inspectPart), rows, example,
+      committed: bundled && !example,
+    };
     ui.restore.hidden = bundled;
     ui.source.textContent = bundled ? "Synthetic fixture" : "Imported downlink";
     ui.source.title = name;
@@ -73,7 +79,7 @@ async function load(input, name, { bundled = false, example } = {}) {
     ui.part.disabled = !current.graph.choices.length;
     options(ui.episode, rows.map(row => ({ id: row.id, label: row.id })));
     ui.episode.hidden = Boolean(example) || rows.length < 2;
-    showSimulation(example);
+    showSimulation(example, bundled);
     notice("");
     await loadEpisode(episode);
     return true;
@@ -118,21 +124,28 @@ async function loadEpisode(episode) {
 
   ui.metadata.textContent = `${session.system} / ${episode.run}`;
   const ids = { id: episode.id };
-  const run = { run: episode.run, t0: episode.start };
+  const scope = {
+    run: episode.run, from: episode.start, to: episode.end,
+    device_faults: deviceFaults, exclude_devices: [],
+  };
   try {
     const results = await Promise.all([
       session.engine.query(presetQueries.verdict, ids),
       session.engine.query(presetQueries.recovery, ids),
       session.engine.query(evidence, ids),
       session.engine.query(resolved, ids),
-      session.engine.query(presetQueries.before, run),
+      session.engine.query(presetQueries.rank, scope),
     ]);
     if (session !== current || attempt !== episodeId) return;
-    const [suspects, procedures, observed, resolution, changes] = results.map(result => result.rows);
+    const [suspects, procedures, observed, resolution, ranked] = results.map(result => result.rows);
     const finish = resolution[0]?.ts ?? episode.end;
-    const timeline = await session.engine.query(events, {
-      run: episode.run, start: episode.start - 1000, end: finish,
-    });
+    const [timeline, before, contradicted] = await Promise.all([
+      session.engine.query(events, { run: episode.run, start: episode.start - 1000, end: finish }),
+      session.engine.query(presetQueries.before, { run: episode.run, t0: precursorCutoff(observed, episode) }),
+      session.engine.query(contradictions, { ...scope, suspects: ranked.map(row => row.suspect) }),
+    ]);
+    const changes = before.rows;
+    const against = contradicted.rows;
     if (session !== current || attempt !== episodeId) return;
     session.events = timeline.rows;
     session.first = observed[0];
@@ -141,7 +154,9 @@ async function loadEpisode(episode) {
     ui["diagnosis-state"].hidden = false;
     ui["diagnosis-state"].textContent = episode.state === "resolved" ? "Resolved" : "Open";
     ui["diagnosis-state"].classList.toggle("resolved", episode.state === "resolved");
-    showDiagnosis(ui.diagnosis, suspects, procedures, episode);
+    const names = new Map(against.map(row => [row.suspect, row.against]));
+    const candidates = ranked.map(row => ({ ...row, against: names.get(row.suspect) ?? [] }));
+    showDiagnosis(ui.diagnosis, suspects, procedures, episode, candidates);
 
     const byName = new Map(session.graph.choices.map(part => [partName(part), part.id]));
     const root = byName.get(top?.suspect);
@@ -254,12 +269,13 @@ async function executeConsole() {
   }
 }
 
-function showSimulation(example) {
-  ui.simulation.value = example?.key ?? "";
+function showSimulation(example, bundled) {
+  const key = example?.key ?? (bundled ? committed : "");
+  ui.simulation.value = key;
   ui["simulation-results"].hidden = !example;
   const url = new URL(location.href);
   if (example) {
-    lastExample = example;
+    restoreView = () => selectSimulation(example);
     url.searchParams.set("case", example.key);
     const { suite, expected, baseline } = example;
     const { count, top_one, baseline: baselineCount } = suite.score;
@@ -267,6 +283,9 @@ function showSimulation(example) {
       `${suite.label} simulation · Correct first pick ${top_one}/${count} · First failed device ${baselineCount}/${count}`;
     ui["simulation-case"].textContent = `Expected ${expected.join(", ")} · First failed device ${baseline ?? "-"}`;
     ui["simulation-recording"].href = new URL(suite.recording, simulationRoot).href;
+  } else if (bundled) {
+    restoreView = openCommitted;
+    url.searchParams.set("case", committed);
   } else {
     url.searchParams.delete("case");
   }
@@ -300,6 +319,10 @@ async function selectSimulation(example) {
   return opened;
 }
 
+function openCommitted() {
+  return load(fixture, "common-cause.json", { bundled: true });
+}
+
 async function start() {
   try {
     const { suites } = await readSimulation("index.json");
@@ -311,7 +334,8 @@ async function start() {
     }
     if (examples.size) {
       options(ui.simulation, [
-        { id: "", label: "Choose a simulation" },
+        { id: "", label: "Choose a case" },
+        { id: committed, label: "Committed downlink · downlink/common-cause.json" },
         ...[...examples.values()].map(example => ({
           id: example.key,
           label: `${example.suite.label}${example.suite.id === "cubesat" ? " " + example.id : ""} · ${example.label}`,
@@ -319,12 +343,13 @@ async function start() {
       ]);
       ui["simulation-controls"].hidden = false;
       const requested = new URLSearchParams(location.search).get("case");
+      if (requested === committed && await openCommitted()) return;
       if (await selectSimulation(examples.get(requested) ?? examples.values().next().value)) return;
     }
   } catch {
     // The bundled F1 fixture also works when the optional simulations have not been built.
   }
-  await load(fixture, "common-cause.json", { bundled: true });
+  await openCommitted();
 }
 
 ui.browse.addEventListener("click", () => ui.file.click());
@@ -338,14 +363,12 @@ ui.file.addEventListener("change", async () => {
     notice("This file could not be parsed as JSON.", true);
   }
 });
-ui.restore.addEventListener("click", () => {
-  if (lastExample) selectSimulation(lastExample);
-  else load(fixture, "common-cause.json", { bundled: true });
-});
+ui.restore.addEventListener("click", () => (restoreView ?? openCommitted)());
 ui.simulation.addEventListener("change", () => {
   const example = examples.get(ui.simulation.value);
   if (example) selectSimulation(example);
-  else ui.simulation.value = current?.example?.key ?? "";
+  else if (ui.simulation.value === committed) openCommitted();
+  else ui.simulation.value = current?.example?.key ?? (current?.committed ? committed : "");
 });
 ui.fit.addEventListener("click", () => current?.graph.fit());
 ui.part.addEventListener("change", () => inspectPart(ui.part.value));

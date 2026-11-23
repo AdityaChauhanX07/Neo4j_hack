@@ -48,7 +48,26 @@ function metering(label, value) {
   return metric;
 }
 
-export function showDiagnosis(container, suspects, procedures, episode) {
+function showCandidates(container, candidates) {
+  const section = element("section", null, "candidates");
+  section.append(
+    element("h3", "Candidates in this window"),
+    element("p", "Every upstream part, scored by the failures it covers and the healthy devices against it.", "candidates-note"),
+  );
+  const ranks = element("div", null, "rank-table candidate-table table-scroll");
+  table(ranks, [
+    { key: "suspect", label: "Part" }, { key: "score", label: "Score" },
+    { key: "covered", label: "Covered" }, { key: "against", label: "Contradicted by" },
+  ], candidates, (cell, key, row) => {
+    if (key === "score") cell.textContent = Number(row.score).toFixed(2);
+    else if (key === "against") cell.textContent = row.against.length ? row.against.join(", ") : "none";
+    else cell.textContent = show(row[key]);
+  });
+  section.append(ranks);
+  container.append(section);
+}
+
+export function showDiagnosis(container, suspects, procedures, episode, candidates = []) {
   if (!suspects.length) {
     container.replaceChildren(element("p", "No diagnosis in this downlink.", "empty"));
     return;
@@ -76,6 +95,8 @@ export function showDiagnosis(container, suspects, procedures, episode) {
     });
     container.append(ranks);
   }
+
+  if (candidates.length) showCandidates(container, candidates);
 
   for (const procedure of procedures) {
     const section = element("section", null, "recovery");
