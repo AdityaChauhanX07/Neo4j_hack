@@ -101,6 +101,7 @@ async function load(input, name, { bundled = false, example } = {}) {
 
 async function loadEpisode(episode) {
   const attempt = ++episodeId;
+  const inspected = partId;
   const session = current;
   session.episode = episode;
   session.events = [];
@@ -176,7 +177,8 @@ async function loadEpisode(episode) {
     ], changes, (cell, key, row) => {
       cell.textContent = key === "at" ? offset(row.at, episode.start) : show(row[key]);
     });
-    await inspectPart(root ?? session.graph.choices[0]?.id);
+    // Keep a part the operator picked while the episode was loading.
+    if (partId === inspected) await inspectPart(root ?? session.graph.choices[0]?.id);
     setPreset();
   } catch (error) {
     if (session === current && attempt === episodeId) notice(error.message, true);

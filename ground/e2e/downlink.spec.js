@@ -121,3 +121,23 @@ test("open the committed downlink from the case picker and restore it", async ({
   await expect(picker).toHaveValue("downlink");
   await expect(page.locator("#metadata")).toHaveText("cubesat-bench / f1-fixture");
 });
+
+test("keep a part picked while an episode is still loading", async ({ page }) => {
+  // Slow every Relate worker reply so the episode is still loading when the part is picked.
+  await page.addInitScript(() => {
+    const Native = window.Worker;
+    window.Worker = class extends Native {
+      set onmessage(handler) {
+        super.onmessage = event => setTimeout(() => handler(event), 300);
+      }
+    };
+  });
+  await page.goto("./?case=downlink");
+  await expect(page.locator("#metadata")).toHaveText("cubesat-bench / f1-fixture");
+  await page.selectOption("#part", "Bus:I2C-1");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+  await expect(page.locator("#changes tbody tr").first()).toBeAttached();
+  await page.waitForTimeout(1000);
+  await expect(page.locator("#part")).toHaveValue("Bus:I2C-1");
+  await expect(page.locator("#component")).toContainText("Impact of I2C-1");
+});
