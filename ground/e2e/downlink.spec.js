@@ -66,7 +66,7 @@ test("fit a small screen without page overflow", async ({ page }, info) => {
 
 test("switch simulations and share a combined fault", async ({ page }) => {
   await page.goto("./");
-  const picker = page.getByLabel("Simulated case");
+  const picker = page.locator("#simulation");
   await expect(picker).toHaveValue("cubesat:F1");
   await expect(page.locator("#simulation-score")).toContainText("9/9");
   await expect(page.locator("#simulation-score")).toContainText("2/9");
@@ -74,16 +74,70 @@ test("switch simulations and share a combined fault", async ({ page }) => {
   await picker.selectOption("cubesat:F2");
   await expect(page.locator("#diagnosis .component-title")).toHaveText("I2C-1");
   await picker.selectOption("cubesat:F9");
-  await expect(page.locator("#diagnosis .rank-table tbody tr")).toHaveCount(2);
-  await expect(page.locator("#diagnosis .rank-table tbody tr").nth(1)).toContainText("I2C-3");
+  await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr")).toHaveCount(2);
+  await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr").nth(1)).toContainText("I2C-3");
   await expect(page).toHaveURL(/case=cubesat%3AF9$/);
   await page.reload();
   await expect(picker).toHaveValue("cubesat:F9");
-  await expect(page.locator("#diagnosis .rank-table tbody tr")).toHaveCount(2);
+  await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr")).toHaveCount(2);
 
   await picker.selectOption("quadcopter:bec-brownout");
   await expect(page.locator("#diagnosis .component-title")).toHaveText("BEC_5V");
   await expect(page.locator("#simulation-score")).toContainText("3/3");
   await expect(page.getByRole("link", { name: "Download simulated readings" }))
     .toHaveAttribute("href", /simulations\/quadcopter\.jsonl$/);
+});
+
+test("show the healthy devices against each candidate and the voltage sag", async ({ page }) => {
+  await page.goto("./");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+  const candidates = page.locator("#diagnosis .candidates tbody tr");
+  await expect(candidates.first()).toContainText("REG_B");
+  await expect(candidates.first()).toContainText("none");
+  await expect(candidates.filter({ hasText: "I2C-1" })).toContainText("epsmon, thermal");
+  await expect(page.locator("#precursors")).toBeVisible();
+  await page.locator("#precursors > summary").click();
+  await expect(page.locator("#changes tbody tr").filter({ hasText: "eps.regb.voltage" }))
+    .toContainText("3.28");
+});
+
+test("open the committed downlink from the case picker and restore it", async ({ page }) => {
+  await page.goto("./?case=downlink");
+  const picker = page.locator("#simulation");
+  await expect(picker).toHaveValue("downlink");
+  await expect(page.locator("#metadata")).toHaveText("cubesat-bench / f1-fixture");
+  await expect(page.locator("#simulation-results")).toBeHidden();
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+
+  await picker.selectOption("cubesat:F2");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("I2C-1");
+  await picker.selectOption("downlink");
+  await expect(page).toHaveURL(/case=downlink$/);
+  await expect(page.locator("#metadata")).toHaveText("cubesat-bench / f1-fixture");
+
+  await page.locator("#file").setInputFiles(fixture);
+  await expect(page.locator("#source")).toHaveText("Imported downlink");
+  await page.getByRole("button", { name: "Restore fixture" }).click();
+  await expect(picker).toHaveValue("downlink");
+  await expect(page.locator("#metadata")).toHaveText("cubesat-bench / f1-fixture");
+});
+
+test("keep a part picked while an episode is still loading", async ({ page }) => {
+  // Slow every Relate worker reply so the episode is still loading when the part is picked.
+  await page.addInitScript(() => {
+    const Native = window.Worker;
+    window.Worker = class extends Native {
+      set onmessage(handler) {
+        super.onmessage = event => setTimeout(() => handler(event), 300);
+      }
+    };
+  });
+  await page.goto("./?case=downlink");
+  await expect(page.locator("#metadata")).toHaveText("cubesat-bench / f1-fixture");
+  await page.selectOption("#part", "Bus:I2C-1");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+  await expect(page.locator("#changes tbody tr").first()).toBeAttached();
+  await page.waitForTimeout(1000);
+  await expect(page.locator("#part")).toHaveValue("Bus:I2C-1");
+  await expect(page.locator("#component")).toContainText("Impact of I2C-1");
 });

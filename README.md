@@ -23,7 +23,7 @@ CubeSat and quadcopter examples.
 ## Try the browser demo
 
 Open the [live ground view](https://adityachauhanx07.github.io/Neo4j_hack/)
-and choose a fault from **Simulated case**. The ground view reconstructs the
+and choose a fault from **Case**. The ground view reconstructs the
 graph with embedded Relate WASM and runs the shared Cypher queries locally.
 Start with the regulator dropout, then open the
 [combined regulator and bus fault](https://adityachauhanx07.github.io/Neo4j_hack/?case=cubesat%3AF9)

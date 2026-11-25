@@ -23,6 +23,12 @@ ROOT = Path(__file__).resolve().parents[1]
 HARDWARE = ROOT / "hardware" / "cubesat-pi4.yaml"
 TOPOLOGY = ROOT / "topologies" / "cubesat-bench.yaml"
 
+# The Pi reports a missing I2C reply as EREMOTEIO, which only Linux defines.
+# CI runs these on Linux; macOS skips them.
+linux_errno = pytest.mark.skipif(
+    not hasattr(errno, "EREMOTEIO"), reason="EREMOTEIO is Linux-only"
+)
+
 
 def test_config_binds_every_channel():
     board = load_board(HARDWARE, TOPOLOGY)
@@ -88,6 +94,7 @@ def test_fault_markers_share_sequence_and_f7_suppresses_one_channel():
         recorder.mark("F8 inject")
 
 
+@linux_errno
 def test_record_cli_preserves_raw_bus_error_and_recovers(tmp_path, monkeypatch):
     opened = []
 
@@ -161,6 +168,7 @@ def test_run_cli_saves_capture_and_persists_the_verdict(tmp_path, monkeypatch):
     assert result["state"] == "resolved"
 
 
+@linux_errno
 def test_two_buses_and_uart_record_a_complete_f1_episode(tmp_path, monkeypatch):
     calibration = pack("<HhhH8h", 27504, 26435, -1000, 36477, -10685, 3024, 2855, 140, -7, 15500, -14600, 6000)
     adc = (415148 << 4).to_bytes(3, "big") + (519888 << 4).to_bytes(3, "big")

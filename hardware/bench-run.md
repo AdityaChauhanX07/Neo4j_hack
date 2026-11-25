@@ -3,12 +3,64 @@
 Use 64-bit Raspberry Pi OS and the bench's confirmed topology. Follow the
 [Pi 4 wiring guide](bench-wiring.md) and update `cubesat-pi4.yaml` to match
 the devices on the board. Run the synthetic checks on the Pi before
-collecting the physical fault matrix.
+collecting the physical fault matrix. The
+[bring-up checklist](bring-up-checklist.md) walks through every step at the
+bench with the output to expect.
+
+## Set up the Pi
+
+`scripts/pi-setup.sh` takes a fresh 64-bit Raspberry Pi OS to a working
+recorder. Clone the repository on the Pi, run the script as your normal
+user, reboot, then run it again with `--check`.
 
 ```sh
-python3 -m venv .venv
+git clone https://github.com/AdityaChauhanX07/Neo4j_hack.git common-cause
+cd common-cause
+scripts/pi-setup.sh
+sudo reboot
+cd common-cause && scripts/pi-setup.sh --check
+```
+
+The script makes these changes:
+
+- Adds one marked block to `/boot/firmware/config.txt` with
+  `dtparam=i2c_arm=on`, the I2C-3 overlay and `enable_uart=1`. The first
+  edit saves a copy as `config.txt.common-cause.bak`.
+- Removes the serial login console from `cmdline.txt` so UART0 carries the
+  radio heartbeat.
+- Loads `i2c-dev` at boot and adds you to the `i2c` and `dialout` groups.
+- Installs `i2c-tools`, `python3-venv` and `git` if they are missing.
+- Creates `.venv` and runs `pip install -e '.[board]'`.
+- Installs the `relate` CLI in `~/.local/bin`. `commoncause downlink` needs it.
+
+On a Pi 4, I2C-3 uses `dtoverlay=i2c3,pins_4_5`. On other models the
+script uses the bit-banged `i2c-gpio` overlay on the same pins as bus 3.
+Pass `--i2c3 hw` or `--i2c3 gpio` to choose one. On a model other than the
+Pi 4, the script warns that `/dev/serial0` may not be GPIO 14 and 15. Check
+the wiring guide before you capture.
+
+Running the script again is safe. The marked block is rewritten in place,
+and completed steps are skipped. `--check` passes when `/dev/i2c-1`,
+`/dev/i2c-3` and `/dev/serial0` exist, `relate-db`, `smbus2` and `pyserial`
+import, and the `relate` CLI runs.
+
+Use the Raspberry Pi OS release based on Debian 13 (trixie). Every `relate`
+CLI release for Linux arm64 needs glibc 2.39, and the Debian 12 (bookworm)
+release has glibc 2.36. On bookworm the script skips the CLI. Capture and
+diagnosis still work there. To downlink, stop `commoncause run`, copy
+`board/store` to a laptop and run `commoncause downlink` on the laptop.
+
+After the reboot, activate the environment in each new shell:
+
+```sh
+cd ~/common-cause
 . .venv/bin/activate
-python -m pip install '.[board]'
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+## Check the software on the Pi
+
+```sh
 python sim/bench.py > /tmp/commoncause-bench-fixtures.jsonl
 commoncause matrix /tmp/commoncause-bench-fixtures.jsonl --bench-repeats 1 --min-top-one 1
 commoncause benchmark --samples 100

@@ -64,13 +64,14 @@ h1 { font-size: clamp(2.22rem, 5vw, 3.45rem); line-height: 1.04; letter-spacing:
 .notice.error { border-color: #9c3f31; background: #fbe6e1; }
 .overview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(288px, 340px); gap: 16px; }
 .wiring-card, .diagnosis-card, .panel { border-radius: 9px; overflow: hidden; }
-.wiring-card { min-width: 0; color: #e6edf6; background: var(--navy); }
+.wiring-card { min-width: 0; color: #e6edf6; background: var(--navy); display: flex; flex-direction: column; }
 .wiring-header, .panel-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 19px; }
 .wiring-header h2, .panel-header h2, .diagnosis-head h2 { font-size: 1rem; font-weight: 680; letter-spacing: -.015em; }
 .wiring-header p { color: #acc0d5; font-size: .76rem; margin-top: 5px; }
 button.dark { background: #203349; color: #e6edf6; border-color: #415a74; }
 button.dark:hover { background: #2a445f; }
 .wiring {
+  flex: 1 0 auto;
   height: 372px;
   background: radial-gradient(circle at 1px 1px, #2f445a 1px, transparent 0) 0 0 / 20px 20px, #192b3e;
   overflow: hidden;
@@ -118,6 +119,9 @@ th:last-child, td:last-child { padding-right: 18px; }
 th { color: #405568; font-weight: 660; background: #f4f7f9; white-space: nowrap; }
 td { overflow-wrap: anywhere; }
 .rank-table { margin-bottom: 12px; }
+.candidates { border-top: 1px solid var(--rule); padding-top: 12px; }
+.candidates h3 { font-size: .83rem; font-weight: 680; }
+.candidates-note { margin: 5px 0 8px; font-size: .77rem; line-height: 1.45; color: var(--muted); }
 .rank-table td, .rank-table th { padding-left: 5px; padding-right: 5px; }
 .time, .code { font-family: var(--mono); }
 .time, .event-status { white-space: nowrap; }

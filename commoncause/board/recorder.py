@@ -95,6 +95,9 @@ class OperatorConsole:
     def invalid(self, error):
         print(f"Marker rejected: {error}", file=self.stderr, flush=True)
 
+    def accepted(self, command):
+        print(f"Marker recorded: {command}", file=self.stderr, flush=True)
+
 
 def _poll_sensor(device, driver, emit, stop):
     ready = False
@@ -198,6 +201,7 @@ def _collect(producers, recorder, duration, console):
                         except ValueError as error:
                             console.invalid(error)
                         else:
+                            console.accepted(command)
                             yield marker
                 for worker in workers:
                     if worker.done():
