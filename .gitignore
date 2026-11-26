@@ -4,7 +4,7 @@ __pycache__/
 .pytest_cache/
 build/
 dist/
-board/store/
+/board/
 downlink/common-cause.rl
 node_modules/
 test-results/
