@@ -2,7 +2,7 @@
 topologies/*.yaml text eol=lf
 config/*.yaml text eol=lf
 recordings/*.jsonl text eol=lf
-recordings/*.gz binary
+*.gz binary
 downlink/*.json text eol=lf
 docs/*.json text eol=lf
 sim/scenarios/*.json text eol=lf

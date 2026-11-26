@@ -8,16 +8,18 @@ that plan and identifies deferred physical work.
 
 ## Current checks
 
-The Python suite contains 99 test cases. CI runs Python 3.9, 3.11, and
+The Python suite contains 102 test cases. CI runs Python 3.9, 3.11, and
 3.13 on x64 Linux and Python 3.11 on ARM64 Linux. Fresh non-editable Python
 3.11 installs also run on hosted macOS ARM64 and Windows x64, without board
 extras. Platform-specific errno and PTY tests are skipped where unavailable.
 
 Four integration tests require the Relate CLI. Python-only jobs skip them;
 the Linux Ground view job and the Mac integration step run them with the
-installed CLI. Six WASM tests, three HTTP-client tests, and eleven browser checks cover the dashboard,
+installed CLI. Six WASM tests, three HTTP-client tests, three walkthrough-data
+tests, and fourteen browser checks cover the ground view,
 including a newly exported capture, the published 36-episode graph, episode
-switching, loading races, rejected writes, and small-screen layout.
+switching, loading races, rejected writes, the guided fault-to-recovery flow,
+keyboard controls, and small-screen layout.
 
 | Area | Evidence |
 | --- | --- |
@@ -30,6 +32,7 @@ switching, loading races, rejected writes, and small-screen layout.
 | Simulated automatic recovery | Both I2C buses, ineffective recovery, incomplete verification, unsafe-candidate refusal, physical-mode rejection, and retained graph evidence |
 | Detection config | Shared packaged defaults, rejected invalid values, custom settle timing, and a config hash on new Run nodes |
 | Published matrix | Raw recording replays to the published scores/times; every persisted ranking agrees with the independent scorer; hashes and export content match |
+| Runtime profile | Eight balanced healthy captures, six recovery attempts, native query timing, and a retained failed pilot; source and recording hashes with raw-input reclassification |
 
 Reproduce the Python checks with `python -m pytest -q` after installing
 `.[test]`. See the [laptop guide](laptop-install.md), [MCP guide](mcp.md),
@@ -54,6 +57,8 @@ those separate times; a first verdict is not necessarily a correct one.
 The native query benchmark uses the 36-episode graph on this shared x64
 Linux host. It is a different workload from the earlier F1 fixture timing
 below, and neither result measures Pi performance.
+The [runtime profile](runtime-profile.md) adds a fresh 100-sample native
+query measurement and separates reader overhead from browser rendering.
 
 ## Bounded varied simulations
 

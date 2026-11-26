@@ -1,0 +1,171 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 60.11389251199989,
+  "cpu_seconds": 1.125223,
+  "peak_rss_bytes": 47525888,
+  "mode": "baseline",
+  "requested_seconds": 60.0,
+  "diagnoses": 1,
+  "healthy": false,
+  "store_bytes": 43876,
+  "recording": "recordings/runtime-profile/pilot-sampling-gap.jsonl.gz",
+  "included_in_mode_medians": false,
+  "exploratory_runner_sha256": "2eb0514074e99b1d0b24e3fe7d529e50173798152def171ddb808daa040d623f",
+  "code_sha": "0dcf7e96b2e3f5528b45b87f9a8f4facabebec4f",
+  "capture_health": {
+    "healthy": false,
+    "runs": [
+      {
+        "run": "profile-healthy",
+        "seconds": 59.517,
+        "min_seconds": 59,
+        "min_rate": 0.9,
+        "healthy": false,
+        "channels": [
+          {
+            "id": "eps.regb.current",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.98,
+            "cadence_ok": true,
+            "max_gap_ms": 2106,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "eps.regb.voltage",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.98,
+            "cadence_ok": true,
+            "max_gap_ms": 2106,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "imu.accel",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.98,
+            "cadence_ok": true,
+            "max_gap_ms": 2419,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "imu.gyro",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.98,
+            "cadence_ok": true,
+            "max_gap_ms": 2419,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "mag.field",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.98,
+            "cadence_ok": true,
+            "max_gap_ms": 1509,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "payload.pressure",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.98,
+            "cadence_ok": true,
+            "max_gap_ms": 2909,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "payload.temp",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.98,
+            "cadence_ok": true,
+            "max_gap_ms": 2909,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "radio.heartbeat",
+            "readings": 60,
+            "expected_hz": 1.0,
+            "observed_hz": 1.0,
+            "cadence_ok": true,
+            "max_gap_ms": 2916,
+            "statuses": {
+              "OK": 60
+            },
+            "healthy": true
+          },
+          {
+            "id": "sun1.lux",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.99,
+            "cadence_ok": true,
+            "max_gap_ms": 2907,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "sun2.lux",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.99,
+            "cadence_ok": true,
+            "max_gap_ms": 2890,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "thermal.temp",
+            "readings": 119,
+            "expected_hz": 2.0,
+            "observed_hz": 1.98,
+            "cadence_ok": true,
+            "max_gap_ms": 2687,
+            "statuses": {
+              "OK": 119,
+              "STALE": 1
+            },
+            "healthy": false
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -32,12 +32,16 @@ CubeSat and quadcopter examples.
 ## Try the browser demo
 
 Open the [live ground view](https://adityachauhanx07.github.io/Neo4j_hack/)
-and choose a fault from **Case**. The ground view reconstructs the
-graph with embedded Relate WASM and runs the shared Cypher queries locally.
-Start with the regulator dropout, then open the
+and select **Try a fault**. Follow four stages: healthy readings, the fault,
+the cause, and recovery. The first example explains why three sensor alarms
+point to one shared regulator. The ground view reconstructs the graph with
+embedded Relate WASM and runs the shared Cypher queries locally.
+Then try the blocked-bus example or the
 [combined regulator and bus fault](https://adityachauhanx07.github.io/Neo4j_hack/?case=cubesat%3AF9)
-to see a diagnosis with two suspects. A JSON downlink can also be opened from
-disk. The console accepts read-only graph queries.
+to see a diagnosis with two suspects. Open **Evidence workspace** for the
+full wiring, readings, other cases, saved JSON downlinks, live connection,
+and read-only query console. The walkthrough identifies its input as a
+recorded simulation; advancing a stage does not inject a live hardware fault.
 
 | Simulation | Cases | Correct first suspect | First failed device |
 | --- | ---: | ---: | ---: |
@@ -123,7 +127,8 @@ The [recorded virtual matrix](docs/virtual-matrix.md) includes 36 live
 virtual injections, their raw recording, an inspectable `.rl` graph, and
 the matching browser export. It reached all 36 correct cause sets and
 resolved every episode; the first-failed-device baseline scored 8/36.
-Choose **Open recorded session** in the dashboard to inspect it.
+Use **Inspect the 36-fault recording**, or open **Evidence workspace** and
+choose **Open recorded session**, to inspect it.
 
 ## Board and ground interfaces
 
@@ -252,3 +257,9 @@ I2C stubs. The [original-plan status](docs/plan-status.md) records completed
 software work, the excluded hardware promises, and optional
 stretch goals. See the [endurance guide](docs/endurance.md) for sustained
 capture and resource measurements.
+
+The [runtime profile](docs/runtime-profile.md) compares acquisition alone,
+live HTTP reading, and simulated recovery policy on the same backend. It
+also retains successful and ineffective recovery timings and an unhealthy
+pilot recording. The [field recheck](docs/field-recheck.md) compares the
+project's diagnostic workflow with nearby public projects.
