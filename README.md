@@ -43,7 +43,7 @@ full wiring, readings, other cases, saved JSON downlinks, live connection,
 and read-only query console. The walkthrough identifies its input as a
 recorded simulation; advancing a stage does not inject a live hardware fault.
 
-| Simulation | Cases | Correct first suspect | First failed device |
+| Simulation | Cases | Correct cause set | First failed device |
 | --- | ---: | ---: | ---: |
 | CubeSat | 9 | 9/9 | 2/9 |
 | Quadcopter | 3 | 3/3 | 1/3 |
@@ -56,9 +56,11 @@ JSONL for the selected suite. The [demo walkthrough](docs/demo.md) covers a
 laptop-only run and the commands to reproduce the fixture scores.
 
 The recorded bench uses four repetitions of each modeled fault through
-the live recorder. A separate one-hour healthy virtual capture opened no
-diagnosis; its [resource and cadence report](docs/endurance.md) identifies
-the measured revision and host.
+the live recorder. An earlier one-hour healthy virtual capture opened no
+diagnosis. The current-backend repeat opened 3 diagnoses after sampling
+gaps and failed its full-hour healthy gate; its first ten-minute prefix
+passed. The [resource and cadence report](docs/endurance.md) retains both
+measurements and identifies each source revision and host.
 
 ## Try the F1 replay
 

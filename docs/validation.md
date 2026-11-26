@@ -8,7 +8,7 @@ that plan and identifies deferred physical work.
 
 ## Current checks
 
-The Python suite contains 102 test cases. CI runs Python 3.9, 3.11, and
+The Python suite contains 104 test cases. CI runs Python 3.9, 3.11, and
 3.13 on x64 Linux and Python 3.11 on ARM64 Linux. Fresh non-editable Python
 3.11 installs also run on hosted macOS ARM64 and Windows x64, without board
 extras. Platform-specific errno and PTY tests are skipped where unavailable.
@@ -156,3 +156,13 @@ the measured source revision, which predates the later fault-path fix.
 Compressed raw inputs and their [manifest](endurance-manifest.json) are
 committed, and the current suite rechecks both their hashes and channel
 health without waiting another hour.
+
+The new current-backend hour at `0dcf7e9` completed in
+3,600.406 seconds, but **failed** its healthy-operation gate:
+3 diagnoses opened after sampling gaps without fault injection.
+Its first 601-second prefix is healthy. Peak acquisition RSS was
+121.07 MiB and the closed store was 1.54 MiB.
+The [current report](final-endurance-results.json) and
+[retained-input manifest](final-endurance-manifest.json) preserve that failure;
+current tests reproduce its classifications and diagnoses. The older clean
+hour is not evidence that this new full-hour gate passed.

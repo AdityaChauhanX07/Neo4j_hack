@@ -1,0 +1,30 @@
+{
+  "simulated": true,
+  "code_sha": "0dcf7e96b2e3f5528b45b87f9a8f4facabebec4f",
+  "files": {
+    "recordings/runtime-profile/hour-current.jsonl.gz": {
+      "bytes": 478441,
+      "sha256": "6e37925f75e6c0fa920988296c2a61a64e09bbf0207b770a8a552b10d8b67756"
+    },
+    "recordings/runtime-profile/ten-minute-prefix.jsonl.gz": {
+      "bytes": 80039,
+      "sha256": "f0f10ea73bd0f0b24a5ff416aa3694fb87d6c2dca8f29dbcac09868a7cb91679"
+    },
+    "docs/final-endurance-results.json": {
+      "bytes": 12147,
+      "sha256": "27dfbfb3a3ebc838e4b975465f7c68491c25abdf2a824135b27326be4596ebf7"
+    },
+    "docs/final-endurance-diagnoses.json": {
+      "bytes": 1373,
+      "sha256": "ea37ea072da04b7f5dba371611ebe5729c79491720b8472ee22d059bb40f5ef1"
+    },
+    "docs/final-ten-minute-health.json": {
+      "bytes": 3687,
+      "sha256": "c216b99f7ca0b914a3650aada301ba7bcb48331906561102c34f10b6b7d6bc14"
+    },
+    "scripts/soak.py": {
+      "bytes": 4281,
+      "sha256": "ee51e270218302150d36c263e730b92fe7331cb99c5d16bb9a915403ed01ee27"
+    }
+  }
+}

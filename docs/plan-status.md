@@ -22,14 +22,17 @@ application and reports.
 | Second system | Quadcopter topology and three labelled synthetic faults using the same engine and queries |
 | Clean Ubuntu and Mac setup | Fresh installed-package workflows on Linux and macOS; Windows coverage added as well |
 | Final 36-injection matrix and inspectable store | Four live virtual repetitions of F1–F9, raw JSONL, persistent snapshot, JSON export, scores, benchmarks, and hash manifest |
-| Ten-minute healthy recording and one-hour resource check | Real-clock virtual endurance runner, cadence/false-alarm checks, minute checkpoints, and retained recordings/reports |
+| Ten-minute healthy recording and one-hour resource check | Real-clock virtual captures, minute checkpoints, and retained inputs; the current-backend ten-minute prefix is healthy, but its full-hour healthy gate failed after sampling gaps |
 
 The [validation notes](validation.md) identify the measured versions,
 inputs, results, and limitations. The [recorded matrix](virtual-matrix.md)
 and [endurance guide](endurance.md) provide the reproducible inputs and
-commands. Core code, fixtures, and the completed one-hour measurement
-cover the agreed software scope. Each measurement identifies its actual
-source revision and host.
+commands. The planned software features are implemented. The latest
+endurance measurement exposes an operating limit: delayed acquisition can
+open diagnoses without an injected fault. It is not evidence of a clean
+current-backend hour. Each measurement identifies its actual source revision
+and host. The [runtime profile](runtime-profile.md) distinguishes healthy
+reader/policy overhead from recovery-action timing and retains a failed pilot.
 
 ## Excluded physical work
 
@@ -65,5 +68,8 @@ virtual UART generates its byte protocol in Python.
 - Live browser HTTP connection: implemented. The [live browser guide](live-browser.md)
   covers the authenticated read-only follower, virtual capture, and browser checks.
 
-Submission copy, market rechecks, the video, rehearsal, and Devpost
-publication are separate from this engineering checklist.
+The [field recheck](field-recheck.md) is complete as a bounded review of
+selected public projects. The browser now starts with a four-stage fault
+walkthrough and leaves technical evidence in a separate workspace.
+Submission copy, the video, rehearsal, and Devpost publication remain
+separate from this engineering checklist.
