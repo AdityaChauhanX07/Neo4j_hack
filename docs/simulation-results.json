@@ -1,0 +1,103 @@
+{
+  "python": "3.9.25",
+  "relate_db": "1.0.1",
+  "generator_sha256": "344df9b5d990226fe9ca6f825e12b42dac11d80305474959a7b3bbe72df02867",
+  "topology_sha256": "32946fc1cc25cd6e4a3dae4a80d69c64280344710959536802e750cdb68ebe45",
+  "scope": "Bounded synthetic faults, not physical validation or general accuracy.",
+  "seeds": [
+    {
+      "seed": 7,
+      "repeats": 4,
+      "recording_sha256": "24ddcee02512101c575995c6f98af2eafb80d08ff3fbec6eed4f8193d6c026e3",
+      "totals": {
+        "injections": 36,
+        "top_one": 36,
+        "baseline": 8,
+        "all_causes": 36,
+        "recorded_decision_ms": {
+          "samples": 36,
+          "p50": 1443,
+          "p95": 1561
+        },
+        "recorded_first_correct_ms": {
+          "samples": 36,
+          "p50": 1457,
+          "p95": 2643
+        }
+      },
+      "episodes": 36,
+      "resolved": 36,
+      "healthy_runs": 4,
+      "false_alarms": 0
+    },
+    {
+      "seed": 42,
+      "repeats": 4,
+      "recording_sha256": "942484d661329cf1682fa5b122223b62fad6961cc26cf030b07ce074604b3e79",
+      "totals": {
+        "injections": 36,
+        "top_one": 36,
+        "baseline": 8,
+        "all_causes": 36,
+        "recorded_decision_ms": {
+          "samples": 36,
+          "p50": 1074,
+          "p95": 1565
+        },
+        "recorded_first_correct_ms": {
+          "samples": 36,
+          "p50": 1133,
+          "p95": 2089
+        }
+      },
+      "episodes": 36,
+      "resolved": 36,
+      "healthy_runs": 4,
+      "false_alarms": 0
+    },
+    {
+      "seed": 2026,
+      "repeats": 4,
+      "recording_sha256": "45913f486ca853a5897837e10b9892e4ad3fad8228cd1e2c5f439c8bb4aa8085",
+      "totals": {
+        "injections": 36,
+        "top_one": 36,
+        "baseline": 8,
+        "all_causes": 36,
+        "recorded_decision_ms": {
+          "samples": 36,
+          "p50": 1103,
+          "p95": 1526
+        },
+        "recorded_first_correct_ms": {
+          "samples": 36,
+          "p50": 1110,
+          "p95": 2530
+        }
+      },
+      "episodes": 36,
+      "resolved": 36,
+      "healthy_runs": 4,
+      "false_alarms": 0
+    }
+  ],
+  "parameters": {
+    "sample_period_ms": 500,
+    "heartbeat_period_ms": 1000,
+    "frame_jitter_ms": 75,
+    "reading_noise_fraction": 0.02,
+    "fault_start_ms": [
+      1000,
+      2500
+    ],
+    "fault_duration_ms": [
+      4000,
+      8000
+    ],
+    "recovery_observation_ms": [
+      3000,
+      5000
+    ],
+    "timing_step_ms": 500
+  }
+}

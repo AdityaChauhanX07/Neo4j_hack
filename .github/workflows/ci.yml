@@ -50,3 +50,16 @@ jobs:
             commoncause benchmark --samples 100
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify varied simulated faults
+        if: matrix.python == '3.11' && matrix.arch == 'x64'
+        run: |
+          python sim/bench.py --seed 42 --repeats 4 > "$RUNNER_TEMP/bench-varied.jsonl"
+          commoncause matrix "$RUNNER_TEMP/bench-varied.jsonl" --bench-repeats 4 --min-top-one 1 --json > "$RUNNER_TEMP/bench-varied-report.json"
+      - uses: actions/upload-artifact@v6
+        if: matrix.python == '3.11' && matrix.arch == 'x64'
+        with:
+          name: simulated-fault-matrix
+          path: |
+            ${{ runner.temp }}/bench-varied.jsonl
+            ${{ runner.temp }}/bench-varied-report.json
+          retention-days: 30

@@ -148,6 +148,21 @@ python sim/quad.py > /tmp/commoncause-quad.jsonl
 commoncause matrix /tmp/commoncause-quad.jsonl --topology topologies/quadcopter.yaml
 ```
 
+## Vary the simulated faults
+
+Use a seed to vary fault timing, frame jitter, reading noise, and recovery
+time. Each repeat includes all nine CubeSat faults. The default generator
+still produces the fixed demo recordings.
+
+```sh
+python sim/bench.py --seed 42 --repeats 4 > /tmp/commoncause-varied.jsonl
+commoncause matrix /tmp/commoncause-varied.jsonl --bench-repeats 4 --min-top-one 1 --json
+```
+
+With `--seed`, `--fault healthy` generates a control with noise and jitter but no injected
+faults. The [validation notes](docs/validation.md) record the parameter
+bounds, accuracy, first-correct timing, recovery checks, and limitations.
+
 ## Ground view
 
 Use Node.js 24 and npm. With the Python environment set up, build the
