@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from itertools import groupby
 
 import relate
 
@@ -31,19 +32,34 @@ def matrix(path, topology):
 
     if not labels:
         raise ValueError("No fault injection markers")
+    history = defaultdict(list)
+
+    def remember_verdict(db, session):
+        rows = db.execute("""
+            MATCH (dx:Diagnosis {run: $run})-[s:SUSPECTS]->(c)
+            RETURN dx.id AS diagnosis, c.id AS suspect
+            ORDER BY dx.id, s.rank
+        """, {"run": session.id}).fetchall()
+        for diagnosis_id, suspects in groupby(rows, key=lambda row: row["diagnosis"]):
+            revisions = history[diagnosis_id]
+            ranked = [row["suspect"] for row in suspects]
+            if not revisions or revisions[-1][1] != ranked:
+                revisions.append((session.last_ts, ranked))
+
     with relate.connect() as db, path.open(encoding="utf-8") as feed:
         load_topology(db, topology)
-        replay(db, feed)
+        # SUSPECTS is replaced on each update, so observe the committed frames.
+        replay(db, feed, on_frame=remember_verdict)
         scores = []
         for run, entries in labels.items():
             entries.sort(key=lambda entry: entry["ts"])
             for index, marker in enumerate(entries):
                 cutoff = entries[index + 1]["ts"] if index + 1 < len(entries) else None
-                scores.append(_score(db, run, marker, cutoff))
+                scores.append(_score(db, run, marker, cutoff, history))
     return scores
 
 
-def _score(db, run, marker, cutoff):
+def _score(db, run, marker, cutoff, history):
     fault = marker["fault"]
     expected = marker.get("expected", EXPECTED.get(fault))
     if isinstance(expected, str):
@@ -58,7 +74,7 @@ def _score(db, run, marker, cutoff):
         WHERE dx.window_from >= $start AND ($end IS NULL OR dx.window_from < $end)
         WITH dx ORDER BY dx.window_from LIMIT 1
         MATCH (dx)-[s:SUSPECTS]->(c)
-        RETURN c.id AS id, dx.window_from AS first_bad,
+        RETURN c.id AS id, dx.id AS diagnosis, dx.window_from AS first_bad,
                coalesce(dx.first_verdict_ts, dx.ts) AS first_verdict, dx.ts AS latest_verdict
         ORDER BY s.rank
     """, params).fetchall()
@@ -70,10 +86,18 @@ def _score(db, run, marker, cutoff):
         LIMIT 1
     """, params).fetchone()
     first = ranked[0] if ranked else None
+    correct_at = None
+    if first:
+        correct_at = next((
+            observed for observed, suspects in history[first["diagnosis"]]
+            if (cutoff is None or observed < cutoff)
+            and suspects[:1] == list(expected[:1]) and set(suspects) == set(expected)
+        ), None)
     return {
         "run": run, "fault": fault, "expected": list(expected),
         "decision_ms": first["first_verdict"] - first["first_bad"] if first else None,
         "latest_verdict_ms": first["latest_verdict"] - first["first_bad"] if first else None,
+        "first_correct_ms": correct_at - first["first_bad"] if correct_at is not None else None,
         "ranked": [row["id"] for row in ranked],
         "baseline": naive["id"] if naive else None,
     }

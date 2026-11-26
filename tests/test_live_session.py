@@ -175,6 +175,7 @@ def test_live_f1_to_f5_session_with_typed_markers(tmp_path, monkeypatch, capsys)
         line = next(row for row in scored.splitlines() if f" {fault} " in row)
         assert f"ranked {expected}" in line, line
     assert "Top-1 5/5" in scored
+    assert "First correct verdicts 5/5" in scored
 
     with relate.connect(str(store), read_only=True) as db:
         latest = diagnosis(db)

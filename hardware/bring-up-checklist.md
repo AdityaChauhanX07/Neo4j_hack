@@ -274,9 +274,12 @@ its inject marker.
   commoncause benchmark --db board/store --samples 100
   ```
 
-  **Pass:** `Top-1 5/5` and the command exits with 0. The benchmark's
-  `Live time to verdict` p50 and p95 are the measured Pi numbers for the
-  plan's "under 2 seconds" target. Record them as measured. Don't round.
+  **Pass:** `Top-1 5/5`, `First correct verdicts 5/5`, and the command exits
+  with 0. Save the per-fault first-correct times and the aggregate p50/p95.
+  The matrix measures elapsed recording time through the replay frame that
+  commits a correct ranking. The benchmark's `Live time to verdict` measures
+  wall time through the first committed verdict, which can still be wrong.
+  Keep both measurements when assessing the plan's timing target.
 - [ ] Downlink, if the `relate` CLI is installed (trixie):
 
   ```sh

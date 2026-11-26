@@ -1,9 +1,11 @@
 import io
 import json
+import sys
 from pathlib import Path
 
 import relate
 
+from commoncause import cli
 from commoncause.matrix import matrix
 from commoncause.replay import replay
 from commoncause.topology import load_topology
@@ -68,7 +70,67 @@ def test_scoring_nine_bench_faults(tmp_path):
     assert sum(row["baseline"] == row["expected"][0] for row in scores) == 2
     rail_loss = scores[4]
     assert rail_loss["decision_ms"] == 1000
+    assert rail_loss["first_correct_ms"] == 2500
     assert rail_loss["latest_verdict_ms"] > rail_loss["decision_ms"]
+
+
+def test_first_correct_verdict_is_missing_when_expected_cause_never_appears(tmp_path, monkeypatch, capsys):
+    readings = list(records("F1"))
+    for row in readings:
+        if row.get("action") == "inject":
+            row["expected"] = ["RAIL_5V"]
+    recording = tmp_path / "mislabelled.jsonl"
+    recording.write_text("\n".join(map(json.dumps, readings)))
+
+    score, = matrix(recording, BENCH)
+
+    assert score["ranked"] == ["REG_B"]
+    assert score["decision_ms"] == 1000
+    assert score["first_correct_ms"] is None
+    monkeypatch.setattr(sys, "argv", ["commoncause", "matrix", str(recording), "--json"])
+    assert cli.main() == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["injections"][0]["first_correct_ms"] is None
+    assert report["totals"]["recorded_first_correct_ms"] == {
+        "samples": 0, "p50": None, "p95": None,
+    }
+
+
+def test_first_correct_verdict_stops_at_the_next_injection(tmp_path):
+    readings = list(records("F5"))
+    cutoff = readings[0]["ts"] + 3500
+    index = next(i for i, row in enumerate(readings) if row["ts"] >= cutoff)
+    readings.insert(index, {
+        "run": readings[0]["run"], "ts": cutoff, "type": "fault",
+        "fault": "F1", "action": "inject", "expected": ["REG_B"],
+    })
+    for seq, row in enumerate(readings, 1):
+        row["seq"] = seq
+    recording = tmp_path / "overlapping.jsonl"
+    recording.write_text("\n".join(map(json.dumps, readings)))
+
+    first, second = matrix(recording, BENCH)
+
+    assert first["ranked"] == ["RAIL_5V"]
+    assert first["first_correct_ms"] is None
+    assert second["first_correct_ms"] is None
+
+
+def test_first_correct_verdict_waits_for_both_causes(tmp_path):
+    readings = list(records("F9"))
+    start = readings[0]["ts"]
+    nominal = {row["channel"]: row["value"] for row in readings if row["ts"] == start}
+    for row in readings:
+        if row.get("channel") in {"sun2.lux", "payload.temp", "payload.pressure"} and row["ts"] < start + 3000:
+            row.update(value=nominal[row["channel"]], ok=True, error=None)
+    recording = tmp_path / "combined.jsonl"
+    recording.write_text("\n".join(map(json.dumps, readings)))
+
+    score, = matrix(recording, BENCH)
+
+    assert score["ranked"] == ["REG_B", "I2C-3"]
+    assert score["decision_ms"] == 1000
+    assert score["first_correct_ms"] == 2000
 
 
 def test_interleaved_replies_reduce_confidence():
