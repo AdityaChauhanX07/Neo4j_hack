@@ -44,11 +44,14 @@ and completed steps are skipped. `--check` passes when `/dev/i2c-1`,
 `/dev/i2c-3` and `/dev/serial0` exist, `relate-db`, `smbus2` and `pyserial`
 import, and the `relate` CLI runs.
 
-Use the Raspberry Pi OS release based on Debian 13 (trixie). Every `relate`
-CLI release for Linux arm64 needs glibc 2.39, and the Debian 12 (bookworm)
-release has glibc 2.36. On bookworm the script skips the CLI. Capture and
-diagnosis still work there. To downlink, stop `commoncause run`, copy
-`board/store` to a laptop and run `commoncause downlink` on the laptop.
+The complete workflow on the Pi requires 64-bit Raspberry Pi OS based on
+Debian 13 (trixie), the current official image. Every `relate` CLI release
+for Linux arm64 needs glibc 2.39, and trixie has 2.41.
+
+Fallback on bookworm (Debian 12, glibc 2.36): the script skips the CLI, and
+capture and diagnosis still work on the Pi. To downlink, stop
+`commoncause run`, copy `board/store` to a laptop and run
+`commoncause downlink` on the laptop.
 
 After the reboot, activate the environment in each new shell:
 

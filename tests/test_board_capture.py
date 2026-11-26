@@ -47,6 +47,29 @@ def test_config_rejects_i2c_address_collision(tmp_path):
         load_board(path, TOPOLOGY)
 
 
+def test_config_rejects_chip_that_differs_from_topology_part(tmp_path):
+    config = yaml.safe_load(HARDWARE.read_text())
+    config["devices"]["mag"].update(chip="hmc5883l", address=0x1E)
+    path = tmp_path / "hardware.yaml"
+    path.write_text(yaml.safe_dump(config))
+    with pytest.raises(ValueError, match="topology part is QMC5883L"):
+        load_board(path, TOPOLOGY)
+
+
+def test_hmc5883l_swap_keeps_mag_field(tmp_path):
+    config = yaml.safe_load(HARDWARE.read_text())
+    config["devices"]["mag"].update(chip="hmc5883l", address=0x1E)
+    topology = yaml.safe_load(TOPOLOGY.read_text())
+    mag = next(part for part in topology["devices"] if part["id"] == "mag")
+    mag["part"] = "HMC5883L"
+    (tmp_path / "hardware.yaml").write_text(yaml.safe_dump(config))
+    (tmp_path / "topology.yaml").write_text(yaml.safe_dump(topology))
+    board = load_board(tmp_path / "hardware.yaml", tmp_path / "topology.yaml")
+    assert board.devices["mag"].chip == "hmc5883l"
+    assert board.devices["mag"].address == 0x1E
+    assert [output.channel for output in board.devices["mag"].outputs] == ["mag.field"]
+
+
 def test_pico_frame_and_serial_decoder_agree(monkeypatch):
     wire = []
     waits = []

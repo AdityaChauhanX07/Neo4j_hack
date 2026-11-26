@@ -76,6 +76,11 @@ def load_board(hardware_path, topology_path):
         else:
             if not isinstance(chip, str) or chip not in I2C_DRIVERS:
                 raise ValueError(f"{name} uses unknown chip {chip}")
+            if _chip_name(part.get("part")) != chip:
+                raise ValueError(
+                    f"{name} uses chip {chip} but the topology part is {part.get('part')}; "
+                    "update both files together"
+                )
             if buses.get(bus) != "i2c" or type(adapter) is not int or adapter < 0:
                 raise ValueError(f"{bus} needs a Linux I2C adapter number")
             if type(address) is not int or not 0x08 <= address <= 0x77:
@@ -123,3 +128,8 @@ def load_board(hardware_path, topology_path):
         if not stall_driver:
             raise ValueError("The stall channel must belong to a topology Driver")
     return Board(i2c, uart, devices, stall, stall_driver)
+
+
+def _chip_name(part):
+    """Map a topology part such as MPU-6050 to its driver name, mpu6050."""
+    return "".join(c for c in str(part).lower() if c.isalnum())
