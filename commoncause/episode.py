@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 
 from .classify import DEVICE_FAULTS
+from .settings import DETECTION
 
-SETTLE_MS = 1000
-RECOVERY_SAMPLES = 3
+SETTLE_MS = DETECTION.settle_ms
+RECOVERY_SAMPLES = DETECTION.recovery_samples
 
 
 @dataclass

@@ -150,6 +150,10 @@ Stale samples are detected after three periods, heartbeat loss after 3
 seconds, and undervoltage below 90% of nominal. Recovery takes three
 consecutive OK readings on each affected channel.
 
+Those defaults come from [config/detection.yaml](config/detection.yaml).
+The [detection guide](docs/detection.md) covers overrides, per-channel stuck
+detection, and the config hash recorded on new runs.
+
 `commoncause matrix` reports the final ranking and the time to the first
 fully correct verdict separately. Its `first_correct_ms` field uses elapsed
 recording time from the first anomaly, with `null` for an injection that
