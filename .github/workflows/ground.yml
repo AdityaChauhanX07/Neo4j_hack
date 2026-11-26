@@ -69,6 +69,8 @@ jobs:
           cache-dependency-path: ground/package-lock.json
       - run: npm --prefix ground ci
       - run: npm --prefix ground test
+        env:
+          RELATE_CLI: /home/runner/.local/bin/relate
       - run: npm --prefix ground run build
       - run: npx playwright install --with-deps chromium
         working-directory: ground
@@ -76,6 +78,7 @@ jobs:
         env:
           COMMONCAUSE_DOWNLINK: ${{ runner.temp }}/commoncause-downlink/common-cause.json
           COMMONCAUSE_VIRTUAL_DOWNLINK: ${{ runner.temp }}/virtual-downlink/common-cause.json
+          RELATE_CLI: /home/runner/.local/bin/relate
       - uses: actions/upload-artifact@v6
         if: always()
         with:

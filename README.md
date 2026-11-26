@@ -223,11 +223,16 @@ GitHub Actions builds a downloadable `ground-preview` artifact on ground-view
 pull requests. A push to `main` with changes to the demo or its inputs builds
 and deploys the site through GitHub Pages.
 
-## Optional hardware setup
+## Live view and hardware reference
+
+The [live browser guide](docs/live-browser.md) connects the ground view to a
+running virtual capture through Relate's read-only HTTP follower. New
+diagnoses and recovery appear without exporting or reopening a downlink.
 
 The demo and both simulation suites run on a laptop. The
 [bench wiring guide](hardware/bench-wiring.md) describes the Pi 4 hardware
-map and Pico heartbeat for future physical validation. The
+map and Pico heartbeat as reference material. Physical tasks are excluded
+from our active scope. The
 [bench run guide](hardware/bench-run.md) covers the recorder and procedures
 for collecting a healthy capture, an F1 episode, and a physical fault matrix.
 
@@ -241,6 +246,6 @@ simulated I/O on x64 and ARM64 Linux.
 The [hardware-free bench assessment](docs/hardware-without-equipment.md)
 compares the implemented virtual bench with Wokwi, QEMU, Renode, and Linux
 I2C stubs. The [original-plan status](docs/plan-status.md) records completed
-software work, the hardware promises that remain unverified, and optional
+software work, the excluded hardware promises, and optional
 stretch goals. See the [endurance guide](docs/endurance.md) for sustained
 capture and resource measurements.
