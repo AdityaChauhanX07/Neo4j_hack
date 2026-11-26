@@ -41,3 +41,9 @@ coverage; the Python replay and browser import paths remain available.
 Results from hosted machines establish compatibility for their recorded
 runner images and Python version, not every desktop configuration. CI
 artifacts retain the fresh recording and replay store for inspection.
+
+The first Mac run found that the virtual intermittent fault could alias
+the 2 Hz polling boundary and spuriously satisfy three healthy recovery
+samples. Its reply windows now alternate every 0.75 seconds, with a
+regression check around the affected polling boundaries. Failed matrix
+captures and scoring reports are retained alongside the quickstart output.

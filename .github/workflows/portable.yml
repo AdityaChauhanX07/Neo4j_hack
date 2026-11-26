@@ -72,5 +72,7 @@ jobs:
         if: always()
         with:
           name: laptop-${{ runner.os }}
-          path: ${{ runner.temp }}/portable
+          path: |
+            ${{ runner.temp }}/portable
+            ${{ runner.temp }}/pytest/**/virtual-session*
           retention-days: 30

@@ -85,7 +85,8 @@ class VirtualBench:
         with self.lock:
             for fault, (started, targets) in self.active.items():
                 if fault == "F8":
-                    if int((self.clock() - started) / 0.5) % 2 == 0:
+                    # Avoid aligning every transition with the 2 Hz polling boundary.
+                    if int((self.clock() - started) / 0.75) % 2 == 0:
                         failed.update(targets)
                 else:
                     failed.update(FAULTS[fault])

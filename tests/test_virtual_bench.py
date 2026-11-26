@@ -112,10 +112,24 @@ def test_rejected_virtual_marker_does_not_change_fault_state():
     assert not bench.active and not recorder.active
     recorder.mark("F8 inject sun2")
     assert bench.offline(board.devices["sun2"])
-    now[0] = 0.5
+    now[0] = 0.75
     assert not bench.offline(board.devices["sun2"])
     recorder.mark("F8 clear")
     assert not bench.active and not recorder.active
+
+
+def test_intermittent_replies_do_not_alias_three_healthy_poll_boundaries():
+    now = [0.0]
+    board = load_board(HARDWARE, TOPOLOGY)
+    bench = VirtualBench(board, TOPOLOGY, clock=lambda: now[0])
+    bench.mark("F8", "inject", ["sun2"])
+    replies = []
+    for instant in (0.999, 1.501, 1.999):
+        now[0] = instant
+        replies.append(not bench.offline(board.devices["sun2"]))
+    assert not all(replies)
+    bench.mark("F8", "clear", [])
+    assert not bench.offline(board.devices["sun2"])
 
 
 def test_scenario_rejects_out_of_order_commands_and_missing_quit(tmp_path):
