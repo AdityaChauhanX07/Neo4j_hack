@@ -228,3 +228,17 @@ evidence, and changing readings resolve the episode. This is an opt-in
 channel policy; the default constant virtual registers do not enable it.
 
 The suite now contains 86 tests, including four CLI integration checks.
+
+## Published 36-injection virtual bundle
+
+The [recorded matrix](virtual-matrix.md) retains four live repetitions of
+all nine modeled faults. All 36 reach their full expected cause set and
+resolve; the naive baseline scores 8/36. Recorded-time first-correct p50
+and p95 are 1,000 and 2,503 ms. The 192,512-byte persistent `.rl` and its
+JSON export are checked against the raw recording and file-hash manifest.
+
+Two bundle tests verify replayed per-injection times, persistence, hashes,
+and agreement with the independent scorer across every saved episode.
+The suite now contains 88 tests. Six WASM tests and nine browser checks
+cover the dashboard, including the full recorded graph and episode
+switching. The graph loads on demand when the operator opens the session.

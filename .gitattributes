@@ -1,0 +1,9 @@
+*.rl binary
+topologies/*.yaml text eol=lf
+config/*.yaml text eol=lf
+recordings/*.jsonl text eol=lf
+downlink/*.json text eol=lf
+docs/*-manifest.json text eol=lf
+docs/*-results.json text eol=lf
+docs/*-benchmark.json text eol=lf
+sim/scenarios/*.json text eol=lf

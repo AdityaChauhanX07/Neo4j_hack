@@ -1,6 +1,7 @@
 import "@fontsource-variable/geist";
 import "./style.css";
 import fixture from "../../downlink/common-cause.json";
+import matrixUrl from "../../downlink/virtual-matrix.json?url";
 import { openEngine } from "./engine.js";
 import { validateSnapshot } from "./graph-data.js";
 import { sourceLabel } from "./evidence.js";
@@ -14,7 +15,7 @@ const ids = [
   "browse", "changes", "channel", "component", "diagnosis", "diagnosis-state", "episode",
   "execute", "file", "fit", "graph-size", "metadata", "notice", "parameters", "part",
   "precursors", "preset", "query", "query-result", "query-status", "restore", "source",
-  "timeline", "timeline-caption", "wiring", "wiring-context", "simulation",
+  "timeline", "timeline-caption", "wiring", "wiring-context", "simulation", "recorded",
   "simulation-controls", "simulation-results", "simulation-score",
   "simulation-case", "simulation-recording",
 ];
@@ -47,6 +48,7 @@ async function load(input, name, { bundled = false, example } = {}) {
   ui.browse.disabled = true;
   ui.restore.disabled = true;
   ui.simulation.disabled = true;
+  ui.recorded.disabled = true;
   notice("Opening downlink…");
   try {
     const snapshot = await input;
@@ -97,6 +99,7 @@ async function load(input, name, { bundled = false, example } = {}) {
       ui.browse.disabled = false;
       ui.restore.disabled = false;
       ui.simulation.disabled = false;
+      ui.recorded.disabled = false;
     }
   }
 }
@@ -358,6 +361,10 @@ async function start() {
 }
 
 ui.browse.addEventListener("click", () => ui.file.click());
+ui.recorded.addEventListener("click", () => load(fetch(matrixUrl).then(response => {
+  if (!response.ok) throw new Error("The recorded virtual session could not be loaded.");
+  return response.json();
+}), "virtual-matrix.json"));
 ui.file.addEventListener("change", async () => {
   const file = ui.file.files[0];
   ui.file.value = "";

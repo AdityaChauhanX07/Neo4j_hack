@@ -107,6 +107,12 @@ Use `--interactive` in place of `--scenario` to type fault controls, or use
 recording, replay, export, and dashboard import. All virtual recordings
 and their exported graphs retain an explicit simulation label.
 
+The [recorded virtual matrix](docs/virtual-matrix.md) includes 36 live
+virtual injections, their raw recording, an inspectable `.rl` graph, and
+the matching browser export. It reached all 36 correct cause sets and
+resolved every episode; the first-failed-device baseline scored 8/36.
+Choose **Open recorded session** in the dashboard to inspect it.
+
 ## Board and ground interfaces
 
 - **Wiring.** `topologies/cubesat-bench.yaml` describes the bench model. A device

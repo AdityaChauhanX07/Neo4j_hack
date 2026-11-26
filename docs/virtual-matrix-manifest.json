@@ -1,0 +1,35 @@
+{
+  "simulated": true,
+  "code_sha": "fd58fe8f1b69ef7bb12bdf5e443a46052d0a9660",
+  "topology_sha": "32946fc1cc25cd6e4a3dae4a80d69c64280344710959536802e750cdb68ebe45",
+  "detection_sha": "8335972416aafa011018c68a6124142c4c465bf73a7ecf004a191ac464404e27",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.11.18",
+  "setting": "Live virtual transports on a shared x64 Linux host; no physical hardware",
+  "files": {
+    "recordings/virtual-matrix.jsonl": {
+      "bytes": 717174,
+      "sha256": "ea75e0cc8b255071a527010eb217d01a2e2824d410061dde3b66074b33c5285a"
+    },
+    "data/virtual-matrix.rl": {
+      "bytes": 192512,
+      "sha256": "b39b6c47e483f27e45185386358af35ca1ee4cd0621a6cf96992da0fb0ee7d56"
+    },
+    "downlink/virtual-matrix.json": {
+      "bytes": 1384098,
+      "sha256": "fa5d3dba3dcdb38f545edc3828a06bbe426e9cd7bf92160de275ba62c0184fb6"
+    },
+    "docs/virtual-matrix-results.json": {
+      "bytes": 6905,
+      "sha256": "4033cd21a270cef8512f4a100a49dd2ef113b72c7f1cc180d2d462d40408705f"
+    },
+    "docs/virtual-matrix-benchmark.json": {
+      "bytes": 263,
+      "sha256": "fa3fdaf431f51b26361037a19811b797217a879c4b60651e1ebab6a082284e29"
+    },
+    "sim/scenarios/matrix-36.json": {
+      "bytes": 2796,
+      "sha256": "e3aedd083a8fd7da205ce2473928d1bc64f3dae15986532285b20d08d2373735"
+    }
+  }
+}
