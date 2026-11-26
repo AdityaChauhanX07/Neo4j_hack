@@ -153,3 +153,24 @@ An isolated installed wheel also completed the eight-second F1 scenario,
 scored its cause correctly, replayed the capture, and exported a downlink
 without board packages installed. Simulation provenance is retained in raw
 JSONL, Run nodes, diagnosis output, benchmark reports, and the ground view.
+
+## Independent ranking specification
+
+`tests/reference_rank.py` computes dependency sets, failed and healthy
+devices, coverage, contradictions, scores, and tie breaks in plain Python.
+It reads topology YAML and classified event facts without calling the
+production topology loader, ranking function, or Cypher engine.
+
+Eleven comparison tests check every returned candidate, including its
+position, score, covered devices, and contradicted count. They cover F1 to
+F9 at the initial and final windows, exclusion passes for combined faults,
+all three quadcopter faults, unknown devices, other runs, and inclusive
+window boundaries. The hand-built regulator test remains separate.
+
+```sh
+python -m pytest -q tests/test_rank.py tests/test_rank_reference.py
+```
+
+The checks pass on Python 3.11 x64 Linux. The full suite now contains 72
+tests; CI also runs them on the other supported Linux interpreter and
+architecture combinations.
