@@ -172,7 +172,7 @@ def test_record_cli_preserves_raw_bus_error_and_recovers(tmp_path, monkeypatch):
 def test_run_cli_saves_capture_and_persists_the_verdict(tmp_path, monkeypatch):
     stream = [json.dumps(row) + "\n" for row in records("F1")]
 
-    def sensor_feed(_args, *, clock):
+    def sensor_feed(_args, *, clock, on_virtual=None):
         yield from stream
 
     monkeypatch.setattr(cli, "board_feed", sensor_feed)

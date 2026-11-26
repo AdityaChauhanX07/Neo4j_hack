@@ -61,6 +61,10 @@ jobs:
           commoncause matrix "$RUNNER_TEMP/virtual-f1.jsonl" --expect-count 1 --min-top-one 1
           commoncause replay "$RUNNER_TEMP/virtual-f1.jsonl" --topology topologies/cubesat-bench.yaml --db "$RUNNER_TEMP/virtual-replayed"
           commoncause downlink --db "$RUNNER_TEMP/virtual-replayed" --out "$RUNNER_TEMP/virtual-downlink" --relate "$HOME/.local/bin/relate"
+      - name: Capture and export verified simulated recovery
+        run: |
+          commoncause run --virtual-bench --auto-recover --scenario sim/scenarios/bus-recovery.json --run recovery-demo --db "$RUNNER_TEMP/recovery-store" --recording "$RUNNER_TEMP/recovery.jsonl"
+          commoncause downlink --db "$RUNNER_TEMP/recovery-store" --out "$RUNNER_TEMP/recovery-downlink" --relate "$HOME/.local/bin/relate"
       - run: python -m sim.demo
       - uses: actions/setup-node@v6
         with:
@@ -78,6 +82,7 @@ jobs:
         env:
           COMMONCAUSE_DOWNLINK: ${{ runner.temp }}/commoncause-downlink/common-cause.json
           COMMONCAUSE_VIRTUAL_DOWNLINK: ${{ runner.temp }}/virtual-downlink/common-cause.json
+          COMMONCAUSE_RECOVERY_DOWNLINK: ${{ runner.temp }}/recovery-downlink/common-cause.json
           RELATE_CLI: /home/runner/.local/bin/relate
       - uses: actions/upload-artifact@v6
         if: always()

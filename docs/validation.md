@@ -8,14 +8,14 @@ that plan and identifies deferred physical work.
 
 ## Current checks
 
-The Python suite contains 90 test cases. CI runs Python 3.9, 3.11, and
+The Python suite contains 99 test cases. CI runs Python 3.9, 3.11, and
 3.13 on x64 Linux and Python 3.11 on ARM64 Linux. Fresh non-editable Python
 3.11 installs also run on hosted macOS ARM64 and Windows x64, without board
 extras. Platform-specific errno and PTY tests are skipped where unavailable.
 
 Four integration tests require the Relate CLI. Python-only jobs skip them;
 the Linux Ground view job and the Mac integration step run them with the
-installed CLI. Six WASM tests and nine browser checks cover the dashboard,
+installed CLI. Six WASM tests, three HTTP-client tests, and eleven browser checks cover the dashboard,
 including a newly exported capture, the published 36-episode graph, episode
 switching, loading races, rejected writes, and small-screen layout.
 
@@ -26,6 +26,8 @@ switching, loading races, rejected writes, and small-screen layout.
 | Uncertainty | Unlabelled delayed failures, missing telemetry, ambiguous power evidence, and stuck-sensor recordings |
 | MCP | Actual stdio initialization, schema/tool discovery, linked facts, valid citation IDs, preserved medium confidence, and refused mutations with an unchanged snapshot hash |
 | Concurrent readers | A live MCP follower sees later commits while cloning produces matching, frozen `.rl` and JSON content beside an active recorder |
+| Live browser | An authenticated HTTP follower observes a real Python writer through healthy telemetry, F1, recovery, rejected mutations, connection loss, and disconnect |
+| Simulated automatic recovery | Both I2C buses, ineffective recovery, incomplete verification, unsafe-candidate refusal, physical-mode rejection, and retained graph evidence |
 | Detection config | Shared packaged defaults, rejected invalid values, custom settle timing, and a config hash on new Run nodes |
 | Published matrix | Raw recording replays to the published scores/times; every persisted ranking agrees with the independent scorer; hashes and export content match |
 

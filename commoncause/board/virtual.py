@@ -30,7 +30,7 @@ REGISTERS = {
 
 
 class VirtualBench:
-    def __init__(self, board, topology_path, *, clock=monotonic):
+    def __init__(self, board, topology_path, *, clock=monotonic, recoverable_bus_faults=True):
         topology = yaml.safe_load(Path(topology_path).read_text(encoding="utf-8"))
         nodes, links = _wiring(topology)
         parts = {part["id"] for rows in nodes.values() for part in rows}
@@ -56,6 +56,8 @@ class VirtualBench:
         self.board = board
         self.clock = clock
         self.active = {}
+        self.restored_buses = set()
+        self.recoverable_bus_faults = recoverable_bus_faults
         self.lock = Lock()
         self.writes = {}
         self.commands = {}
@@ -68,6 +70,8 @@ class VirtualBench:
             if self.board.devices[expected[0]].chip == "heartbeat":
                 raise ValueError("Virtual F8 needs an I2C device; use F6 for heartbeat loss")
         with self.lock:
+            if fault in {"F2", "F3"}:
+                self.restored_buses.difference_update(FAULTS[fault])
             if action == "inject":
                 self.active[fault] = (self.clock(), tuple(expected))
             else:
@@ -89,8 +93,15 @@ class VirtualBench:
                     if int((self.clock() - started) / 0.75) % 2 == 0:
                         failed.update(targets)
                 else:
-                    failed.update(FAULTS[fault])
+                    failed.update(FAULTS[fault] - self.restored_buses if fault in {"F2", "F3"} else FAULTS[fault])
         return failed
+
+    def clear_bus(self, bus):
+        if bus not in self.board.i2c:
+            raise ValueError(f"No virtual I2C adapter for {bus}")
+        with self.lock:
+            if self.recoverable_bus_faults:
+                self.restored_buses.add(bus)
 
     def offline(self, device):
         return bool((self.upstream(device.id) | {device.bus}) & self.failures())

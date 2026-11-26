@@ -57,8 +57,9 @@ virtual UART generates its byte protocol in Python.
 
 - Pico-controlled MOSFET fault switches: excluded with the physical work;
   automated virtual injection and the recorded 36-fault matrix are complete.
-- Automatic electrical recovery or I2C bus clear: excluded. A simulated
-  closed-loop recovery exercise can validate policy and observed outcomes.
+- Automatic electrical recovery or I2C bus clear: excluded. The
+  [simulated recovery controller](virtual-recovery.md) implements policy,
+  action history, fresh-telemetry verification, and persistent-failure handling.
 - PerovSat's real topology: excluded without an actual approved layout; the
   quadcopter already demonstrates a second system.
 - Live browser HTTP connection: implemented. The [live browser guide](live-browser.md)

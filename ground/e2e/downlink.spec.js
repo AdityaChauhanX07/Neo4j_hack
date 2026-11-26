@@ -173,3 +173,20 @@ test("inspect the recorded 36-injection session and switch its episodes", async 
   await page.getByRole("button", { name: "Restore fixture" }).click();
   await expect(page.locator("#source")).toHaveText("Synthetic fixture");
 });
+
+test("inspect a verified recovery attempt from a newly captured downlink", async ({ page }) => {
+  const recovery = process.env.COMMONCAUSE_RECOVERY_DOWNLINK;
+  test.skip(!recovery, "requires an automatic recovery capture");
+  await page.goto("./");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+  await page.locator("#file").setInputFiles(recovery);
+  await expect(page.locator("#source")).toHaveText("Simulated bench");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("I2C-1");
+  await expect(page.locator("#diagnosis-state")).toHaveText("Resolved");
+  await expect(page.locator("#recovery-attempts")).toBeVisible();
+  await expect(page.locator("#recovery-history tbody tr")).toHaveCount(1);
+  await expect(page.locator("#recovery-history")).toContainText("I2C bus clear");
+  await expect(page.locator("#recovery-history")).toContainText("Verified");
+  await page.getByRole("button", { name: "Restore fixture" }).click();
+  await expect(page.locator("#recovery-attempts")).toBeHidden();
+});
