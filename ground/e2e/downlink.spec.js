@@ -167,7 +167,7 @@ test("inspect the recorded 36-injection session and switch its episodes", async 
   await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr")).toHaveCount(2);
   await expect(page.locator("#diagnosis-state")).toHaveText("Resolved");
   await page.selectOption("#episode", "dx:virtual-matrix-36:1");
-  await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr")).toHaveCount(1);
+  await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr")).toHaveCount(0);
   await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
   await expect(page.locator("#source")).toHaveText("Simulated bench");
   await page.getByRole("button", { name: "Restore fixture" }).click();
