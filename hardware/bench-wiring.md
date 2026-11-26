@@ -1,5 +1,9 @@
 # CubeSat bench wiring
 
+This wiring is an optional extension to the
+[laptop demo](../README.md#try-the-f1-replay). It has not been validated on
+physical hardware.
+
 The checked-in hardware map targets a Raspberry Pi 4 and a Raspberry Pi
 Pico. Confirm the chip, address straps, and supply pins on each breakout
 before wiring it. The logical wiring and channel IDs live in
