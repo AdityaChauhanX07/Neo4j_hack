@@ -167,3 +167,26 @@ def test_first_commit_timestamp_survives_live_reranking():
     assert committed == [epoch + 2020]
     assert row["committed"] == committed[0]
     assert row["updated"] > row["first"]
+
+
+def test_delayed_frame_commits_one_verdict_for_gaps_with_different_deadlines():
+    healthy = list(records("healthy"))
+    nominal = [row for row in healthy if row["ts"] == healthy[0]["ts"] and "channel" in row]
+    readings = [dict(row, run="delayed-frame", ts=0, seq=index)
+                for index, row in enumerate(nominal, 1)]
+    for timestamp in (1000, 3500):
+        readings.append({
+            "run": "delayed-frame", "seq": len(readings) + 1, "ts": timestamp,
+            "channel": "imu.gyro", "value": None, "ok": False, "error": "EREMOTEIO",
+        })
+    with relate.connect() as db:
+        load_topology(db, BENCH)
+        replay(db, io.StringIO("\n".join(map(json.dumps, readings))))
+        verdicts = db.execute("""
+            MATCH (dx:Diagnosis)
+            RETURN dx.ts AS decided, dx.window_from AS opened, dx.state AS state
+        """).fetchall()
+        assert verdicts == [{"decided": 3500, "opened": 1000, "state": "open"}]
+        assert db.execute("""
+            MATCH (e:Event {status: 'HEARTBEAT_LOST'}) RETURN e.ts AS ts
+        """).fetchone() == {"ts": 3000}

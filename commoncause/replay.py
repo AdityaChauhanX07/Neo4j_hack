@@ -93,7 +93,6 @@ class Run:
                 raise ValueError("Simulation metadata must be consistent within a run")
             seq = reading.seq
 
-        first_verdicts = []
         with transaction(self.db):
             if self.last_ts is None:
                 provenance = {
@@ -112,26 +111,25 @@ class Run:
                 for key, channel in self.channels.items()
             ]
             gaps = sorted((event for event in gaps if event), key=lambda event: (event.ts, event.channel))
-            for at, batch in groupby(gaps, key=lambda event: event.ts):
-                first_verdicts.append(self._apply(batch, at))
+            self._apply(gaps)
             samples = (
                 self.states[item.channel].measure(self.channels[item.channel], item)
                 for item in readings
             )
-            first_verdicts.append(self._apply(samples, now))
+            self._apply(samples)
+            # Gap and sample changes share one committed observation frame.
+            created = self._update_episode(now)
 
         self.last_ts = now
         self.last_seq = seq
         self.simulated = simulated
-        created = [diagnosis for diagnosis in first_verdicts if diagnosis is not None]
         if self.commit_clock is not None and created:
             self.db.execute("""
-                UNWIND $ids AS id
-                MATCH (dx:Diagnosis {id: id})
+                MATCH (dx:Diagnosis {id: $id})
                 SET dx.first_commit_ts = $committed
-            """, {"ids": created, "committed": self.commit_clock()})
+            """, {"id": created, "committed": self.commit_clock()})
 
-    def _apply(self, events, now):
+    def _apply(self, events):
         kept = []
         previous = []
         for event in events:
@@ -162,6 +160,7 @@ class Run:
                 [event.id, event.status] for event in kept if event.status != "OK"
             ])
 
+    def _update_episode(self, now):
         first_verdict = None
         if self.episode and self.episode.ready(now):
             already_written = self.episode.written

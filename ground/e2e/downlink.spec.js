@@ -156,3 +156,20 @@ test("identify a newly captured and replayed virtual bench downlink", async ({ p
   await page.getByRole("button", { name: "Restore fixture" }).click();
   await expect(page.locator("#source")).toHaveText("Synthetic fixture");
 });
+
+test("inspect the recorded 36-injection session and switch its episodes", async ({ page }) => {
+  await page.goto("./");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+  await page.getByRole("button", { name: "Open recorded session" }).click();
+  await expect(page.locator("#source")).toHaveText("Simulated bench");
+  await expect(page.locator("#metadata")).toContainText("virtual-matrix-36");
+  await expect(page.locator("#episode option")).toHaveCount(36);
+  await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr")).toHaveCount(2);
+  await expect(page.locator("#diagnosis-state")).toHaveText("Resolved");
+  await page.selectOption("#episode", "dx:virtual-matrix-36:1");
+  await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr")).toHaveCount(0);
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+  await expect(page.locator("#source")).toHaveText("Simulated bench");
+  await page.getByRole("button", { name: "Restore fixture" }).click();
+  await expect(page.locator("#source")).toHaveText("Synthetic fixture");
+});
