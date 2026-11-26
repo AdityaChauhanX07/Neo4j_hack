@@ -38,14 +38,14 @@ def parser():
     playback.add_argument("--run", help="store a single recording under a new run ID")
     playback.add_argument("--speed", type=float, help="pace replay at a multiple of recorded time")
 
-    run = commands.add_parser("run", help="diagnose live telemetry from the Pi or stdin")
+    run = commands.add_parser("run", help="diagnose a physical or virtual capture, or JSONL on stdin")
     run.add_argument("--db", type=Path, required=True)
     run.add_argument("--hardware", type=Path, help="read sensors using this Linux hardware map")
     run.add_argument("--recording", type=Path, help="save raw JSONL while diagnosing")
     run.add_argument("--tui", action="store_true", help="show wiring status and diagnoses as they change")
     capture_options(run)
 
-    record = commands.add_parser("record", help="record raw telemetry from the Pi")
+    record = commands.add_parser("record", help="record physical or virtual sensor readings")
     record.add_argument("--hardware", type=Path, default=DEFAULT_HARDWARE)
     record.add_argument("--out", required=True, help="new JSONL file, or - for stdout")
     record.add_argument("--device", help="sample just this device during bench bring-up")
@@ -193,6 +193,8 @@ def dispatch(args):
             if args.json:
                 print(json.dumps(timing))
             else:
+                if timing.get("simulated"):
+                    print("Simulated bench")
                 rank_ms = timing["rank_ms"]
                 print(f"{timing['diagnosis']}  {timing['architecture']}  {timing['store_bytes']} bytes")
                 print(f"Rank latency  {rank_ms['samples']} samples  "

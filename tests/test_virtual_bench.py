@@ -10,6 +10,7 @@ import relate
 import yaml
 
 from commoncause import cli
+from commoncause.benchmark import benchmark
 from commoncause.board.drivers import I2C_DRIVERS
 from commoncause.board.heartbeat import Heartbeats
 from commoncause.board.i2c import I2CDevice
@@ -140,15 +141,17 @@ def test_windows_console_keeps_polling_while_a_command_is_being_typed(monkeypatc
     assert console.read() == "F1 inject"
 
 
-def test_replay_preserves_simulation_provenance_and_rejects_mixed_metadata():
+def test_replay_preserves_simulation_provenance_and_rejects_mixed_metadata(tmp_path):
     from sim.bench import records
 
     rows = [dict(row, simulated=True) for row in records("F1") if "channel" in row]
-    with relate.connect() as db:
+    store = tmp_path / "virtual-store"
+    with relate.connect(str(store)) as db:
         load_topology(db, TOPOLOGY)
         replay(db, io.StringIO("\n".join(map(json.dumps, rows))))
         verdict = diagnosis(db)
         assert verdict["simulated"] is True
+        assert benchmark(db, store, samples=3)["simulated"] is True
     rows[-1].pop("simulated")
     with relate.connect() as db:
         load_topology(db, TOPOLOGY)
