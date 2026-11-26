@@ -19,6 +19,11 @@ def diagnosis(db, diagnosis_id=None):
     if verdict is None:
         return None
 
+    origin = db.execute("MATCH (r:Run {id: $run}) RETURN r.simulated AS simulated",
+                        {"run": verdict["run"]}).fetchone()
+    if origin and origin["simulated"] is True:
+        verdict["simulated"] = True
+
     params = {"id": verdict["id"]}
     verdict["suspects"] = db.execute("""
         MATCH (dx:Diagnosis {id: $id})-[s:SUSPECTS]->(c)
@@ -42,6 +47,8 @@ def diagnosis(db, diagnosis_id=None):
 
 def summarize(verdict):
     lines = [f"{verdict['id']}  {verdict['state']}  {verdict['confidence']} confidence"]
+    if verdict.get("simulated"):
+        lines.insert(0, "Simulated bench")
     for suspect in verdict["suspects"]:
         lines.append(
             f"{suspect['rank']}. {suspect['id']} ({suspect['kind']})  "
@@ -109,7 +116,8 @@ def live_view():
                 affected.append(device)
         status.extend(f"{part}  UNDERVOLTAGE" for part in sorted(monitors))
         if status != previous_status:
-            print(f"Run {run.id}", *status, sep="\n", file=sys.stderr, flush=True)
+            origin = " (simulated)" if run.simulated is True else ""
+            print(f"Run {run.id}{origin}", *status, sep="\n", file=sys.stderr, flush=True)
             previous_status = status
 
         if run.episode or run.previous:

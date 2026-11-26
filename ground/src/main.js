@@ -3,6 +3,7 @@ import "./style.css";
 import fixture from "../../downlink/common-cause.json";
 import { openEngine } from "./engine.js";
 import { validateSnapshot } from "./graph-data.js";
+import { sourceLabel } from "./evidence.js";
 import { createWiring, partName } from "./wiring.js";
 import {
   contradictions, deviceFaults, episodes, events, evidence, precursorCutoff, presetQueries, resolved,
@@ -64,16 +65,17 @@ async function load(input, name, { bundled = false, example } = {}) {
     current?.engine.close();
     current?.graph.dispose();
     current = {
-      engine, graph: createWiring(ui.wiring, snapshot, inspectPart), rows, example,
+      engine, graph: createWiring(ui.wiring, snapshot, inspectPart), rows, example, bundled,
+      runs: new Map(snapshot.nodes.filter(node => node.label === "Run").map(node => [node.props.id, node.props])),
       committed: bundled && !example,
     };
     ui.restore.hidden = bundled;
-    ui.source.textContent = bundled ? "Synthetic fixture" : "Imported downlink";
     ui.source.title = name;
     ui["graph-size"].textContent = `${snapshot.nodes.length} nodes · ${snapshot.rels.length} relationships`;
     const system = snapshot.nodes.find(node => node.label === "Topology")?.props.id;
     current.system = system ?? name;
     const run = snapshot.nodes.find(node => node.label === "Run")?.props.id;
+    ui.source.textContent = sourceLabel(bundled, current.runs.get(episode?.run ?? run));
     ui.metadata.textContent = run ? `${current.system} / ${run}` : current.system;
     options(ui.part, current.graph.choices.map(part => ({ id: part.id, label: partName(part) })));
     ui.part.disabled = !current.graph.choices.length;
@@ -124,6 +126,7 @@ async function loadEpisode(episode) {
   }
 
   ui.metadata.textContent = `${session.system} / ${episode.run}`;
+  ui.source.textContent = sourceLabel(session.bundled, session.runs.get(episode.run));
   const ids = { id: episode.id };
   const scope = {
     run: episode.run, from: episode.start, to: episode.end,

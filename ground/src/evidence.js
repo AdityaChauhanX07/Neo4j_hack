@@ -3,6 +3,11 @@
 
 export const deviceFaults = ["NO_RESPONSE", "OUT_OF_RANGE", "STUCK", "STALE", "HEARTBEAT_LOST"];
 
+export function sourceLabel(bundled, run) {
+  if (bundled) return "Synthetic fixture";
+  return run?.simulated === true ? "Simulated bench" : "Imported downlink";
+}
+
 // before.cypher lists changes strictly before $t0. The episode opens on its
 // first anomaly, often the voltage sag itself, so cut off just after the first
 // missed device reading to keep the sag and the dropout in the list.

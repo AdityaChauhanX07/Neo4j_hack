@@ -2,10 +2,11 @@ import errno
 
 
 class I2CDevice:
-    def __init__(self, bus, lock, address):
+    def __init__(self, bus, lock, address, read_message=None):
         self.bus = bus
         self.lock = lock
         self.address = address
+        self.read_message = read_message
 
     def read(self, register, size):
         with self.lock:
@@ -23,9 +24,12 @@ class I2CDevice:
             self.bus.write_byte(self.address, command)
 
     def read_raw(self, size):
-        from smbus2 import i2c_msg
+        read = self.read_message
+        if read is None:
+            from smbus2 import i2c_msg
 
-        message = i2c_msg.read(self.address, size)
+            read = i2c_msg.read
+        message = read(self.address, size)
         with self.lock:
             self.bus.i2c_rdwr(message)
         return bytes(message)

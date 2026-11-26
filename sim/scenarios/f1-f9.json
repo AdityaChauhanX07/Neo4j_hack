@@ -1,0 +1,21 @@
+[
+  {"at": 2, "command": "F1 inject"},
+  {"at": 5, "command": "F1 clear"},
+  {"at": 7, "command": "F2 inject"},
+  {"at": 10, "command": "F2 clear"},
+  {"at": 12, "command": "F3 inject"},
+  {"at": 15, "command": "F3 clear"},
+  {"at": 17, "command": "F4 inject"},
+  {"at": 20, "command": "F4 clear"},
+  {"at": 22, "command": "F5 inject"},
+  {"at": 27, "command": "F5 clear"},
+  {"at": 31, "command": "F6 inject"},
+  {"at": 36, "command": "F6 clear"},
+  {"at": 40, "command": "F7 inject"},
+  {"at": 44, "command": "F7 clear"},
+  {"at": 46, "command": "F8 inject sun2"},
+  {"at": 51, "command": "F8 clear"},
+  {"at": 53, "command": "F9 inject"},
+  {"at": 56, "command": "F9 clear"},
+  {"at": 59, "command": "quit"}
+]

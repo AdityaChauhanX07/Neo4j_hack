@@ -142,3 +142,17 @@ test("keep a part picked while an episode is still loading", async ({ page }) =>
   await expect(page.locator("#part")).toHaveValue("Bus:I2C-1");
   await expect(page.locator("#component")).toContainText("Impact of I2C-1");
 });
+
+test("identify a newly captured and replayed virtual bench downlink", async ({ page }) => {
+  const virtual = process.env.COMMONCAUSE_VIRTUAL_DOWNLINK;
+  test.skip(!virtual, "requires a downlink from the virtual bench workflow");
+  await page.goto("./");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+  await page.locator("#file").setInputFiles(virtual);
+  await expect(page.locator("#source")).toHaveText("Simulated bench");
+  await expect(page.locator("#metadata")).toContainText("virtual-f1");
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+  await expect(page.locator("#diagnosis-state")).toHaveText("Resolved");
+  await page.getByRole("button", { name: "Restore fixture" }).click();
+  await expect(page.locator("#source")).toHaveText("Synthetic fixture");
+});

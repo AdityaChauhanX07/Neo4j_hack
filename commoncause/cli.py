@@ -38,14 +38,14 @@ def parser():
     playback.add_argument("--run", help="store a single recording under a new run ID")
     playback.add_argument("--speed", type=float, help="pace replay at a multiple of recorded time")
 
-    run = commands.add_parser("run", help="diagnose live telemetry from the Pi or stdin")
+    run = commands.add_parser("run", help="diagnose a physical or virtual capture, or JSONL on stdin")
     run.add_argument("--db", type=Path, required=True)
     run.add_argument("--hardware", type=Path, help="read sensors using this Linux hardware map")
     run.add_argument("--recording", type=Path, help="save raw JSONL while diagnosing")
     run.add_argument("--tui", action="store_true", help="show wiring status and diagnoses as they change")
     capture_options(run)
 
-    record = commands.add_parser("record", help="record raw telemetry from the Pi")
+    record = commands.add_parser("record", help="record physical or virtual sensor readings")
     record.add_argument("--hardware", type=Path, default=DEFAULT_HARDWARE)
     record.add_argument("--out", required=True, help="new JSONL file, or - for stdout")
     record.add_argument("--device", help="sample just this device during bench bring-up")
@@ -97,7 +97,10 @@ def capture_options(command):
     command.add_argument("--topology", type=Path, default=DEFAULT_TOPOLOGY)
     command.add_argument("--duration", type=float, help="stop after this many seconds")
     command.add_argument("--run", help="recording ID, defaulting to the UTC start time")
-    command.add_argument("--interactive", action="store_true", help="read fault markers from the terminal")
+    command.add_argument("--virtual-bench", action="store_true", help="simulate the hardware map's I2C and UART devices")
+    control = command.add_mutually_exclusive_group()
+    control.add_argument("--interactive", action="store_true", help="read fault markers from the terminal")
+    control.add_argument("--scenario", type=Path, help="run timed virtual-bench commands from JSON")
 
 
 def main():
@@ -170,7 +173,7 @@ def dispatch(args):
                 replay(db, feed, run_id=args.run, speed=args.speed)
         elif args.command == "run":
             on_frame = live_view() if args.tui else None
-            if args.hardware:
+            if args.hardware or args.virtual_bench:
                 from .board.recorder import capture_clock, save_capture
 
                 clock = capture_clock()
@@ -179,16 +182,19 @@ def dispatch(args):
                     feed = stack.enter_context(closing(board_feed(args, clock=clock)))
                     if args.recording:
                         feed = stack.enter_context(closing(save_capture(feed, args.recording)))
-                    replay(db, feed, source="live", on_frame=on_frame, commit_clock=clock)
+                    source = "virtual-bench" if args.virtual_bench else "live"
+                    replay(db, feed, source=source, on_frame=on_frame, commit_clock=clock)
             else:
-                if args.recording or args.interactive or args.duration is not None or args.run is not None:
-                    raise ValueError("Capture options require --hardware; otherwise run reads JSONL on stdin")
+                if args.recording or args.interactive or args.scenario or args.duration is not None or args.run is not None:
+                    raise ValueError("Capture options require --hardware or --virtual-bench; otherwise run reads JSONL on stdin")
                 replay(db, sys.stdin, source="live", on_frame=on_frame)
         elif args.command == "benchmark":
             timing = benchmark(db, args.db, args.id, args.samples)
             if args.json:
                 print(json.dumps(timing))
             else:
+                if timing.get("simulated"):
+                    print("Simulated bench")
                 rank_ms = timing["rank_ms"]
                 print(f"{timing['diagnosis']}  {timing['architecture']}  {timing['store_bytes']} bytes")
                 print(f"Rank latency  {rank_ms['samples']} samples  "
@@ -214,14 +220,26 @@ def dispatch(args):
 
 
 def board_feed(args, *, clock=None):
-    from .board.recorder import OperatorConsole, capture
+    from .board.recorder import OperatorConsole, ScriptedConsole, capture
     from .board.settings import load_board
 
-    board = load_board(args.hardware, args.topology)
-    console = OperatorConsole(sys.stdin, sys.stderr) if args.interactive else None
+    if args.scenario and not args.virtual_bench:
+        raise ValueError("--scenario requires --virtual-bench")
+    board = load_board(args.hardware or DEFAULT_HARDWARE, args.topology)
+    console = ScriptedConsole(args.scenario, sys.stderr) if args.scenario else (
+        OperatorConsole(sys.stdin, sys.stderr) if args.interactive else None
+    )
+    virtual = None
+    if args.virtual_bench:
+        from .board.virtual import VirtualBench
+
+        virtual = VirtualBench(board, args.topology)
+        print("Virtual bench: simulated sensor registers and heartbeat bytes", file=sys.stderr)
     return capture(
         board, run_id=args.run, duration=args.duration, console=console,
         device=getattr(args, "device", None), clock=clock,
+        transports=virtual.transports if virtual else None,
+        on_marker=virtual.mark if virtual else None, simulated=bool(virtual),
     )
 
 

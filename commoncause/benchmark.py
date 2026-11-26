@@ -43,8 +43,13 @@ def benchmark(db, path, diagnosis_id=None, samples=100):
         WHERE dx.first_commit_ts IS NOT NULL
         RETURN dx.first_commit_ts - dx.window_from AS elapsed
     """, {"run": window["run"]})
-    return {
+    report = {
         "diagnosis": window["id"], "run": window["run"], "architecture": machine(),
         "rank_ms": percentiles(durations), "store_bytes": size,
         "live_verdict_ms": percentiles(row["elapsed"] for row in commits),
     }
+    origin = db.execute("MATCH (r:Run {id: $run}) RETURN r.simulated AS simulated",
+                        {"run": window["run"]}).fetchone()
+    if origin and origin["simulated"] is True:
+        report["simulated"] = True
+    return report
