@@ -67,6 +67,9 @@ failures with zero healthy devices downstream. Read the diagnosis, its original
 telemetry, and its recovery procedure with the commands above.
 
 To build the graph again from the raw readings, use a new store path.
+For the export command, first install the
+[Relate CLI](https://relatedb.ai/docs/get-started/install/) and check that
+`relate --version` runs in the same shell.
 
 ```sh
 commoncause replay recordings/f1-fixture.jsonl \
@@ -75,8 +78,7 @@ commoncause matrix recordings/f1-fixture.jsonl
 commoncause downlink --db board/store --out downlink
 ```
 
-Downlink uses the [Relate CLI](https://relatedb.ai/docs/get-started/install/).
-The writer uses a directory store on the board. The downlink command clones an
+Replay writes a directory store. The downlink command clones an
 inspectable `.rl` file and exports JSON from the same snapshot. The repository
 includes a fixture bundle at `data/common-cause.rl` and its JSON export at
 `downlink/common-cause.json`.
@@ -148,8 +150,8 @@ commoncause matrix /tmp/commoncause-quad.jsonl --topology topologies/quadcopter.
 
 ## Ground view
 
-With the Python environment set up, build the simulated downlinks before
-starting Vite.
+Use Node.js 24 and npm. With the Python environment set up, build the
+simulated downlinks before starting Vite.
 
 ```sh
 python -m sim.demo
