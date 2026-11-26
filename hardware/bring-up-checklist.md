@@ -1,5 +1,9 @@
 # Bench bring-up checklist
 
+This checklist applies to the optional physical bench, which has not been
+validated on hardware. The [laptop demo](../README.md#try-the-f1-replay)
+runs without bench equipment.
+
 Work through this list at the bench, in order. Each step gives the command
 to run and what passing output looks like. Stop at the first step that
 fails and fix it before you go on. The steps cover tracker rows #6 (Pi
@@ -184,8 +188,10 @@ say HMC5883L. Make both edits in the same commit:
 
 `commoncause record` and `commoncause run` refuse to start if the chip and
 the part disagree.
-Start from a fresh store after the change (`rm -rf board/store`), so the
-graph is not mixing topology versions.
+For `commoncause run`, use a new store path after the change, such as
+`--db board/store-hmc5883l`, so each store keeps one topology version.
+Use that same path for diagnosis and downlink, and retain the original
+store with its recordings.
 
 ## 5. Back-powering check (the plan's "Check by day 3", row #8)
 

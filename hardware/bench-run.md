@@ -1,5 +1,10 @@
 # Bench replay and measurements
 
+This guide covers the optional physical bench. The
+[laptop demo](../README.md#try-the-f1-replay) uses generated telemetry and
+requires no bench equipment. Physical capture has been tested with
+simulated I/O only.
+
 Use 64-bit Raspberry Pi OS and the bench's confirmed topology. Follow the
 [Pi 4 wiring guide](bench-wiring.md) and update `cubesat-pi4.yaml` to match
 the devices on the board. Run the synthetic checks on the Pi before

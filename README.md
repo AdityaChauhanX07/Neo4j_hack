@@ -5,6 +5,11 @@ sensors stop responding, it uses their shared power and data paths to rank
 the components that could explain the fault. Healthy devices help rule out
 suspects.
 
+The complete demo runs in a browser or on a laptop, using generated
+telemetry with a real Relate graph. No bench equipment is required.
+Physical capture is an optional extension and has not been validated on
+hardware.
+
 ## How it uses Relate
 
 The graph connects devices to their power rails, regulators, buses, and
@@ -127,7 +132,7 @@ consecutive OK readings on each affected channel.
 fully correct verdict separately. Its `first_correct_ms` field uses elapsed
 recording time from the first anomaly, with `null` for an injection that
 never reaches the expected ranking. The [bench run guide](hardware/bench-run.md)
-defines the timing fields and the measurements to collect on the Pi.
+defines the timing fields and the optional measurements to collect on the Pi.
 
 ## Try another topology
 
