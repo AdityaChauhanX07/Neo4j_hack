@@ -136,6 +136,13 @@ evidence before writing one verdict for the observed frame. The regression
 case preserves each gap's timestamp while committing its verdict at the
 actual observation time. No native exception is swallowed or retried.
 
+The Mac recovery check also exposed a test observation window that could
+end capture before the three-second verification timeout completed. The
+integration test now allows 7.5 seconds for detection and verification,
+still requires the persistent failure to remain open, and checks that the
+attempt observed the complete timeout. Capture ending early continues to
+produce `unverified`; the separate shutdown test preserves that behavior.
+
 ## Sustained operation
 
 The [endurance runner](endurance.md) measures a real-clock healthy virtual
