@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import test from "node:test";
 import { initSync, RelateDb } from "@relate/relate-wasm";
-import { contradictions, deviceFaults, precursorCutoff } from "../src/evidence.js";
+import { contradictions, deviceFaults, precursorCutoff, sourceLabel } from "../src/evidence.js";
 import { loadSnapshot, querySnapshot } from "../src/graph-data.js";
 
 const require = createRequire(import.meta.url);
@@ -44,6 +44,23 @@ test("console refuses writes even when they start with MATCH", () => {
       assert.throws(() => querySnapshot(db, statement));
     }
     assert.equal(querySnapshot(db, "MATCH (n:Device) RETURN count(n) AS devices").rows[0].devices, 8);
+  } finally {
+    db.free();
+  }
+});
+
+test("simulation provenance survives a downlink import into Relate WASM", () => {
+  const snapshot = structuredClone(fixture);
+  const run = snapshot.nodes.find(node => node.label === "Run");
+  run.props.simulated = true;
+  const db = new RelateDb();
+  try {
+    loadSnapshot(db, snapshot);
+    const stored = querySnapshot(db, "MATCH (r:Run) RETURN properties(r) AS props").rows[0].props;
+    assert.equal(stored.simulated, true);
+    assert.equal(sourceLabel(false, stored), "Simulated bench");
+    assert.equal(sourceLabel(false, {}), "Imported downlink");
+    assert.equal(sourceLabel(true, stored), "Synthetic fixture");
   } finally {
     db.free();
   }
