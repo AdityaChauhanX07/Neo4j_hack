@@ -138,7 +138,7 @@ class Run:
                 self.episode_count += 1
                 self.episode = Episode(f"dx:{self.id}:{self.episode_count}", event.ts)
             if self.episode is not None:
-                self.episode.observe(event)
+                self.episode.observe(event, self.channels[event.channel].device)
             prior = self.saved.get(event.channel)
             closing = self.episode is not None and self.episode.resolved_at is event
             if self._keep(event, prior) or closing:
