@@ -41,6 +41,7 @@ test("follow a real HTTP store through fault, recovery, connection loss, and dis
       try { return (await fetch(origin)).ok; } catch { return false; }
     }).toBe(true);
     await page.goto("./");
+    await page.locator("#workspace > summary").click();
     await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
     await page.getByRole("button", { name: "Connect live", exact: true }).click();
     await page.getByLabel("Server origin").fill(origin);

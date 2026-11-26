@@ -6,6 +6,7 @@ const fixture = process.env.COMMONCAUSE_DOWNLINK
 
 test("inspect an episode and run the shared query", async ({ page }, info) => {
   await page.goto("./");
+  await page.locator("#workspace > summary").click();
   await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
   await expect(page.locator("#diagnosis-state")).toHaveText("Resolved");
   await expect(page.locator("#component")).toContainText("sun1");
@@ -38,6 +39,7 @@ test("inspect an episode and run the shared query", async ({ page }, info) => {
 
 test("open a downlink and keep the current graph if import fails", async ({ page }) => {
   await page.goto("./");
+  await page.locator("#workspace > summary").click();
   await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
   await page.locator("#file").setInputFiles({
     name: "broken.json",
@@ -60,6 +62,7 @@ test("open a downlink and keep the current graph if import fails", async ({ page
 test("fit a small screen without page overflow", async ({ page }, info) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("./");
+  await page.locator("#workspace > summary").click();
   await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await page.screenshot({ path: info.outputPath("mobile.png") });
@@ -67,6 +70,7 @@ test("fit a small screen without page overflow", async ({ page }, info) => {
 
 test("switch simulations and share a combined fault", async ({ page }) => {
   await page.goto("./");
+  await page.locator("#workspace > summary").click();
   const picker = page.locator("#simulation");
   await expect(picker).toHaveValue("cubesat:F1");
   await expect(page.locator("#simulation-score")).toContainText("9/9");
@@ -79,6 +83,7 @@ test("switch simulations and share a combined fault", async ({ page }) => {
   await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr").nth(1)).toContainText("I2C-3");
   await expect(page).toHaveURL(/case=cubesat%3AF9$/);
   await page.reload();
+  await page.locator("#workspace > summary").click();
   await expect(picker).toHaveValue("cubesat:F9");
   await expect(page.locator("#diagnosis .rank-table:not(.candidate-table) tbody tr")).toHaveCount(2);
 
@@ -91,6 +96,7 @@ test("switch simulations and share a combined fault", async ({ page }) => {
 
 test("show the healthy devices against each candidate and the voltage sag", async ({ page }) => {
   await page.goto("./");
+  await page.locator("#workspace > summary").click();
   await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
   const candidates = page.locator("#diagnosis .candidates tbody tr");
   await expect(candidates.first()).toContainText("REG_B");
@@ -104,6 +110,7 @@ test("show the healthy devices against each candidate and the voltage sag", asyn
 
 test("open the committed downlink from the case picker and restore it", async ({ page }) => {
   await page.goto("./?case=downlink");
+  await page.locator("#workspace > summary").click();
   const picker = page.locator("#simulation");
   await expect(picker).toHaveValue("downlink");
   await expect(page.locator("#metadata")).toHaveText("cubesat-bench / f1-fixture");
@@ -134,6 +141,7 @@ test("keep a part picked while an episode is still loading", async ({ page }) =>
     };
   });
   await page.goto("./?case=downlink");
+  await page.locator("#workspace > summary").click();
   await expect(page.locator("#metadata")).toHaveText("cubesat-bench / f1-fixture");
   await page.selectOption("#part", "Bus:I2C-1");
   await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
@@ -147,6 +155,7 @@ test("identify a newly captured and replayed virtual bench downlink", async ({ p
   const virtual = process.env.COMMONCAUSE_VIRTUAL_DOWNLINK;
   test.skip(!virtual, "requires a downlink from the virtual bench workflow");
   await page.goto("./");
+  await page.locator("#workspace > summary").click();
   await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
   await page.locator("#file").setInputFiles(virtual);
   await expect(page.locator("#source")).toHaveText("Simulated bench");
@@ -159,8 +168,9 @@ test("identify a newly captured and replayed virtual bench downlink", async ({ p
 
 test("inspect the recorded 36-injection session and switch its episodes", async ({ page }) => {
   await page.goto("./");
+  await page.locator("#workspace > summary").click();
   await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
-  await page.getByRole("button", { name: "Open recorded session" }).click();
+  await page.getByRole("button", { name: "Open 36-fault session" }).click();
   await expect(page.locator("#source")).toHaveText("Simulated bench");
   await expect(page.locator("#metadata")).toContainText("virtual-matrix-36");
   await expect(page.locator("#episode option")).toHaveCount(36);
@@ -178,6 +188,7 @@ test("inspect a verified recovery attempt from a newly captured downlink", async
   const recovery = process.env.COMMONCAUSE_RECOVERY_DOWNLINK;
   test.skip(!recovery, "requires an automatic recovery capture");
   await page.goto("./");
+  await page.locator("#workspace > summary").click();
   await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
   await page.locator("#file").setInputFiles(recovery);
   await expect(page.locator("#source")).toHaveText("Simulated bench");

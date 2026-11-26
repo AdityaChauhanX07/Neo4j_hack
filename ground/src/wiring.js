@@ -8,6 +8,28 @@ export function partName(node) {
 }
 
 export function createWiring(container, snapshot, onSelect) {
+  let graph;
+  let highlight;
+  let focused;
+  const choices = snapshot.nodes.filter(node => tiers.includes(node.label))
+    .sort((a, b) => partName(a).localeCompare(partName(b)));
+  return {
+    choices,
+    fit() {
+      if (!graph && container.clientWidth) {
+        graph = mountWiring(container, snapshot, onSelect);
+        if (highlight) graph.highlight(...highlight);
+        if (focused) graph.focus(focused);
+      }
+      graph?.fit();
+    },
+    highlight(root, affected) { highlight = [root, affected]; graph?.highlight(root, affected); },
+    focus(id) { focused = id; graph?.focus(id); },
+    dispose() { graph?.dispose(); },
+  };
+}
+
+function mountWiring(container, snapshot, onSelect) {
   const parts = snapshot.nodes.filter(node => tiers.includes(node.label));
   const partIds = new Set(parts.map(node => node.id));
   const wires = snapshot.rels.filter(rel => (
