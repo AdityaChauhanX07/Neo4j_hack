@@ -32,7 +32,57 @@ workflow**, defaulting to 3,600 seconds, and saves the complete output as
 the `virtual-endurance` artifact. Pull requests that change the runner use
 a five-second smoke run; that is not an endurance result.
 
-## November 26 measurement
+## Current backend: `0dcf7e9`
+
+The new full-hour repeat **failed the healthy-operation gate**. It ran for
+3,600.406 seconds and opened **3 diagnoses without an
+injected fault**. The raw values came from nominally healthy virtual devices,
+but acquisition missed sampling deadlines. Reclassification retains those
+stale/missing-reading observations; a roughly correct average sampling rate
+does not make the full recording healthy.
+
+| Measurement | Result |
+| --- | ---: |
+| Persisted events | 33,733 |
+| Peak acquisition RSS | 126,955,520 bytes (121.07 MiB) |
+| Closed directory store | 1,619,962 bytes (1.54 MiB) |
+| Largest minute store checkpoint | 3,784,380 bytes |
+| Diagnoses during nominally healthy acquisition | 3 |
+| Full-hour healthy gate | Failed |
+| First 601-second prefix | Healthy, 600.999 seconds of telemetry |
+
+The [current report](final-endurance-results.json),
+[diagnosis rows and query](final-endurance-diagnoses.json),
+[ten-minute prefix report](final-ten-minute-health.json), and
+[manifest](final-endurance-manifest.json) retain the exact result and inputs.
+The source is `0dcf7e9`; later UI changes leave this backend unchanged.
+Both complete raw input and the healthy prefix are committed. The prefix
+satisfies the ten-minute capture check, not the full-hour healthy gate.
+
+One of the sampling interruptions coincided with an independently running
+[profile pilot](runtime-profile.md) also missing its sampling deadlines.
+Shared-host scheduling is a plausible explanation, not an established cause.
+The result demonstrates sensitivity to delayed acquisition. It does not
+establish a component failure or justify a current zero-false-alarm claim.
+The current engine can attribute symptoms caused by an acquisition delay to
+a device dependency; separating those possibilities needs further validation.
+No detection threshold was relaxed and no failed interval was discarded.
+
+The older successful measurement below remains a historical result of its
+recorded revision and host. It is not the result of this new repeat. To
+recheck the current full input:
+
+```sh
+python -c "import gzip; from pathlib import Path; p=Path('board/current-hour.jsonl'); p.parent.mkdir(exist_ok=True); p.write_bytes(gzip.decompress(Path('recordings/runtime-profile/hour-current.jsonl.gz').read_bytes()))"
+commoncause check-capture board/current-hour.jsonl --min-seconds 3599 --min-rate 0.9
+```
+
+That command should report unhealthy input. Tests preserve the result and
+replay its diagnoses; a passing bundle-consistency test is not a passing
+healthy-operation gate. The [runtime profile](runtime-profile.md) separately
+measures live-reader CPU, recovery-policy overhead, and recovery attempts.
+
+## Earlier measured revision: `73be4a8`
 
 An uninterrupted run on x64 Linux with Python 3.11.18 completed with no
 diagnosis and healthy input on every channel. Sensors measured 2.00 Hz;

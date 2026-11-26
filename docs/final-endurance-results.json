@@ -1,0 +1,536 @@
+{
+  "simulated": true,
+  "code_sha": "0dcf7e96b2e3f5528b45b87f9a8f4facabebec4f",
+  "runner_sha256": "ee51e270218302150d36c263e730b92fe7331cb99c5d16bb9a915403ed01ee27",
+  "topology_sha256": "32946fc1cc25cd6e4a3dae4a80d69c64280344710959536802e750cdb68ebe45",
+  "started_utc": "2026-11-26T17:52:40.652157+00:00",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.11.18",
+  "requested_seconds": 3600.0,
+  "checkpoints": [
+    {
+      "seconds": 60.054,
+      "peak_rss_bytes": 41861120,
+      "store_bytes": 500333,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 120.058,
+      "peak_rss_bytes": 43171840,
+      "store_bytes": 944763,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 180.055,
+      "peak_rss_bytes": 44220416,
+      "store_bytes": 1398861,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 240.051,
+      "peak_rss_bytes": 45744128,
+      "store_bytes": 1850008,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 300.053,
+      "peak_rss_bytes": 51122176,
+      "store_bytes": 153465,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 360.054,
+      "peak_rss_bytes": 51777536,
+      "store_bytes": 611478,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 420.051,
+      "peak_rss_bytes": 53936128,
+      "store_bytes": 1062800,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 480.051,
+      "peak_rss_bytes": 54984704,
+      "store_bytes": 1533638,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 540.054,
+      "peak_rss_bytes": 55902208,
+      "store_bytes": 2024724,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 600.088,
+      "peak_rss_bytes": 58175488,
+      "store_bytes": 286627,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 660.059,
+      "peak_rss_bytes": 58961920,
+      "store_bytes": 748619,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 720.051,
+      "peak_rss_bytes": 62107648,
+      "store_bytes": 1214259,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 780.054,
+      "peak_rss_bytes": 65613824,
+      "store_bytes": 1716000,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 840.055,
+      "peak_rss_bytes": 65736704,
+      "store_bytes": 2202805,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 900.054,
+      "peak_rss_bytes": 66523136,
+      "store_bytes": 2667444,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 960.054,
+      "peak_rss_bytes": 67309568,
+      "store_bytes": 864088,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1020.053,
+      "peak_rss_bytes": 68358144,
+      "store_bytes": 1332291,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1080.051,
+      "peak_rss_bytes": 69406720,
+      "store_bytes": 1807787,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1140.051,
+      "peak_rss_bytes": 70455296,
+      "store_bytes": 2297508,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1200.053,
+      "peak_rss_bytes": 71372800,
+      "store_bytes": 2779716,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1260.051,
+      "peak_rss_bytes": 72290304,
+      "store_bytes": 1012899,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1320.054,
+      "peak_rss_bytes": 73338880,
+      "store_bytes": 1471233,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1380.051,
+      "peak_rss_bytes": 74125312,
+      "store_bytes": 1946528,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1440.053,
+      "peak_rss_bytes": 75436032,
+      "store_bytes": 2434326,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1500.053,
+      "peak_rss_bytes": 76484608,
+      "store_bytes": 2915058,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1560.054,
+      "peak_rss_bytes": 82558976,
+      "store_bytes": 1168446,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1620.051,
+      "peak_rss_bytes": 82558976,
+      "store_bytes": 1658007,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1680.054,
+      "peak_rss_bytes": 83361792,
+      "store_bytes": 2176339,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1740.055,
+      "peak_rss_bytes": 84672512,
+      "store_bytes": 2634429,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1800.051,
+      "peak_rss_bytes": 85327872,
+      "store_bytes": 3087091,
+      "diagnoses": 1
+    },
+    {
+      "seconds": 1860.053,
+      "peak_rss_bytes": 92196864,
+      "store_bytes": 1288894,
+      "diagnoses": 2
+    },
+    {
+      "seconds": 1920.054,
+      "peak_rss_bytes": 92459008,
+      "store_bytes": 1769002,
+      "diagnoses": 2
+    },
+    {
+      "seconds": 1980.058,
+      "peak_rss_bytes": 92983296,
+      "store_bytes": 2241258,
+      "diagnoses": 2
+    },
+    {
+      "seconds": 2040.054,
+      "peak_rss_bytes": 93507584,
+      "store_bytes": 2707787,
+      "diagnoses": 2
+    },
+    {
+      "seconds": 2100.054,
+      "peak_rss_bytes": 94294016,
+      "store_bytes": 3175149,
+      "diagnoses": 2
+    },
+    {
+      "seconds": 2160.058,
+      "peak_rss_bytes": 95473664,
+      "store_bytes": 1435723,
+      "diagnoses": 2
+    },
+    {
+      "seconds": 2220.059,
+      "peak_rss_bytes": 96653312,
+      "store_bytes": 1899718,
+      "diagnoses": 2
+    },
+    {
+      "seconds": 2280.062,
+      "peak_rss_bytes": 97701888,
+      "store_bytes": 2355642,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2340.057,
+      "peak_rss_bytes": 98619392,
+      "store_bytes": 2819348,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2400.058,
+      "peak_rss_bytes": 99405824,
+      "store_bytes": 3282574,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2460.054,
+      "peak_rss_bytes": 100192256,
+      "store_bytes": 1551171,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2520.054,
+      "peak_rss_bytes": 101371904,
+      "store_bytes": 2002130,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2580.052,
+      "peak_rss_bytes": 102027264,
+      "store_bytes": 2452280,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2640.056,
+      "peak_rss_bytes": 103206912,
+      "store_bytes": 2916010,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2700.059,
+      "peak_rss_bytes": 104124416,
+      "store_bytes": 3360022,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2760.056,
+      "peak_rss_bytes": 104910848,
+      "store_bytes": 1670975,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2820.055,
+      "peak_rss_bytes": 105959424,
+      "store_bytes": 2109256,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2880.055,
+      "peak_rss_bytes": 107008000,
+      "store_bytes": 2579451,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 2940.056,
+      "peak_rss_bytes": 107663360,
+      "store_bytes": 3030965,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3000.058,
+      "peak_rss_bytes": 108580864,
+      "store_bytes": 3486772,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3060.063,
+      "peak_rss_bytes": 121417728,
+      "store_bytes": 1824876,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3120.051,
+      "peak_rss_bytes": 121417728,
+      "store_bytes": 2280712,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3180.057,
+      "peak_rss_bytes": 121417728,
+      "store_bytes": 2750336,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3240.06,
+      "peak_rss_bytes": 121417728,
+      "store_bytes": 3209290,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3300.062,
+      "peak_rss_bytes": 121417728,
+      "store_bytes": 3657085,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3360.056,
+      "peak_rss_bytes": 121974784,
+      "store_bytes": 1940895,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3420.059,
+      "peak_rss_bytes": 122892288,
+      "store_bytes": 2407296,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3480.056,
+      "peak_rss_bytes": 123940864,
+      "store_bytes": 2865134,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3540.056,
+      "peak_rss_bytes": 126169088,
+      "store_bytes": 3322256,
+      "diagnoses": 3
+    },
+    {
+      "seconds": 3600.059,
+      "peak_rss_bytes": 126955520,
+      "store_bytes": 3784380,
+      "diagnoses": 3
+    }
+  ],
+  "diagnoses": 3,
+  "events": 33733,
+  "peak_rss_bytes": 126955520,
+  "elapsed_seconds": 3600.406,
+  "store_bytes": 1619962,
+  "recording_bytes": 10536588,
+  "capture_health": {
+    "healthy": false,
+    "runs": [
+      {
+        "run": "virtual-soak",
+        "seconds": 3599.716,
+        "min_seconds": 3599.0,
+        "min_rate": 0.9,
+        "healthy": false,
+        "channels": [
+          {
+            "id": "eps.regb.current",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1634,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "eps.regb.voltage",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1634,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "imu.accel",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1659,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 2
+            },
+            "healthy": false
+          },
+          {
+            "id": "imu.gyro",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1659,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 2
+            },
+            "healthy": false
+          },
+          {
+            "id": "mag.field",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1637,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 1
+            },
+            "healthy": false
+          },
+          {
+            "id": "payload.pressure",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1655,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 3
+            },
+            "healthy": false
+          },
+          {
+            "id": "payload.temp",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1655,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 3
+            },
+            "healthy": false
+          },
+          {
+            "id": "radio.heartbeat",
+            "readings": 3600,
+            "expected_hz": 1.0,
+            "observed_hz": 1.0,
+            "cadence_ok": true,
+            "max_gap_ms": 2968,
+            "statuses": {
+              "OK": 3600
+            },
+            "healthy": true
+          },
+          {
+            "id": "sun1.lux",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1648,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 3
+            },
+            "healthy": false
+          },
+          {
+            "id": "sun2.lux",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1651,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 2
+            },
+            "healthy": false
+          },
+          {
+            "id": "thermal.temp",
+            "readings": 7198,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1635,
+            "statuses": {
+              "OK": 7198,
+              "STALE": 1
+            },
+            "healthy": false
+          }
+        ]
+      }
+    ]
+  },
+  "recording_sha256": "ee7a54e155a1a72d74258f9cc5bd676d69e988effd4b079015996fb6d86dddf4",
+  "passed": false
+}

@@ -1,0 +1,51 @@
+{
+  "code_sha": "0dcf7e96b2e3f5528b45b87f9a8f4facabebec4f",
+  "query": "MATCH (d:Diagnosis)-[s:SUSPECTS]->(p)\nRETURN d.id AS id, d.state AS state, d.confidence AS confidence,\n       d.window_from AS first_bad, d.window_to AS last_bad,\n       p.id AS suspect, s.rank AS rank\nORDER BY d.id, s.rank",
+  "rows": [
+    {
+      "id": "dx:virtual-soak:1",
+      "state": "resolved",
+      "confidence": "medium",
+      "first_bad": 1795716232967,
+      "last_bad": 1795716234204,
+      "suspect": "I2C-3",
+      "rank": 1
+    },
+    {
+      "id": "dx:virtual-soak:1",
+      "state": "resolved",
+      "confidence": "medium",
+      "first_bad": 1795716232967,
+      "last_bad": 1795716234204,
+      "suspect": "drv.imu",
+      "rank": 2
+    },
+    {
+      "id": "dx:virtual-soak:2",
+      "state": "resolved",
+      "confidence": "high",
+      "first_bad": 1795717376205,
+      "last_bad": 1795717377278,
+      "suspect": "I2C-3",
+      "rank": 1
+    },
+    {
+      "id": "dx:virtual-soak:3",
+      "state": "resolved",
+      "confidence": "low",
+      "first_bad": 1795717779778,
+      "last_bad": 1795717780920,
+      "suspect": "I2C-1",
+      "rank": 1
+    },
+    {
+      "id": "dx:virtual-soak:3",
+      "state": "resolved",
+      "confidence": "low",
+      "first_bad": 1795717779778,
+      "last_bad": 1795717780920,
+      "suspect": "I2C-3",
+      "rank": 2
+    }
+  ]
+}

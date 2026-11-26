@@ -15,7 +15,7 @@
         <nav aria-label="Main navigation">
           <a href="#demo">Try the demo</a>
           <a href="#reasoning">Why a graph?</a>
-          <button class="nav-evidence" data-open-workspace type="button">Explore the evidence <span aria-hidden="true">↗</span></button>
+          <button class="nav-evidence" data-open-workspace type="button">Explore the evidence <svg class="arrow-icon" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 11 11 3M3 3h8v8"/></svg></button>
         </nav>
       </div>
     </header>
@@ -28,7 +28,7 @@
         <div class="intro-copy">
           <p>When several sensors go quiet, the broken part might be the one they share.</p>
           <p class="intro-detail">Follow a satellite's wiring, introduce a simulated fault, and see how healthy sensors help reveal what actually failed.</p>
-          <button id="start-demo" class="button primary" type="button">Try a fault <span aria-hidden="true">↗</span></button>
+          <button id="start-demo" class="button primary" type="button">Try a fault <svg class="arrow-icon" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 11 11 3M3 3h8v8"/></svg></button>
           <p class="no-setup">No setup. No hardware. Just follow the connections.</p>
         </div>
       </section>
@@ -62,10 +62,10 @@
               <p id="tour-description"></p>
               <div id="tour-proof" class="tour-proof"></div>
               <div class="tour-actions"><button id="tour-next" class="button primary" type="button"></button><button id="tour-reset" class="text-button" type="button">Start over</button></div>
-              <button class="tour-evidence" data-open-workspace type="button">Show me the recorded evidence <span aria-hidden="true">↗</span></button>
+              <button class="tour-evidence" data-open-workspace type="button">Show me the recorded evidence <svg class="arrow-icon" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 11 11 3M3 3h8v8"/></svg></button>
             </div>
           </div>
-          <footer class="tour-footer"><p>You're stepping through stored telemetry. The diagnosis comes from the graph.</p><button class="text-button" type="button" data-case="quadcopter:bec-brownout">Try the same idea on a drone <span aria-hidden="true">↗</span></button></footer>
+          <footer class="tour-footer"><p>You're stepping through stored telemetry. The diagnosis comes from the graph.</p><button class="text-button" type="button" data-case="quadcopter:bec-brownout">Try the same idea on a drone <svg class="arrow-icon" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 11 11 3M3 3h8v8"/></svg></button></footer>
         </div>
       </section>
       <section class="reasoning-section" id="reasoning" aria-labelledby="reasoning-heading">
@@ -77,7 +77,7 @@
         </ol>
       </section>
       <section class="results-section" aria-labelledby="results-heading">
-        <div><p class="eyebrow">A measured example, with limits</p><h2 id="results-heading">Put the reasoning<br>to the test.</h2><p>Four repetitions of nine modeled faults. The same recordings, two ways to pick a cause.</p><button id="open-results" class="text-button" type="button">Inspect the 36-fault recording <span aria-hidden="true">↗</span></button></div>
+        <div><p class="eyebrow">A measured example, with limits</p><h2 id="results-heading">Put the reasoning<br>to the test.</h2><p>Four repetitions of nine modeled faults. The same recordings, two ways to pick a cause.</p><button id="open-results" class="text-button" type="button">Inspect the 36-fault recording <svg class="arrow-icon" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 11 11 3M3 3h8v8"/></svg></button></div>
         <div class="comparison" aria-label="Results on 36 virtual fault injections">
           <div class="comparison-row"><div><strong>Common Cause</strong><span><b id="measured-correct">36</b> / <b class="measured-total">36</b> correct</span></div><div class="comparison-track"><span id="measured-bar" style="width:100%"></span></div><p>The complete expected cause set, including two simultaneous faults.</p></div>
           <div class="comparison-row baseline"><div><strong>Blame the first failed device</strong><span><b id="baseline-correct">8</b> / <b class="measured-total">36</b> correct</span></div><div class="comparison-track"><span id="baseline-bar" style="width:22.22%"></span></div><p>A simple baseline using the same recorded observations.</p></div>
@@ -103,7 +103,7 @@
           <button id="recorded" class="text-button" type="button" title="36 recorded virtual fault injections">Open 36-fault session</button>
           <button id="live-toggle" class="text-button" type="button" aria-expanded="false" aria-controls="live-panel">Connect live</button>
           <input id="file" type="file" accept=".json,application/json" hidden>
-          <button id="browse" class="button primary" type="button">Import recording</button>
+          <button id="browse" class="button primary" type="button">Open saved JSON</button>
         </div>
       </div>
       <section id="live-panel" class="live-panel" aria-label="Live connection" hidden>
@@ -214,7 +214,7 @@
           </div>
         </details>
       </section>
-      <footer class="site-footer"><div><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Common Cause</a><p>Find the fault. Keep the evidence.</p></div><div><span>Built with Relate by Neo4j</span><a href="https://github.com/AdityaChauhanX07/Neo4j_hack">Read the source <span aria-hidden="true">↗</span></a><a href="https://github.com/AdityaChauhanX07/Neo4j_hack/blob/main/docs/validation.md">Methods and validation <span aria-hidden="true">↗</span></a></div></footer>
+      <footer class="site-footer"><div><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Common Cause</a><p>Find the fault. Keep the evidence.</p></div><div><span>Built with Relate by Neo4j</span><a href="https://github.com/AdityaChauhanX07/Neo4j_hack">Read the source <svg class="arrow-icon" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 11 11 3M3 3h8v8"/></svg></a><a href="https://github.com/AdityaChauhanX07/Neo4j_hack/blob/main/docs/validation.md">Methods and validation <svg class="arrow-icon" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 11 11 3M3 3h8v8"/></svg></a></div></footer>
     </main>
     <script type="module" src="/src/main.js"></script>
   </body>

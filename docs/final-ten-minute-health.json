@@ -1,0 +1,152 @@
+{
+  "simulated": true,
+  "code_sha": "0dcf7e96b2e3f5528b45b87f9a8f4facabebec4f",
+  "source_recording": "recordings/runtime-profile/hour-current.jsonl.gz",
+  "prefix_seconds": 601,
+  "recording": "recordings/runtime-profile/ten-minute-prefix.jsonl.gz",
+  "recording_sha256": "3012736fa0b3716eb4060b0e83e7bec48636ec80e6e68af73253f0235ba569ec",
+  "healthy": true,
+  "runs": [
+    {
+      "run": "virtual-soak",
+      "seconds": 600.999,
+      "min_seconds": 600,
+      "min_rate": 0.9,
+      "healthy": true,
+      "channels": [
+        {
+          "id": "eps.regb.current",
+          "readings": 1202,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 766,
+          "statuses": {
+            "OK": 1202
+          },
+          "healthy": true
+        },
+        {
+          "id": "eps.regb.voltage",
+          "readings": 1202,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 766,
+          "statuses": {
+            "OK": 1202
+          },
+          "healthy": true
+        },
+        {
+          "id": "imu.accel",
+          "readings": 1203,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 509,
+          "statuses": {
+            "OK": 1203
+          },
+          "healthy": true
+        },
+        {
+          "id": "imu.gyro",
+          "readings": 1203,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 509,
+          "statuses": {
+            "OK": 1203
+          },
+          "healthy": true
+        },
+        {
+          "id": "mag.field",
+          "readings": 1202,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 760,
+          "statuses": {
+            "OK": 1202
+          },
+          "healthy": true
+        },
+        {
+          "id": "payload.pressure",
+          "readings": 1202,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 778,
+          "statuses": {
+            "OK": 1202
+          },
+          "healthy": true
+        },
+        {
+          "id": "payload.temp",
+          "readings": 1202,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 778,
+          "statuses": {
+            "OK": 1202
+          },
+          "healthy": true
+        },
+        {
+          "id": "radio.heartbeat",
+          "readings": 601,
+          "expected_hz": 1.0,
+          "observed_hz": 1.0,
+          "cadence_ok": true,
+          "max_gap_ms": 1171,
+          "statuses": {
+            "OK": 601
+          },
+          "healthy": true
+        },
+        {
+          "id": "sun1.lux",
+          "readings": 1202,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 771,
+          "statuses": {
+            "OK": 1202
+          },
+          "healthy": true
+        },
+        {
+          "id": "sun2.lux",
+          "readings": 1202,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 775,
+          "statuses": {
+            "OK": 1202
+          },
+          "healthy": true
+        },
+        {
+          "id": "thermal.temp",
+          "readings": 1202,
+          "expected_hz": 2.0,
+          "observed_hz": 2.0,
+          "cadence_ok": true,
+          "max_gap_ms": 645,
+          "statuses": {
+            "OK": 1202
+          },
+          "healthy": true
+        }
+      ]
+    }
+  ]
+}

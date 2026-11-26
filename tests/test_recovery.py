@@ -25,8 +25,9 @@ HARDWARE = ROOT / "hardware/cubesat-pi4.yaml"
 def test_live_recovery_uses_observed_health_and_retains_failed_attempts(tmp_path, monkeypatch, capsys,
                                                                      fault, target, persistent):
     scenario = tmp_path / "scenario.json"
+    # Leave room for detection and the full verification timeout on a busy host.
     scenario.write_text(json.dumps([
-        {"at": 0.5, "command": f"{fault} inject"}, {"at": 5.5, "command": "quit"},
+        {"at": 0.5, "command": f"{fault} inject"}, {"at": 7.5, "command": "quit"},
     ]))
     store, recording = tmp_path / "store", tmp_path / "capture.jsonl"
     args = ["commoncause", "run", "--virtual-bench", "--auto-recover", "--scenario", str(scenario),
@@ -45,6 +46,8 @@ def test_live_recovery_uses_observed_health_and_retains_failed_attempts(tmp_path
         """).fetchall()
         assert attempt["target"] == target and attempt["simulated"] is True
         assert attempt["state"] == expected and attempt["finished"] > attempt["ts"]
+        if persistent:
+            assert attempt["finished"] - attempt["ts"] >= 3000
         assert attempt["diagnosis"] == ("open" if persistent else "resolved")
         evidence = db.execute("""
             MATCH (a:RecoveryAttempt)-[:VERIFIED_BY]->(e:Event)

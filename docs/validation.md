@@ -8,16 +8,18 @@ that plan and identifies deferred physical work.
 
 ## Current checks
 
-The Python suite contains 99 test cases. CI runs Python 3.9, 3.11, and
+The Python suite contains 104 test cases. CI runs Python 3.9, 3.11, and
 3.13 on x64 Linux and Python 3.11 on ARM64 Linux. Fresh non-editable Python
 3.11 installs also run on hosted macOS ARM64 and Windows x64, without board
 extras. Platform-specific errno and PTY tests are skipped where unavailable.
 
 Four integration tests require the Relate CLI. Python-only jobs skip them;
 the Linux Ground view job and the Mac integration step run them with the
-installed CLI. Six WASM tests, three HTTP-client tests, and eleven browser checks cover the dashboard,
+installed CLI. Six WASM tests, three HTTP-client tests, three walkthrough-data
+tests, and fourteen browser checks cover the ground view,
 including a newly exported capture, the published 36-episode graph, episode
-switching, loading races, rejected writes, and small-screen layout.
+switching, loading races, rejected writes, the guided fault-to-recovery flow,
+keyboard controls, and small-screen layout.
 
 | Area | Evidence |
 | --- | --- |
@@ -30,6 +32,7 @@ switching, loading races, rejected writes, and small-screen layout.
 | Simulated automatic recovery | Both I2C buses, ineffective recovery, incomplete verification, unsafe-candidate refusal, physical-mode rejection, and retained graph evidence |
 | Detection config | Shared packaged defaults, rejected invalid values, custom settle timing, and a config hash on new Run nodes |
 | Published matrix | Raw recording replays to the published scores/times; every persisted ranking agrees with the independent scorer; hashes and export content match |
+| Runtime profile | Eight balanced healthy captures, six recovery attempts, native query timing, and a retained failed pilot; source and recording hashes with raw-input reclassification |
 
 Reproduce the Python checks with `python -m pytest -q` after installing
 `.[test]`. See the [laptop guide](laptop-install.md), [MCP guide](mcp.md),
@@ -43,7 +46,7 @@ all nine modeled faults: 36 correct full cause sets, 36 recoveries, and an
 8/36 first-failed-device baseline. It retains raw JSONL, an inspectable
 persistent `.rl`, matching browser JSON, scoring, query benchmarks, and a
 [file-hash manifest](virtual-matrix-manifest.json). The browser loads this
-larger graph on demand through **Open recorded session**.
+larger graph on demand through **Open 36-fault session**.
 
 The manifest identifies the capture's source revision, topology, config,
 interpreter, and host. The report distinguishes the first verdict from the
@@ -54,6 +57,8 @@ those separate times; a first verdict is not necessarily a correct one.
 The native query benchmark uses the 36-episode graph on this shared x64
 Linux host. It is a different workload from the earlier F1 fixture timing
 below, and neither result measures Pi performance.
+The [runtime profile](runtime-profile.md) adds a fresh 100-sample native
+query measurement and separates reader overhead from browser rendering.
 
 ## Bounded varied simulations
 
@@ -131,6 +136,13 @@ evidence before writing one verdict for the observed frame. The regression
 case preserves each gap's timestamp while committing its verdict at the
 actual observation time. No native exception is swallowed or retried.
 
+The Mac recovery check also exposed a test observation window that could
+end capture before the three-second verification timeout completed. The
+integration test now allows 7.5 seconds for detection and verification,
+still requires the persistent failure to remain open, and checks that the
+attempt observed the complete timeout. Capture ending early continues to
+produce `unverified`; the separate shutdown test preserves that behavior.
+
 ## Sustained operation
 
 The [endurance runner](endurance.md) measures a real-clock healthy virtual
@@ -151,3 +163,13 @@ the measured source revision, which predates the later fault-path fix.
 Compressed raw inputs and their [manifest](endurance-manifest.json) are
 committed, and the current suite rechecks both their hashes and channel
 health without waiting another hour.
+
+The new current-backend hour at `0dcf7e9` completed in
+3,600.406 seconds, but **failed** its healthy-operation gate:
+3 diagnoses opened after sampling gaps without fault injection.
+Its first 601-second prefix is healthy. Peak acquisition RSS was
+121.07 MiB and the closed store was 1.54 MiB.
+The [current report](final-endurance-results.json) and
+[retained-input manifest](final-endurance-manifest.json) preserve that failure;
+current tests reproduce its classifications and diagnoses. The older clean
+hour is not evidence that this new full-hour gate passed.

@@ -60,6 +60,7 @@ h1 { font-size: clamp(2.22rem, 5vw, 3.45rem); line-height: 1.04; letter-spacing:
 .primary:hover { background: #27415c; }
 .text-button { border: 0; background: transparent; color: var(--teal); padding: 8px 0; font-size: .81rem; font-weight: 630; }
 .text-button:hover { text-decoration: underline; }
+.arrow-icon { width: .8em; height: .8em; margin-left: .3em; fill: none; stroke: currentColor; stroke-width: 1.5; vertical-align: baseline; }
 .notice { padding: 11px 14px; background: #e0ecf7; border-left: 3px solid #3076ad; border-radius: 4px; margin-bottom: 14px; font-size: .88rem; overflow-wrap: anywhere; }
 .notice.error { border-color: #9c3f31; background: #fbe6e1; }
 .live-panel { padding: 14px; margin-bottom: 16px; background: #fff; border: 1px solid var(--rule); border-radius: 5px; }
@@ -213,7 +214,7 @@ button, a, input, select, summary { -webkit-tap-highlight-color: transparent; }
 .masthead nav a, .nav-evidence { font-size: .84rem; font-weight: 550; text-decoration: none; }
 .nav-evidence { background: transparent; border: 1px solid #bdc9c0; border-radius: 0; padding: 9px 14px; color: var(--ink); }
 .nav-evidence:hover { background: #e8eee5; }
-.nav-evidence span { padding-left: 12px; }
+.nav-evidence .arrow-icon { margin-left: 12px; }
 .shell { max-width: 1400px; padding: 0 48px; }
 .intro { display: grid; grid-template-columns: 1.45fr 1fr; gap: 75px; padding: 77px 0 66px; align-items: end; }
 .eyebrow { color: var(--muted); font: 550 .72rem/1.5 var(--mono); letter-spacing: .07em; text-transform: uppercase; }
@@ -229,7 +230,7 @@ button, a, input, select, summary { -webkit-tap-highlight-color: transparent; }
 .button.primary { background: var(--navy); color: #fff; }
 .button.primary:hover { background: #305448; }
 .intro .button { margin-top: 23px; min-width: 155px; text-align: left; }
-.intro .button span { float: right; padding-left: 28px; }
+.intro .button .arrow-icon { float: right; margin: 3px 0 0 28px; }
 .no-setup { color: var(--muted); font-size: .74rem; margin-top: 11px; }
 .guided-demo { background: #fff; border: 1px solid #d3dacf; border-radius: 4px; box-shadow: 0 8px 35px #1c342608; scroll-margin-top: 24px; }
 .demo-header { padding: 26px 30px; display: flex; justify-content: space-between; gap: 20px; align-items: center; }

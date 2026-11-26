@@ -1,0 +1,151 @@
+{
+  "code_sha": "0dcf7e96b2e3f5528b45b87f9a8f4facabebec4f",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.11.18",
+  "runner_sha256": "302174a451b260856ddc90cf2aacae309ebcc38751088c0b1deeae0d49e4cd8a",
+  "poller_sha256": "1de1768c3be0a11689ad8c5ca4f060062a4952200f23bfea3518f070dfadca87",
+  "live_workload": "Healthy-view startup and 1 Hz read-query polling through the real HTTP client; browser rendering excluded",
+  "runs": [
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 60.10987877799994,
+      "cpu_seconds": 1.0115,
+      "peak_rss_bytes": 45428736,
+      "mode": "baseline",
+      "requested_seconds": 60.0,
+      "diagnoses": 0,
+      "healthy": true,
+      "store_bytes": 44444,
+      "recording": "recordings/runtime-profile/01-baseline.jsonl.gz"
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 60.085329367999975,
+      "cpu_seconds": 0.975252,
+      "peak_rss_bytes": 45813760,
+      "mode": "live",
+      "requested_seconds": 60.0,
+      "follower": {
+        "peak_rss_bytes": 26689536,
+        "cpu_seconds": 0.46
+      },
+      "poller": {
+        "polls": 60,
+        "failed": 0,
+        "elapsed_seconds": 60.756881384,
+        "cpu_seconds": 0.903408,
+        "peak_rss_bytes": 74993664
+      },
+      "diagnoses": 0,
+      "healthy": true,
+      "store_bytes": 44369,
+      "recording": "recordings/runtime-profile/02-live.jsonl.gz"
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 60.08836472799999,
+      "cpu_seconds": 1.265434,
+      "peak_rss_bytes": 45944832,
+      "mode": "recovery",
+      "requested_seconds": 60.0,
+      "diagnoses": 0,
+      "healthy": true,
+      "store_bytes": 43331,
+      "recording": "recordings/runtime-profile/03-recovery.jsonl.gz"
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 60.14783339399992,
+      "cpu_seconds": 1.228993,
+      "peak_rss_bytes": 45944832,
+      "mode": "combined",
+      "requested_seconds": 60.0,
+      "follower": {
+        "peak_rss_bytes": 27660288,
+        "cpu_seconds": 0.47
+      },
+      "poller": {
+        "polls": 60,
+        "failed": 0,
+        "elapsed_seconds": 60.729575407,
+        "cpu_seconds": 0.892601,
+        "peak_rss_bytes": 72597504
+      },
+      "diagnoses": 0,
+      "healthy": true,
+      "store_bytes": 44648,
+      "recording": "recordings/runtime-profile/04-combined.jsonl.gz"
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 60.09287638699993,
+      "cpu_seconds": 1.151275,
+      "peak_rss_bytes": 45944832,
+      "mode": "combined",
+      "requested_seconds": 60.0,
+      "follower": {
+        "peak_rss_bytes": 23322624,
+        "cpu_seconds": 0.5
+      },
+      "poller": {
+        "polls": 60,
+        "failed": 0,
+        "elapsed_seconds": 60.710435081,
+        "cpu_seconds": 0.785547,
+        "peak_rss_bytes": 73269248
+      },
+      "diagnoses": 0,
+      "healthy": true,
+      "store_bytes": 44549,
+      "recording": "recordings/runtime-profile/05-combined.jsonl.gz"
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 60.099854766000135,
+      "cpu_seconds": 1.371907,
+      "peak_rss_bytes": 46075904,
+      "mode": "recovery",
+      "requested_seconds": 60.0,
+      "diagnoses": 0,
+      "healthy": true,
+      "store_bytes": 44129,
+      "recording": "recordings/runtime-profile/06-recovery.jsonl.gz"
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 60.10581149699988,
+      "cpu_seconds": 1.0783939999999999,
+      "peak_rss_bytes": 46108672,
+      "mode": "live",
+      "requested_seconds": 60.0,
+      "follower": {
+        "peak_rss_bytes": 23572480,
+        "cpu_seconds": 0.47
+      },
+      "poller": {
+        "polls": 60,
+        "failed": 0,
+        "elapsed_seconds": 60.71492063,
+        "cpu_seconds": 0.882868,
+        "peak_rss_bytes": 76988416
+      },
+      "diagnoses": 0,
+      "healthy": true,
+      "store_bytes": 44832,
+      "recording": "recordings/runtime-profile/07-live.jsonl.gz"
+    },
+    {
+      "exit_code": 0,
+      "elapsed_seconds": 60.099809608999976,
+      "cpu_seconds": 1.0668179999999998,
+      "peak_rss_bytes": 46108672,
+      "mode": "baseline",
+      "requested_seconds": 60.0,
+      "diagnoses": 0,
+      "healthy": true,
+      "store_bytes": 43785,
+      "recording": "recordings/runtime-profile/08-baseline.jsonl.gz"
+    }
+  ],
+  "passed": true
+}
