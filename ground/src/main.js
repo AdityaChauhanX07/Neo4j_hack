@@ -2,6 +2,7 @@ import "@fontsource-variable/geist";
 import "./style.css";
 import fixture from "../../downlink/common-cause.json";
 import matrixUrl from "../../downlink/virtual-matrix.json?url";
+import matrixResults from "../../docs/virtual-matrix-results.json";
 import { openEngine } from "./engine.js";
 import { openHttpEngine } from "./http-engine.js";
 import { validateSnapshot } from "./graph-data.js";
@@ -11,6 +12,8 @@ import {
   contradictions, deviceFaults, episodes, events, evidence, precursorCutoff, presetQueries, resolved, recoveryAttempts,
 } from "./queries.js";
 import { element, options, show, showDiagnosis, table } from "./render.js";
+import { tourFacts } from "./tour-data.js";
+import { createTour } from "./tour.js";
 
 const ids = [
   "browse", "changes", "channel", "component", "diagnosis", "diagnosis-state", "episode",
@@ -24,6 +27,14 @@ const ids = [
   "recovery-attempts", "recovery-history",
 ];
 const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+const workspace = document.getElementById("workspace");
+function inspectEvidence() {
+  workspace.open = true;
+  workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+  workspace.querySelector("summary").focus({ preventScroll: true });
+  requestAnimationFrame(() => current?.graph.fit());
+}
+const tour = createTour({ selectCase: key => selectSimulation(examples.get(key)), inspect: inspectEvidence });
 const eventColumns = [
   { key: "ts", label: "Time from fault" }, { key: "channel", label: "Channel" },
   { key: "status", label: "Status" }, { key: "value", label: "Reading" },
@@ -40,6 +51,11 @@ const committed = "downlink";
 const examples = new Map();
 const graphs = new Map();
 const simulationRoot = new URL("simulations/", location.href);
+document.getElementById("measured-correct").textContent = matrixResults.totals.all_causes;
+document.getElementById("baseline-correct").textContent = matrixResults.totals.baseline;
+document.querySelectorAll(".measured-total").forEach(node => { node.textContent = matrixResults.totals.injections; });
+document.getElementById("measured-bar").style.width = `${100 * matrixResults.totals.all_causes / matrixResults.totals.injections}%`;
+document.getElementById("baseline-bar").style.width = `${100 * matrixResults.totals.baseline / matrixResults.totals.injections}%`;
 
 function notice(message, error = false) {
   ui.notice.hidden = !message;
@@ -73,7 +89,7 @@ async function load(input, name, { bundled = false, example, live } = {}) {
     current?.graph.dispose();
     clearTimeout(liveTimer);
     current = {
-      engine, graph: createWiring(ui.wiring, snapshot, inspectPart), rows, example, bundled, live: Boolean(live),
+      engine, graph: createWiring(ui.wiring, snapshot, inspectPart), snapshot, rows, example, bundled, live: Boolean(live),
       runs: new Map(snapshot.nodes.filter(node => node.label === "Run").map(node => [node.props.id, node.props])),
       committed: bundled && !example,
     };
@@ -95,6 +111,7 @@ async function load(input, name, { bundled = false, example, live } = {}) {
     showSimulation(example, bundled);
     notice("");
     await loadEpisode(episode);
+    if (workspace.open) requestAnimationFrame(() => current?.graph.fit());
     if (live) scheduleLive(current);
     return true;
   } catch (error) {
@@ -102,6 +119,7 @@ async function load(input, name, { bundled = false, example, live } = {}) {
     if (attempt === loadId) {
       if (!current) ui.restore.hidden = false;
       notice(error.message, true);
+      tour.fail(`The simulation could not be opened. ${error.message}`);
     }
     return false;
   } finally {
@@ -136,6 +154,7 @@ async function loadEpisode(episode, { refresh = false } = {}) {
   if (!refresh) options(ui.channel, [{ id: "", label: "All channels" }]);
 
   if (!episode) {
+    tour.set(null, { guided: false });
     ui["recovery-attempts"].hidden = true;
     showDiagnosis(ui.diagnosis, [], [], {});
     current.graph.highlight(null, []);
@@ -183,6 +202,11 @@ async function loadEpisode(episode, { refresh = false } = {}) {
     ui["diagnosis-state"].classList.toggle("resolved", episode.state === "resolved");
     const names = new Map(against.map(row => [row.suspect, row.against]));
     const candidates = ranked.map(row => ({ ...row, against: names.get(row.suspect) ?? [] }));
+    tour.set(session.bundled ? tourFacts(session.snapshot, episode, {
+      suspects, observed, resolution, candidates, procedures,
+    }) : null, {
+      guided: session.bundled, key: session.example?.key ?? "downlink", system: session.system,
+    });
     showDiagnosis(ui.diagnosis, suspects, procedures, episode, candidates);
     ui["recovery-attempts"].hidden = !attempts.length;
     table(ui["recovery-history"], [
@@ -446,6 +470,11 @@ async function start() {
 }
 
 ui.browse.addEventListener("click", () => ui.file.click());
+workspace.addEventListener("toggle", () => { if (workspace.open) requestAnimationFrame(() => current?.graph.fit()); });
+document.getElementById("open-results").addEventListener("click", () => {
+  inspectEvidence();
+  ui.recorded.click();
+});
 ui["live-toggle"].addEventListener("click", () => {
   ui["live-panel"].hidden = !ui["live-panel"].hidden;
   ui["live-toggle"].setAttribute("aria-expanded", String(!ui["live-panel"].hidden));

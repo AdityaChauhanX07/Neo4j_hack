@@ -3,32 +3,106 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Inspect CubeSat fault diagnoses, wiring paths, and telemetry in a Relate downlink.">
-    <title>Common Cause | Ground view</title>
+    <meta name="description" content="Three sensors fail. Find the shared cause. Explore an interactive satellite fault simulation, then inspect every piece of recorded evidence.">
+    <meta name="theme-color" content="#182b2a">
+    <title>Common Cause | Find what failed</title>
   </head>
   <body>
+    <a class="skip-link" href="#demo">Skip to the interactive demo</a>
     <header class="masthead">
       <div class="masthead-inner">
-        <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Common Cause</div>
-        <a href="https://github.com/AdityaChauhanX07/Neo4j_hack">Repository <span aria-hidden="true">&#8599;</span></a>
+        <a class="brand" href="#top" aria-label="Common Cause home"><span class="brand-mark" aria-hidden="true"></span>Common Cause</a>
+        <nav aria-label="Main navigation">
+          <a href="#demo">Try the demo</a>
+          <a href="#reasoning">Why a graph?</a>
+          <button class="nav-evidence" data-open-workspace type="button">Explore the evidence <span aria-hidden="true">↗</span></button>
+        </nav>
       </div>
     </header>
-    <main class="shell">
+    <main class="shell" id="top">
+      <section class="intro" aria-labelledby="intro-heading">
+        <div class="intro-heading">
+          <p class="eyebrow"><span class="signal-dot" aria-hidden="true"></span> A small satellite. A connected problem.</p>
+          <h1 id="intro-heading">Three alarms.<br>One <em>shared cause.</em></h1>
+        </div>
+        <div class="intro-copy">
+          <p>When several sensors go quiet, the broken part might be the one they share.</p>
+          <p class="intro-detail">Follow a satellite's wiring, introduce a simulated fault, and see how healthy sensors help reveal what actually failed.</p>
+          <button id="start-demo" class="button primary" type="button">Try a fault <span aria-hidden="true">↗</span></button>
+          <p class="no-setup">No setup. No hardware. Just follow the connections.</p>
+        </div>
+      </section>
+      <section id="demo" class="guided-demo" aria-labelledby="demo-heading">
+        <header class="demo-header">
+          <div><p class="eyebrow">An interactive walkthrough</p><h2 id="demo-heading" tabindex="-1">Find the fault.</h2></div>
+          <p class="demo-provenance"><span class="signal-dot" aria-hidden="true"></span> Recorded simulation</p>
+        </header>
+        <div class="scenario-tabs" role="group" aria-label="Choose a guided scenario">
+          <button type="button" data-case="cubesat:F1" aria-pressed="true"><span class="case-number">01</span><span>Shared power failure<small>Three sensors, two buses</small></span></button>
+          <button type="button" data-case="cubesat:F2" aria-pressed="false"><span class="case-number">02</span><span>A blocked data bus<small>One connection, several symptoms</small></span></button>
+          <button type="button" data-case="cubesat:F9" aria-pressed="false"><span class="case-number">03</span><span>Two faults at once<small>When one cause isn't enough</small></span></button>
+        </div>
+        <p id="tour-loading" class="tour-loading" role="status">Loading the recorded simulation…</p>
+        <div id="tour" hidden>
+          <div class="tour-steps" role="group" aria-label="Steps in the fault walkthrough">
+            <button type="button" data-stage="0" aria-current="step"><span>1</span> All healthy</button>
+            <button type="button" data-stage="1"><span>2</span> The fault</button>
+            <button type="button" data-stage="2"><span>3</span> The cause</button>
+            <button type="button" data-stage="3"><span>4</span> Recovery</button>
+          </div>
+          <div class="tour-body">
+            <div class="tour-visual">
+              <div class="map-caption"><span id="tour-system">CubeSat</span><span id="tour-map-state">All responding</span></div>
+              <div id="tour-map" class="tour-map" aria-label="Simplified dependencies of the affected sensors"></div>
+              <p id="tour-map-note" class="map-note"></p>
+            </div>
+            <div class="tour-story" aria-live="polite" aria-atomic="true">
+              <p id="tour-kicker" class="eyebrow"></p>
+              <h3 id="tour-title"></h3>
+              <p id="tour-description"></p>
+              <div id="tour-proof" class="tour-proof"></div>
+              <div class="tour-actions"><button id="tour-next" class="button primary" type="button"></button><button id="tour-reset" class="text-button" type="button">Start over</button></div>
+              <button class="tour-evidence" data-open-workspace type="button">Show me the recorded evidence <span aria-hidden="true">↗</span></button>
+            </div>
+          </div>
+          <footer class="tour-footer"><p>You're stepping through stored telemetry. The diagnosis comes from the graph.</p><button class="text-button" type="button" data-case="quadcopter:bec-brownout">Try the same idea on a drone <span aria-hidden="true">↗</span></button></footer>
+        </div>
+      </section>
+      <section class="reasoning-section" id="reasoning" aria-labelledby="reasoning-heading">
+        <div class="section-intro"><p class="eyebrow">Why the connections matter</p><h2 id="reasoning-heading">An alarm tells you <em>what.</em><br>The wiring helps explain <em>why.</em></h2><p>A silent sensor is a symptom. Its power supply, data bus, and neighbors help tell the rest of the story.</p></div>
+        <ol class="reasoning-list">
+          <li><span class="reason-number">01</span><div><h3>Follow what the sensors share.</h3><p>A motion sensor and a sun sensor can use different data buses and still depend on the same regulator.</p></div></li>
+          <li><span class="reason-number">02</span><div><h3>Listen to the healthy sensors, too.</h3><p>If other devices on a bus still work, blaming the whole bus explains less than blaming their shared supply.</p></div></li>
+          <li><span class="reason-number">03</span><div><h3>Keep the evidence with the answer.</h3><p>Each diagnosis links to the readings, alternative explanations, and recovery guidance behind it. You can inspect them yourself.</p></div></li>
+        </ol>
+      </section>
+      <section class="results-section" aria-labelledby="results-heading">
+        <div><p class="eyebrow">A measured example, with limits</p><h2 id="results-heading">Put the reasoning<br>to the test.</h2><p>Four repetitions of nine modeled faults. The same recordings, two ways to pick a cause.</p><button id="open-results" class="text-button" type="button">Inspect the 36-fault recording <span aria-hidden="true">↗</span></button></div>
+        <div class="comparison" aria-label="Results on 36 virtual fault injections">
+          <div class="comparison-row"><div><strong>Common Cause</strong><span><b id="measured-correct">36</b> / <b class="measured-total">36</b> correct</span></div><div class="comparison-track"><span id="measured-bar" style="width:100%"></span></div><p>The complete expected cause set, including two simultaneous faults.</p></div>
+          <div class="comparison-row baseline"><div><strong>Blame the first failed device</strong><span><b id="baseline-correct">8</b> / <b class="measured-total">36</b> correct</span></div><div class="comparison-track"><span id="baseline-bar" style="width:22.22%"></span></div><p>A simple baseline using the same recorded observations.</p></div>
+          <p class="results-limit">Virtual sensor and communication models. These results describe the tested scenarios; physical equipment and flight performance are outside this demonstration.</p>
+        </div>
+      </section>
+      <section class="workspace-section" aria-labelledby="workspace-heading">
+        <details id="workspace" class="workspace">
+          <summary><span><span class="eyebrow">For a closer look</span><strong id="workspace-heading">Evidence workspace</strong><span class="workspace-summary-note">Full wiring, recorded readings, other scenarios, and read-only queries.</span></span><span class="workspace-expand" aria-hidden="true">+</span></summary>
+          <div class="workspace-body">
       <div class="page-heading">
         <div>
           <div class="source"><span class="source-dot"></span><span id="source">Synthetic fixture</span></div>
-          <h1>Ground view</h1>
-          <p id="metadata" class="metadata">Opening the CubeSat downlink</p>
+          <h2>Evidence workspace</h2>
+          <p id="metadata" class="metadata">Loading the recorded evidence</p>
         </div>
         <div class="page-actions">
           <label id="simulation-controls" class="simulation-picker" for="simulation" hidden>Case
             <select id="simulation"></select>
           </label>
           <button id="restore" class="text-button" type="button" hidden>Restore fixture</button>
-          <button id="recorded" class="text-button" type="button" title="36 recorded virtual fault injections">Open recorded session</button>
+          <button id="recorded" class="text-button" type="button" title="36 recorded virtual fault injections">Open 36-fault session</button>
           <button id="live-toggle" class="text-button" type="button" aria-expanded="false" aria-controls="live-panel">Connect live</button>
           <input id="file" type="file" accept=".json,application/json" hidden>
-          <button id="browse" class="button primary" type="button">Open downlink</button>
+          <button id="browse" class="button primary" type="button">Import recording</button>
         </div>
       </div>
       <section id="live-panel" class="live-panel" aria-label="Live connection" hidden>
@@ -55,7 +129,7 @@
         <article class="wiring-card">
           <header class="wiring-header">
             <div>
-              <h2>Wiring</h2>
+              <h3>Full wiring graph</h3>
               <p id="wiring-context">Power and data dependencies</p>
             </div>
             <button id="fit" class="button dark" type="button">Fit graph</button>
@@ -74,7 +148,7 @@
         </article>
         <aside class="diagnosis-card">
           <div class="diagnosis-head">
-            <h2>Diagnosis</h2>
+            <h3>Recorded diagnosis</h3>
             <span id="diagnosis-state" class="state" hidden></span>
           </div>
           <label class="sr-only" for="episode">Episode</label>
@@ -135,10 +209,11 @@
           <div id="query-result" class="table-scroll"></div>
         </div>
       </details>
-      <footer class="site-footer">
-        <span id="graph-size"></span>
-        <span>Relate &middot; WebAssembly</span>
-      </footer>
+
+          </div>
+        </details>
+      </section>
+      <footer class="site-footer"><div><a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Common Cause</a><p>Find the fault. Keep the evidence.</p></div><div><span>Built with Relate by Neo4j</span><a href="https://github.com/AdityaChauhanX07/Neo4j_hack">Read the source <span aria-hidden="true">↗</span></a><a href="https://github.com/AdityaChauhanX07/Neo4j_hack/blob/main/docs/validation.md">Methods and validation <span aria-hidden="true">↗</span></a></div></footer>
     </main>
     <script type="module" src="/src/main.js"></script>
   </body>
