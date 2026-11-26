@@ -4,6 +4,7 @@ from pathlib import Path
 
 import relate
 import pytest
+import yaml
 
 from commoncause.replay import replay
 from commoncause.topology import load_topology
@@ -31,7 +32,7 @@ def quiet_recording():
     return epoch, rows
 
 
-def verdict_history(rows):
+def verdict_history(rows, topology=TOPOLOGY):
     history = []
 
     def observe(db, run):
@@ -40,7 +41,7 @@ def verdict_history(rows):
             history.append((run.last_ts, verdict))
 
     with relate.connect() as db:
-        load_topology(db, TOPOLOGY)
+        load_topology(db, topology)
         replay(db, io.StringIO("\n".join(map(json.dumps, rows))), on_frame=observe)
     return history
 
@@ -93,4 +94,23 @@ def test_missing_driver_samples_remain_distinct_from_bus_errors():
     assert first["confidence"] == "medium"
     assert {event["status"] for event in first["evidence"]} == {"STALE"}
     assert all(event["error"] is None for event in first["evidence"])
+    assert history[-1][1]["state"] == "resolved"
+
+
+def test_stuck_sensor_is_diagnosed_from_unlabelled_readings_and_recovers(tmp_path):
+    topology = yaml.safe_load(TOPOLOGY.read_text())
+    imu = next(device for device in topology["devices"] if device["id"] == "imu")
+    next(channel for channel in imu["channels"] if channel["id"] == "imu.gyro")["noisy"] = True
+    path = tmp_path / "stuck-enabled.yaml"
+    path.write_text(yaml.safe_dump(topology))
+    epoch, rows = quiet_recording()
+    for row in rows:
+        if row["channel"] == "imu.gyro":
+            age = row["ts"] - epoch
+            row["value"] = [9 if 1000 <= age < 7000 else age / 1000, 0, 0]
+    history = verdict_history(rows, path)
+    first = history[0][1]
+    assert first["suspects"][0]["id"] == "imu"
+    assert {event["status"] for event in first["evidence"]} == {"STUCK"}
+    assert first["window_from"] == epoch + 5500
     assert history[-1][1]["state"] == "resolved"

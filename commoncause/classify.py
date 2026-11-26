@@ -2,11 +2,13 @@ from dataclasses import dataclass
 from math import isfinite
 from typing import Optional
 
+from .settings import DETECTION
+
 DEVICE_FAULTS = ("NO_RESPONSE", "OUT_OF_RANGE", "STUCK", "STALE", "HEARTBEAT_LOST")
-STUCK_SAMPLES = 10
-STALE_PERIODS = 3
-HEARTBEAT_TIMEOUT_MS = 3000
-UNDERVOLTAGE_RATIO = 0.9
+STUCK_SAMPLES = DETECTION.stuck_samples
+STALE_PERIODS = DETECTION.stale_periods
+HEARTBEAT_TIMEOUT_MS = DETECTION.heartbeat_timeout_ms
+UNDERVOLTAGE_RATIO = DETECTION.undervoltage_ratio
 
 
 @dataclass(frozen=True)

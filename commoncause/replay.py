@@ -9,9 +9,10 @@ from .classify import ChannelState, Reading
 from .diagnose import resolve, write_verdict
 from .episode import Episode
 from .schema import merge_links, merge_nodes, transaction
+from .settings import DETECTION, DETECTION_SHA
 from .topology import read_channels
 
-OK_INTERVAL_MS = 1000
+OK_INTERVAL_MS = DETECTION.ok_interval_ms
 
 
 def records(stream):
@@ -99,6 +100,7 @@ class Run:
                     "id": self.id, "source": self.source, "started": now,
                     "topology_sha": self.topology["sha"],
                     "code_sha": os.environ.get("COMMONCAUSE_CODE_SHA"),
+                    "detection_sha": DETECTION_SHA,
                 }
                 if simulated is not None:
                     provenance["simulated"] = simulated

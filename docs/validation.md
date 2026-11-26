@@ -213,3 +213,18 @@ The first Mac matrix run found an extra episode caused by intermittent
 reply transitions aligning with the 2 Hz polling boundary. A regression
 test reproduces that alias, and the virtual reply windows now alternate
 every 0.75 seconds. The complete matrix then passed on both platforms.
+
+## Shared thresholds and stuck-sensor evidence
+
+The seven timing, classification, recovery, and retention defaults now
+come from one packaged [detection config](detection.md). A subprocess check
+changes the settle interval to 500 ms and verifies both the earlier
+verdict and the Run's config hash. Invalid count and ratio values are
+rejected. Default values retain the existing behavior.
+
+An additional unlabelled end-to-end recording enables stuck detection on
+the gyro channel. Ten repeated values identify the IMU with `STUCK`
+evidence, and changing readings resolve the episode. This is an opt-in
+channel policy; the default constant virtual registers do not enable it.
+
+The suite now contains 86 tests, including four CLI integration checks.

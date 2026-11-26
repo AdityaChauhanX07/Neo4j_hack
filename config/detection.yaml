@@ -1,0 +1,7 @@
+stuck_samples: 10
+stale_periods: 3
+heartbeat_timeout_ms: 3000
+undervoltage_ratio: 0.9
+settle_ms: 1000
+recovery_samples: 3
+ok_interval_ms: 1000

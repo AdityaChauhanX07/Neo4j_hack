@@ -22,13 +22,14 @@ board = ["smbus2>=0.5,<1", "pyserial>=3.5,<4"]
 [tool.setuptools]
 packages = [
     "commoncause", "commoncause.board", "commoncause.board.drivers",
-    "commoncause.queries", "commoncause.catalog",
+    "commoncause.queries", "commoncause.catalog", "commoncause.config",
 ]
-package-dir = {"commoncause.queries" = "queries", "commoncause.catalog" = "catalog"}
+package-dir = {"commoncause.queries" = "queries", "commoncause.catalog" = "catalog", "commoncause.config" = "config"}
 
 [tool.setuptools.package-data]
 "commoncause.queries" = ["*.cypher"]
 "commoncause.catalog" = ["*.yaml"]
+"commoncause.config" = ["*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
