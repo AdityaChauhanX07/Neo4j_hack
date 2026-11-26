@@ -3,6 +3,7 @@ import "./style.css";
 import fixture from "../../downlink/common-cause.json";
 import matrixUrl from "../../downlink/virtual-matrix.json?url";
 import { openEngine } from "./engine.js";
+import { openHttpEngine } from "./http-engine.js";
 import { validateSnapshot } from "./graph-data.js";
 import { sourceLabel } from "./evidence.js";
 import { createWiring, partName } from "./wiring.js";
@@ -18,6 +19,8 @@ const ids = [
   "timeline", "timeline-caption", "wiring", "wiring-context", "simulation", "recorded",
   "simulation-controls", "simulation-results", "simulation-score",
   "simulation-case", "simulation-recording",
+  "live-toggle", "live-panel", "live-form", "live-url", "live-credential", "live-connect",
+  "live-disconnect", "live-follow", "live-status",
 ];
 const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 const eventColumns = [
@@ -31,6 +34,7 @@ let loadId = 0;
 let episodeId = 0;
 let partId = 0;
 let restoreView;
+let liveTimer;
 const committed = "downlink";
 const examples = new Map();
 const graphs = new Map();
@@ -42,7 +46,7 @@ function notice(message, error = false) {
   ui.notice.classList.toggle("error", error);
 }
 
-async function load(input, name, { bundled = false, example } = {}) {
+async function load(input, name, { bundled = false, example, live } = {}) {
   const attempt = ++loadId;
   let engine;
   ui.browse.disabled = true;
@@ -53,7 +57,7 @@ async function load(input, name, { bundled = false, example } = {}) {
   try {
     const snapshot = await input;
     validateSnapshot(snapshot);
-    engine = openEngine(snapshot);
+    engine = live ?? openEngine(snapshot);
     await engine.ready;
     const { rows } = await engine.query(episodes);
     if (attempt !== loadId) {
@@ -66,18 +70,22 @@ async function load(input, name, { bundled = false, example } = {}) {
 
     current?.engine.close();
     current?.graph.dispose();
+    clearTimeout(liveTimer);
     current = {
-      engine, graph: createWiring(ui.wiring, snapshot, inspectPart), rows, example, bundled,
+      engine, graph: createWiring(ui.wiring, snapshot, inspectPart), rows, example, bundled, live: Boolean(live),
       runs: new Map(snapshot.nodes.filter(node => node.label === "Run").map(node => [node.props.id, node.props])),
       committed: bundled && !example,
     };
     ui.restore.hidden = bundled;
+    ui["live-disconnect"].disabled = !live;
+    ui["live-connect"].disabled = Boolean(live);
+    if (!live) ui["live-status"].textContent = "Read-only live view. Credentials stay in this tab.";
     ui.source.title = name;
     ui["graph-size"].textContent = `${snapshot.nodes.length} nodes · ${snapshot.rels.length} relationships`;
     const system = snapshot.nodes.find(node => node.label === "Topology")?.props.id;
     current.system = system ?? name;
     const run = snapshot.nodes.find(node => node.label === "Run")?.props.id;
-    ui.source.textContent = sourceLabel(bundled, current.runs.get(episode?.run ?? run));
+    ui.source.textContent = sessionLabel(current, episode?.run ?? run);
     ui.metadata.textContent = run ? `${current.system} / ${run}` : current.system;
     options(ui.part, current.graph.choices.map(part => ({ id: part.id, label: partName(part) })));
     ui.part.disabled = !current.graph.choices.length;
@@ -86,6 +94,7 @@ async function load(input, name, { bundled = false, example } = {}) {
     showSimulation(example, bundled);
     notice("");
     await loadEpisode(episode);
+    if (live) scheduleLive(current);
     return true;
   } catch (error) {
     if (engine !== current?.engine) engine?.close();
@@ -104,18 +113,26 @@ async function load(input, name, { bundled = false, example } = {}) {
   }
 }
 
-async function loadEpisode(episode) {
+function sessionLabel(session, run) {
+  const label = sourceLabel(session.bundled, session.runs.get(run));
+  return session.live ? `Live · ${session.runs.get(run)?.simulated ? "Simulated bench" : "Telemetry"}` : label;
+}
+
+async function loadEpisode(episode, { refresh = false } = {}) {
   const attempt = ++episodeId;
   const inspected = partId;
   const session = current;
   session.episode = episode;
-  session.events = [];
-  session.first = null;
-  ui["diagnosis-state"].hidden = true;
-  ui.precursors.hidden = true;
-  ui["query-result"].replaceChildren();
-  ui["query-status"].textContent = "";
-  options(ui.channel, [{ id: "", label: "All channels" }]);
+  if (!refresh) {
+    session.events = [];
+    session.first = null;
+    ui["diagnosis-state"].hidden = true;
+    ui.precursors.hidden = true;
+    ui["query-result"].replaceChildren();
+    ui["query-status"].textContent = "";
+  }
+  const channel = refresh ? ui.channel.value : "";
+  if (!refresh) options(ui.channel, [{ id: "", label: "All channels" }]);
 
   if (!episode) {
     showDiagnosis(ui.diagnosis, [], [], {});
@@ -123,13 +140,13 @@ async function loadEpisode(episode) {
     ui["timeline-caption"].textContent = "";
     ui["wiring-context"].textContent = "Power and data dependencies";
     renderTimeline();
-    await inspectPart(session.graph.choices[0]?.id);
+    await inspectPart((refresh && session.selected?.id) || session.graph.choices[0]?.id);
     setPreset();
-    return;
+    return true;
   }
 
   ui.metadata.textContent = `${session.system} / ${episode.run}`;
-  ui.source.textContent = sourceLabel(session.bundled, session.runs.get(episode.run));
+  ui.source.textContent = sessionLabel(session, episode.run);
   const ids = { id: episode.id };
   const scope = {
     run: episode.run, from: episode.start, to: episode.end,
@@ -174,6 +191,7 @@ async function loadEpisode(episode) {
 
     const channels = [...new Set(session.events.map(event => event.channel))].sort();
     options(ui.channel, [{ id: "", label: "All channels" }, ...channels.map(id => ({ id, label: id }))]);
+    if (channels.includes(channel)) ui.channel.value = channel;
     ui["timeline-caption"].textContent = `${episode.id} · ${timeline.count} readings${timeline.count > timeline.rows.length ? " · first 200 shown" : ""}`;
     renderTimeline();
     ui.precursors.hidden = !changes.length;
@@ -184,10 +202,60 @@ async function loadEpisode(episode) {
       cell.textContent = key === "at" ? offset(row.at, episode.start) : show(row[key]);
     });
     // Keep a part the operator picked while the episode was loading.
-    if (partId === inspected) await inspectPart(root ?? session.graph.choices[0]?.id);
+    if (partId === inspected) await inspectPart((refresh && session.selected?.id) || root || session.graph.choices[0]?.id);
     setPreset();
+    return true;
   } catch (error) {
     if (session === current && attempt === episodeId) notice(error.message, true);
+    return false;
+  }
+}
+
+function scheduleLive(session) {
+  liveTimer = setTimeout(async () => {
+    try {
+      const [latest, runs, activity] = await Promise.all([
+        session.engine.query(episodes),
+        session.engine.query("MATCH (r:Run) RETURN r.id AS id, properties(r) AS props"),
+        session.engine.query("MATCH (e:Event) RETURN max(e.ts) AS last"),
+      ]);
+      if (session !== current) return;
+      session.runs = new Map(runs.rows.map(row => [row.id, row.props]));
+      session.rows = latest.rows;
+      const selected = !ui["live-follow"].checked && session.rows.find(row => row.id === session.episode?.id);
+      const episode = selected || session.rows[0];
+      options(ui.episode, session.rows.map(row => ({ id: row.id, label: row.id })));
+      ui.episode.value = episode?.id ?? "";
+      ui.episode.hidden = session.rows.length < 2;
+      if (!await loadEpisode(episode, { refresh: true })) throw new Error("Could not refresh the live diagnosis.");
+      if (session !== current) return;
+      notice("");
+      const last = activity.rows[0]?.last;
+      ui["live-status"].classList.remove("error");
+      ui["live-status"].textContent = `Connected · checked ${new Date().toLocaleTimeString()} · latest telemetry ${last == null ? "not received" : new Date(last).toISOString()}`;
+    } catch (error) {
+      if (session !== current) return;
+      ui["live-status"].classList.add("error");
+      ui["live-status"].textContent = `Connection interrupted. Showing the last read; retrying. ${error.message}`;
+    }
+    if (session === current) scheduleLive(session);
+  }, 1000);
+}
+
+async function connectLive(event) {
+  event.preventDefault();
+  ui["live-connect"].disabled = true;
+  let engine;
+  try {
+    engine = openHttpEngine(ui["live-url"].value, ui["live-credential"].value);
+    ui["live-credential"].value = "";
+    const loaded = await load(engine.snapshot(), "Live Relate connection", { live: engine });
+    if (!loaded) engine.close();
+  } catch (error) {
+    engine?.close();
+    notice(error.message, true);
+  } finally {
+    ui["live-connect"].disabled = Boolean(current?.live);
   }
 }
 
@@ -361,6 +429,12 @@ async function start() {
 }
 
 ui.browse.addEventListener("click", () => ui.file.click());
+ui["live-toggle"].addEventListener("click", () => {
+  ui["live-panel"].hidden = !ui["live-panel"].hidden;
+  ui["live-toggle"].setAttribute("aria-expanded", String(!ui["live-panel"].hidden));
+});
+ui["live-form"].addEventListener("submit", connectLive);
+ui["live-disconnect"].addEventListener("click", () => (restoreView ?? openCommitted)());
 ui.recorded.addEventListener("click", () => load(fetch(matrixUrl).then(response => {
   if (!response.ok) throw new Error("The recorded virtual session could not be loaded.");
   return response.json();
@@ -384,7 +458,10 @@ ui.simulation.addEventListener("change", () => {
 });
 ui.fit.addEventListener("click", () => current?.graph.fit());
 ui.part.addEventListener("change", () => inspectPart(ui.part.value));
-ui.episode.addEventListener("change", () => loadEpisode(current.rows.find(row => row.id === ui.episode.value)));
+ui.episode.addEventListener("change", () => {
+  if (current.live) ui["live-follow"].checked = false;
+  loadEpisode(current.rows.find(row => row.id === ui.episode.value));
+});
 ui.channel.addEventListener("change", renderTimeline);
 ui.preset.addEventListener("change", setPreset);
 for (const field of [ui.query, ui.parameters]) {

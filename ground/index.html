@@ -26,10 +26,25 @@
           </label>
           <button id="restore" class="text-button" type="button" hidden>Restore fixture</button>
           <button id="recorded" class="text-button" type="button" title="36 recorded virtual fault injections">Open recorded session</button>
+          <button id="live-toggle" class="text-button" type="button" aria-expanded="false" aria-controls="live-panel">Connect live</button>
           <input id="file" type="file" accept=".json,application/json" hidden>
           <button id="browse" class="button primary" type="button">Open downlink</button>
         </div>
       </div>
+      <section id="live-panel" class="live-panel" aria-label="Live connection" hidden>
+        <form id="live-form" class="live-form">
+          <label for="live-url">Server origin
+            <input id="live-url" type="url" value="http://127.0.0.1:7474" required>
+          </label>
+          <label for="live-credential">User:token
+            <input id="live-credential" type="password" autocomplete="off" required>
+          </label>
+          <button id="live-connect" class="button primary" type="submit">Connect</button>
+          <button id="live-disconnect" class="text-button" type="button" disabled>Disconnect</button>
+          <label class="live-follow" for="live-follow"><input id="live-follow" type="checkbox" checked> Follow latest episode</label>
+        </form>
+        <p id="live-status" role="status">Read-only live view. Credentials stay in this tab.</p>
+      </section>
       <div id="simulation-results" class="simulation-results" hidden>
         <p id="simulation-score"></p>
         <p id="simulation-case"></p>

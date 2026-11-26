@@ -1,9 +1,9 @@
 # Original plan and current scope
 
 This reconciles the November 16 plan with the agreed laptop/browser scope.
-The team has no bench equipment. Physical validation remains a future
-extension; simulated results are labelled throughout the application and
-reports.
+The team has no bench equipment. Physical work is excluded from this
+project's remaining scope; simulated results are labelled throughout the
+application and reports.
 
 ## Engineering deliverables
 
@@ -31,12 +31,13 @@ commands. Core code, fixtures, and the completed one-hour measurement
 cover the agreed software scope. Each measurement identifies its actual
 source revision and host.
 
-## Physical promises that remain unverified
+## Excluded physical work
 
 Original tracker rows 1, 6, 8, and the physical portions of 10, 14, and 19
 cover ordering equipment, Pi setup, wiring/isolation, physical capture,
-and hardware fault runs. Scripts, drivers, maps, and checklists exist, but
-they do not establish those physical results.
+and hardware fault runs. These are removed from the active task list.
+Scripts, drivers, maps, and checklists remain as reference material; they
+do not establish physical results and no hardware purchase is required.
 
 The original under-two-second Pi verdict target and Pi query/RSS figures
 are unmeasured. The simulated F5 case needs heartbeat-loss evidence after
@@ -49,19 +50,19 @@ use that per-channel cadence. The hardware-free equivalent of the gate is
 a healthy ten-minute virtual capture, rather than a claim of Pi operation.
 
 The Pico firmware is supplied and checked with a MicroPython test double.
-Actual RP2040 emulator execution remains optional and unverified; the
+Actual RP2040 emulator execution is outside the active scope; the
 virtual UART generates its byte protocol in Python.
 
 ## Optional original stretch goals
 
-- Pico-controlled MOSFET fault switches: physical extension; scripted
-  virtual injection is already available.
-- Automatic electrical recovery or I2C bus clear: deferred. The application
-  records recovery evidence and displays the catalogue's operator guidance.
-- PerovSat's real topology: conditional on access and permission; the
+- Pico-controlled MOSFET fault switches: excluded with the physical work;
+  automated virtual injection and the recorded 36-fault matrix are complete.
+- Automatic electrical recovery or I2C bus clear: excluded. A simulated
+  closed-loop recovery exercise can validate policy and observed outcomes.
+- PerovSat's real topology: excluded without an actual approved layout; the
   quadcopter already demonstrates a second system.
-- Live browser HTTP connection: deferred. The browser currently inspects
-  frozen downlinks; live directory inspection works through CLI/MCP.
+- Live browser HTTP connection: implemented. The [live browser guide](live-browser.md)
+  covers the authenticated read-only follower, virtual capture, and browser checks.
 
 Submission copy, market rechecks, the video, rehearsal, and Devpost
 publication are separate from this engineering checklist.
