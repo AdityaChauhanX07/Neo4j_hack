@@ -192,3 +192,7 @@ records time through the first committed verdict, which
 `commoncause benchmark` reports alongside native query latency. CI checks
 synthetic fault replays, register conversions, and capture behavior with
 simulated I/O on x64 and ARM64 Linux.
+
+The [hardware-free bench assessment](docs/hardware-without-equipment.md)
+compares local transport models with Wokwi, QEMU, Renode, and Linux I2C
+stubs, and proposes an interactive virtual bench as the next extension.
