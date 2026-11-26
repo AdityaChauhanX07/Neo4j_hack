@@ -16,6 +16,7 @@ NODE_KEYS = {
     "RecoveryProcedure": "id",
     "Diagnosis": "id",
     "Run": "id",
+    "RecoveryAttempt": "id",
 }
 
 

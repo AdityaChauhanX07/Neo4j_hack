@@ -8,7 +8,7 @@ import { validateSnapshot } from "./graph-data.js";
 import { sourceLabel } from "./evidence.js";
 import { createWiring, partName } from "./wiring.js";
 import {
-  contradictions, deviceFaults, episodes, events, evidence, precursorCutoff, presetQueries, resolved,
+  contradictions, deviceFaults, episodes, events, evidence, precursorCutoff, presetQueries, resolved, recoveryAttempts,
 } from "./queries.js";
 import { element, options, show, showDiagnosis, table } from "./render.js";
 
@@ -21,6 +21,7 @@ const ids = [
   "simulation-case", "simulation-recording",
   "live-toggle", "live-panel", "live-form", "live-url", "live-credential", "live-connect",
   "live-disconnect", "live-follow", "live-status",
+  "recovery-attempts", "recovery-history",
 ];
 const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 const eventColumns = [
@@ -135,6 +136,7 @@ async function loadEpisode(episode, { refresh = false } = {}) {
   if (!refresh) options(ui.channel, [{ id: "", label: "All channels" }]);
 
   if (!episode) {
+    ui["recovery-attempts"].hidden = true;
     showDiagnosis(ui.diagnosis, [], [], {});
     current.graph.highlight(null, []);
     ui["timeline-caption"].textContent = "";
@@ -159,9 +161,10 @@ async function loadEpisode(episode, { refresh = false } = {}) {
       session.engine.query(evidence, ids),
       session.engine.query(resolved, ids),
       session.engine.query(presetQueries.rank, scope),
+      session.engine.query(recoveryAttempts, ids),
     ]);
     if (session !== current || attempt !== episodeId) return;
-    const [suspects, procedures, observed, resolution, ranked] = results.map(result => result.rows);
+    const [suspects, procedures, observed, resolution, ranked, attempts] = results.map(result => result.rows);
     const finish = resolution[0]?.ts ?? episode.end;
     const [timeline, before, contradicted] = await Promise.all([
       session.engine.query(events, { run: episode.run, start: episode.start - 1000, end: finish }),
@@ -181,6 +184,20 @@ async function loadEpisode(episode, { refresh = false } = {}) {
     const names = new Map(against.map(row => [row.suspect, row.against]));
     const candidates = ranked.map(row => ({ ...row, against: names.get(row.suspect) ?? [] }));
     showDiagnosis(ui.diagnosis, suspects, procedures, episode, candidates);
+    ui["recovery-attempts"].hidden = !attempts.length;
+    table(ui["recovery-history"], [
+      { key: "target", label: "Target" }, { key: "action", label: "Action" },
+      { key: "state", label: "Observed outcome" }, { key: "ts", label: "Attempt from fault" },
+      { key: "finished", label: "Finished from fault" },
+    ], attempts, (cell, key, row) => {
+      cell.textContent = ["ts", "finished"].includes(key)
+        ? (row[key] == null ? "Awaiting telemetry" : offset(row[key], episode.start)) : show(row[key]);
+      if (key === "action" && row.action === "i2c-bus-clear") cell.textContent = "I2C bus clear";
+      if (key === "state") cell.textContent = {
+        awaiting_telemetry: "Awaiting telemetry", verified: "Verified",
+        not_recovered: "Not recovered", unverified: "Unverified",
+      }[row.state] ?? row.state;
+    });
 
     const byName = new Map(session.graph.choices.map(part => [partName(part), part.id]));
     const root = byName.get(top?.suspect);

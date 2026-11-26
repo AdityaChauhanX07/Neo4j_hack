@@ -43,6 +43,8 @@ def parser():
     run.add_argument("--hardware", type=Path, help="read sensors using this Linux hardware map")
     run.add_argument("--recording", type=Path, help="save raw JSONL while diagnosing")
     run.add_argument("--tui", action="store_true", help="show wiring status and diagnoses as they change")
+    run.add_argument("--auto-recover", action="store_true", help="attempt and verify I2C recovery on the virtual bench")
+    run.add_argument("--persistent-bus-fault", action="store_true", help="keep virtual bus faults active after a recovery attempt")
     capture_options(run)
 
     record = commands.add_parser("record", help="record physical or virtual sensor readings")
@@ -118,6 +120,11 @@ def main():
 
 
 def dispatch(args):
+    if args.command == "run":
+        if args.auto_recover and (not args.virtual_bench or args.hardware):
+            raise ValueError("--auto-recover requires --virtual-bench without --hardware")
+        if args.persistent_bus_fault and not args.auto_recover:
+            raise ValueError("--persistent-bus-fault requires --auto-recover")
     if args.command == "check-capture":
         with args.recording.open(encoding="utf-8") as stream:
             report = check_capture(
@@ -173,17 +180,36 @@ def dispatch(args):
                 replay(db, feed, run_id=args.run, speed=args.speed)
         elif args.command == "run":
             on_frame = live_view() if args.tui else None
+            recovery = None
+
+            def attach_recovery(bench):
+                nonlocal recovery
+                if args.auto_recover:
+                    from .recovery import VirtualRecovery
+
+                    recovery = VirtualRecovery(bench)
+
+            def observe(db, session):
+                if recovery:
+                    recovery.observe(db, session)
+                if on_frame:
+                    on_frame(db, session)
+
             if args.hardware or args.virtual_bench:
                 from .board.recorder import capture_clock, save_capture
 
                 clock = capture_clock()
                 with ExitStack() as stack:
                     load_topology(db, args.topology)
-                    feed = stack.enter_context(closing(board_feed(args, clock=clock)))
+                    feed = stack.enter_context(closing(board_feed(args, clock=clock, on_virtual=attach_recovery)))
                     if args.recording:
                         feed = stack.enter_context(closing(save_capture(feed, args.recording)))
                     source = "virtual-bench" if args.virtual_bench else "live"
-                    replay(db, feed, source=source, on_frame=on_frame, commit_clock=clock)
+                    try:
+                        replay(db, feed, source=source, on_frame=observe, commit_clock=clock)
+                    finally:
+                        if recovery:
+                            recovery.finish(db, clock())
             else:
                 if args.recording or args.interactive or args.scenario or args.duration is not None or args.run is not None:
                     raise ValueError("Capture options require --hardware or --virtual-bench; otherwise run reads JSONL on stdin")
@@ -219,7 +245,7 @@ def dispatch(args):
                 print(summarize(verdict))
 
 
-def board_feed(args, *, clock=None):
+def board_feed(args, *, clock=None, on_virtual=None):
     from .board.recorder import OperatorConsole, ScriptedConsole, capture
     from .board.settings import load_board
 
@@ -233,7 +259,10 @@ def board_feed(args, *, clock=None):
     if args.virtual_bench:
         from .board.virtual import VirtualBench
 
-        virtual = VirtualBench(board, args.topology)
+        virtual = VirtualBench(board, args.topology,
+                               recoverable_bus_faults=not getattr(args, "persistent_bus_fault", False))
+        if on_virtual:
+            on_virtual(virtual)
         print("Virtual bench: simulated sensor registers and heartbeat bytes", file=sys.stderr)
     return capture(
         board, run_id=args.run, duration=args.duration, console=console,

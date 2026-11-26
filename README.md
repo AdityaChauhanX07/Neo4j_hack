@@ -228,6 +228,9 @@ and deploys the site through GitHub Pages.
 The [live browser guide](docs/live-browser.md) connects the ground view to a
 running virtual capture through Relate's read-only HTTP follower. New
 diagnoses and recovery appear without exporting or reopening a downlink.
+The [simulated recovery controller](docs/virtual-recovery.md) can attempt an
+I2C bus clear and verify the result from fresh telemetry, with a persistent
+fault mode that exercises unsuccessful recovery.
 
 The demo and both simulation suites run on a laptop. The
 [bench wiring guide](hardware/bench-wiring.md) describes the Pi 4 hardware

@@ -1,0 +1,4 @@
+[
+  {"at": 1, "command": "F2 inject"},
+  {"at": 7, "command": "quit"}
+]

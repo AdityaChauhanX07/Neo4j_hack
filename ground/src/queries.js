@@ -37,6 +37,13 @@ MATCH (dx:Diagnosis {id: $id})-[:RESOLVED_AT]->(e:Event)
 RETURN e.ts AS ts
 `.trim();
 
+export const recoveryAttempts = `
+MATCH (:Diagnosis {id: $id})-[:ATTEMPTED]->(a:RecoveryAttempt)
+RETURN a.target AS target, a.action AS action, a.state AS state,
+       a.ts AS ts, a.finished AS finished, a.simulated AS simulated
+ORDER BY a.ts
+`.trim();
+
 export const presetQueries = { verdict, before, impact, rank, recovery };
 
 export { contradictions, deviceFaults, precursorCutoff } from "./evidence.js";
