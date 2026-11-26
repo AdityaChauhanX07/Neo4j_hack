@@ -187,3 +187,29 @@ The suite now contains 75 tests. The three MCP checks require the Relate
 CLI and run in the Ground view workflow after installation. Other jobs
 skip them when the binary is absent. This verifies the protocol path;
 LLM-host configuration and narrative answer quality are separate concerns.
+
+## Concurrent readers and downlink
+
+A five-second live virtual capture passes with a second process following
+the directory over read-only MCP. A downlink made while the recorder is
+still running produces matching `.rl` and JSON content. The same follower
+observes later committed events, while the snapshot remains unchanged.
+See [live-store.md](live-store.md) for the process model and commands.
+
+The suite now contains 77 tests, including four CLI integration checks.
+Ground-view CI supplies the Relate CLI for those checks; Python-only jobs
+skip them when it is absent.
+
+## Mac and Windows installs
+
+Fresh, non-editable installs on hosted macOS ARM64 and Windows x64 passed
+their Python 3.11 suites and the virtual F1 CLI workflow on November 26,
+2026. The Mac job also passed CLI export and the MCP protocol checks.
+Linux-only errno checks and unavailable CLI/PTY integrations are skipped
+explicitly on the relevant platforms. The [laptop guide](laptop-install.md)
+documents commands and coverage.
+
+The first Mac matrix run found an extra episode caused by intermittent
+reply transitions aligning with the 2 Hz polling boundary. A regression
+test reproduces that alias, and the virtual reply windows now alternate
+every 0.75 seconds. The complete matrix then passed on both platforms.

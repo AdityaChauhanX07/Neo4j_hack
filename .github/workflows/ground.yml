@@ -51,8 +51,8 @@ jobs:
           commoncause impact REG_B
           commoncause replay recordings/f1-fixture.jsonl --topology topologies/cubesat-bench.yaml --db "$RUNNER_TEMP/commoncause-store"
           commoncause downlink --db "$RUNNER_TEMP/commoncause-store" --out "$RUNNER_TEMP/commoncause-downlink" --relate "$HOME/.local/bin/relate"
-      - name: Verify read-only MCP sessions
-        run: RELATE_CLI="$HOME/.local/bin/relate" python -m pytest -q tests/test_mcp.py --basetemp "$RUNNER_TEMP/pytest-mcp"
+      - name: Verify read-only MCP and live downlink
+        run: RELATE_CLI="$HOME/.local/bin/relate" python -m pytest -q tests/test_mcp.py tests/test_live_store.py --basetemp "$RUNNER_TEMP/pytest-mcp"
       - name: Capture, replay, and export a virtual bench episode
         run: |
           commoncause run --virtual-bench --scenario sim/scenarios/f1.json --run virtual-f1 --db "$RUNNER_TEMP/virtual-store" --recording "$RUNNER_TEMP/virtual-f1.jsonl" --tui
