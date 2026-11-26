@@ -18,17 +18,20 @@ class Reading:
     value: object
     ok: bool
     error: Optional[str] = None
+    simulated: Optional[bool] = None
 
     @classmethod
     def from_record(cls, record):
         reading = cls(*(record[key] for key in ("run", "seq", "ts", "channel", "value", "ok")),
-                      error=record.get("error"))
+                      error=record.get("error"), simulated=record.get("simulated"))
         if any(not isinstance(name, str) or not name for name in (reading.run, reading.channel)):
             raise ValueError("run and channel must be nonempty strings")
         if any(type(number) is not int or number < 0 for number in (reading.seq, reading.ts)):
             raise ValueError("seq and ts must be nonnegative integers")
         if type(reading.ok) is not bool:
             raise ValueError("ok must be a boolean")
+        if reading.simulated is not None and type(reading.simulated) is not bool:
+            raise ValueError("simulated must be a boolean or null")
         if reading.error is not None and not isinstance(reading.error, str):
             raise ValueError("error must be a string or null")
         if reading.ok or reading.value is not None:

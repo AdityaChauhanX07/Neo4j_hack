@@ -1,9 +1,11 @@
 import errno
 import json
 import re
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import ExitStack
 from datetime import datetime, timezone
+from dataclasses import dataclass
 from functools import partial
 from itertools import chain
 from math import isfinite
@@ -11,12 +13,20 @@ from queue import Empty, SimpleQueue
 from select import select
 from threading import Event, Lock
 from time import monotonic, monotonic_ns, time_ns
+from typing import Callable, Optional
 
 from .drivers import I2C_DRIVERS
 from .heartbeat import Heartbeats
 from .i2c import I2CDevice
 
 FAULT = re.compile(r"F[1-9]")
+
+
+@dataclass(frozen=True)
+class Transports:
+    i2c: Callable
+    uart: Callable
+    message: Optional[Callable] = None
 
 
 def capture_clock():
@@ -30,16 +40,21 @@ def capture_clock():
 
 
 class Recorder:
-    def __init__(self, run_id, stall_channel=None, stall_driver=None, clock=None):
+    def __init__(self, run_id, stall_channel=None, stall_driver=None, clock=None, *,
+                 on_marker=None, simulated=False):
         self.run_id = run_id
         self.stall_channel = stall_channel
         self.stall_driver = stall_driver
         self.seq = 0
         self.active = set()
         self.clock = clock or capture_clock()
+        self.on_marker = on_marker
+        self.simulated = simulated
 
     def _line(self, timestamp, fields):
         self.seq += 1
+        if self.simulated:
+            fields["simulated"] = True
         return json.dumps({
             "run": self.run_id, "seq": self.seq, "ts": timestamp, **fields,
         }, separators=(",", ":"), allow_nan=False) + "\n"
@@ -66,11 +81,13 @@ class Recorder:
             raise ValueError("F7 needs a stall_channel in the hardware config")
         if fault == "F8" and action == "inject" and not expected:
             raise ValueError("F8 needs the affected component, for example F8 inject sun2")
+        if action == "inject" and fault == "F7" and not expected:
+            expected = [self.stall_driver]
+        if self.on_marker is not None:
+            self.on_marker(fault, action, expected)
         fields = {"type": "fault", "fault": fault, "action": action}
         if action == "inject":
             self.active.add(fault)
-            if fault == "F7" and not expected:
-                expected = [self.stall_driver]
             if expected:
                 fields["expected"] = expected
         else:
@@ -84,12 +101,40 @@ class OperatorConsole:
             raise ValueError("--interactive requires a terminal on stdin")
         self.stdin = stdin
         self.stderr = stderr
+        self.line = ""
         print("Enter F1-F9 inject or clear. Enter quit to finish the capture.", file=stderr)
 
     def read(self):
+        if sys.platform == "win32":
+            return self._windows_line()
         if select([self.stdin], [], [], 0)[0]:
             line = self.stdin.readline()
             return line.strip() if line else "quit"
+        return None
+
+    def _windows_line(self):
+        # Windows select() accepts sockets, not console handles.
+        import msvcrt
+
+        while msvcrt.kbhit():
+            char = msvcrt.getwch()
+            if char == "\x03":
+                raise KeyboardInterrupt
+            if char == "\x1a":
+                return "quit"
+            if char in {"\x00", "\xe0"}:
+                msvcrt.getwch()
+            elif char in {"\r", "\n"}:
+                command, self.line = self.line.strip(), ""
+                print(file=self.stderr, flush=True)
+                return command
+            elif char == "\b":
+                if self.line:
+                    self.line = self.line[:-1]
+                    print("\b \b", end="", file=self.stderr, flush=True)
+            else:
+                self.line += char
+                print(char, end="", file=self.stderr, flush=True)
         return None
 
     def invalid(self, error):
@@ -97,6 +142,39 @@ class OperatorConsole:
 
     def accepted(self, command):
         print(f"Marker recorded: {command}", file=self.stderr, flush=True)
+
+
+class ScriptedConsole(OperatorConsole):
+    def __init__(self, path, stderr):
+        steps = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(steps, list) or not steps:
+            raise ValueError("A scenario needs a nonempty list of timed commands")
+        previous = -1
+        for step in steps:
+            if not isinstance(step, dict):
+                raise ValueError("Scenario steps must be objects with at and command")
+            at, command = step.get("at"), step.get("command")
+            if type(at) not in (int, float) or not isfinite(at) or at < 0 or at < previous:
+                raise ValueError("Scenario times must be finite, nonnegative, and in order")
+            if not isinstance(command, str) or not command.strip():
+                raise ValueError("Each scenario step needs a command")
+            previous = at
+        if steps[-1]["command"] != "quit" or any(step["command"] == "quit" for step in steps[:-1]):
+            raise ValueError("The last scenario command must be its only quit")
+        self.steps = iter(steps)
+        self.pending = next(self.steps)
+        self.started = monotonic()
+        self.stderr = stderr
+
+    def read(self):
+        if self.pending is not None and monotonic() - self.started >= self.pending["at"]:
+            command = self.pending["command"]
+            self.pending = next(self.steps, None)
+            return command
+        return None
+
+    def invalid(self, error):
+        raise ValueError(f"Scenario command rejected: {error}") from error
 
 
 def _poll_sensor(device, driver, emit, stop):
@@ -142,42 +220,47 @@ def _poll_serial(channel, serial, emit, stop):
             emit([(channel, counter, None)])
 
 
-def capture(board, *, run_id=None, duration=None, console=None, device=None, clock=None):
+def capture(board, *, run_id=None, duration=None, console=None, device=None, clock=None,
+            transports=None, on_marker=None, simulated=False):
     if duration is not None and (not isfinite(duration) or duration <= 0):
         raise ValueError("Capture duration must be positive")
     if run_id is not None and not run_id.strip():
         raise ValueError("Run ID must not be blank")
     if device is not None and device not in board.devices:
         raise ValueError(f"Unknown board device {device}")
-    try:
-        from serial import Serial
-        from smbus2 import SMBus
-    except ImportError as error:
-        raise ValueError("Install the board dependencies with pip install '.[board]'") from error
+    if transports is None:
+        try:
+            from serial import Serial
+            from smbus2 import SMBus
+        except ImportError as error:
+            raise ValueError("Install the board dependencies with pip install '.[board]'") from error
+        transports = Transports(SMBus, Serial)
 
     selected = [board.devices[device]] if device is not None else list(board.devices.values())
-    name = run_id or datetime.now(timezone.utc).strftime("bench-%Y%m%dT%H%M%S.%fZ")
+    prefix = "virtual-bench" if simulated else "bench"
+    name = run_id or datetime.now(timezone.utc).strftime(prefix + "-%Y%m%dT%H%M%S.%fZ")
     stall = board.stall_channel if any(
         item.channel == board.stall_channel for sensor in selected for item in sensor.outputs
     ) else None
     with ExitStack() as stack:
         buses = {
-            bus: (stack.enter_context(SMBus(board.i2c[bus])), Lock())
+            bus: (stack.enter_context(transports.i2c(board.i2c[bus])), Lock())
             for bus in sorted({sensor.bus for sensor in selected if sensor.chip != "heartbeat"})
         }
         producers = []
         for sensor in selected:
             if sensor.chip == "heartbeat":
                 port, baud = board.uart[sensor.bus]
-                serial = stack.enter_context(Serial(port, baudrate=baud, timeout=0.1, exclusive=True))
+                serial = stack.enter_context(transports.uart(port, baudrate=baud, timeout=0.1, exclusive=True))
                 producers.append(partial(_poll_serial, sensor.outputs[0].channel, serial))
             else:
                 bus, lock = buses[sensor.bus]
-                port = I2CDevice(bus, lock, sensor.address)
+                port = I2CDevice(bus, lock, sensor.address, transports.message)
                 driver = I2C_DRIVERS[sensor.chip]
                 chip = driver(port, sensor.shunt_ohms) if sensor.chip == "ina219" else driver(port)
                 producers.append(partial(_poll_sensor, sensor, chip))
-        recorder = Recorder(name, stall, board.stall_driver, clock)
+        recorder = Recorder(name, stall, board.stall_driver, clock,
+                            on_marker=on_marker, simulated=simulated)
         yield from _collect(producers, recorder, duration, console)
 
 

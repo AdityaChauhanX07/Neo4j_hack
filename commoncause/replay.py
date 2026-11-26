@@ -70,6 +70,7 @@ class Run:
         self.states = {}
         self.last_ts = None
         self.last_seq = -1
+        self.simulated = None
         self.saved = {}
         self.latest = {}
         self.episode = None
@@ -81,21 +82,27 @@ class Run:
         if self.last_ts is not None and now < self.last_ts:
             raise ValueError("Telemetry timestamps must be in order within a run")
         seq = self.last_seq
+        simulated = readings[0].simulated if self.last_ts is None else self.simulated
         for reading in readings:
             if reading.seq <= seq:
                 raise ValueError("Telemetry seq must increase within a run")
             if reading.channel not in self.channels:
                 raise ValueError(f"Unknown channel {reading.channel}")
+            if reading.simulated != simulated:
+                raise ValueError("Simulation metadata must be consistent within a run")
             seq = reading.seq
 
         first_verdicts = []
         with transaction(self.db):
             if self.last_ts is None:
-                merge_nodes(self.db, "Run", [{
+                provenance = {
                     "id": self.id, "source": self.source, "started": now,
                     "topology_sha": self.topology["sha"],
                     "code_sha": os.environ.get("COMMONCAUSE_CODE_SHA"),
-                }])
+                }
+                if simulated is not None:
+                    provenance["simulated"] = simulated
+                merge_nodes(self.db, "Run", [provenance])
                 self.states = {key: ChannelState(now) for key in self.channels}
 
             gaps = [
@@ -113,6 +120,7 @@ class Run:
 
         self.last_ts = now
         self.last_seq = seq
+        self.simulated = simulated
         created = [diagnosis for diagnosis in first_verdicts if diagnosis is not None]
         if self.commit_clock is not None and created:
             self.db.execute("""
