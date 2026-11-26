@@ -174,3 +174,16 @@ python -m pytest -q tests/test_rank.py tests/test_rank_reference.py
 The checks pass on Python 3.11 x64 Linux. The full suite now contains 72
 tests; CI also runs them on the other supported Linux interpreter and
 architecture combinations.
+
+## MCP transport
+
+Relate CLI 1.3.0 passes three sessions through the checked-in `.mcp.json`
+command: linked F1 facts and citation IDs, refused mutations with an
+unchanged snapshot hash, and preserved medium confidence for intermittent
+evidence. The stdio server exposes `get_schema` and `read_cypher` only.
+The [MCP guide](mcp.md) documents the client setup and exact checks.
+
+The suite now contains 75 tests. The three MCP checks require the Relate
+CLI and run in the Ground view workflow after installation. Other jobs
+skip them when the binary is absent. This verifies the protocol path;
+LLM-host configuration and narrative answer quality are separate concerns.
