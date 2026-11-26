@@ -28,14 +28,14 @@ test("switch faults and systems without presenting uncertain results as high con
   await page.goto("./");
   await expect(page.locator("#tour-title")).toHaveText("Start with a healthy system.");
   await page.getByRole("button", { name: /Two faults at once/ }).click();
-  await page.locator('[data-stage="2"]').click();
+  await page.locator('button[data-stage="2"]').click();
   await expect(page.locator("#tour-title")).toContainText("Regulator B and Data bus 3");
   await expect(page.locator("#tour-proof")).toContainText("More inspection needed");
   await expect(page.locator("#tour-map .map-root")).toHaveCount(2);
   await page.getByRole("button", { name: /Try the same idea on a drone/ }).click();
   await expect(page.locator("#tour-system")).toContainText("Quadcopter");
   await expect(page.locator("#tour-title")).toHaveText("Start with a healthy system.");
-  await page.locator('[data-stage="2"]').click();
+  await page.locator('button[data-stage="2"]').click();
   await expect(page.locator("#tour-title")).toHaveText("5 V regulator");
 });
 
@@ -43,9 +43,9 @@ test("the mobile walkthrough stays readable and keyboard steps expose the curren
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("./");
   await expect(page.locator("#tour-title")).toHaveText("Start with a healthy system.");
-  await page.locator('[data-stage="1"]').focus();
+  await page.locator('button[data-stage="1"]').focus();
   await page.keyboard.press("Enter");
-  await expect(page.locator('[data-stage="1"]')).toHaveAttribute("aria-current", "step");
+  await expect(page.locator('button[data-stage="1"]')).toHaveAttribute("aria-current", "step");
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
   await page.screenshot({ path: info.outputPath("guided-mobile.png"), fullPage: true });
 });
