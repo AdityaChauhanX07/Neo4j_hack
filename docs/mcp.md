@@ -57,3 +57,28 @@ Python-only jobs skip them when the CLI is absent.
 These checks verify the server and a real protocol client. They do not
 measure an LLM's answer quality or certify every host application's MCP
 configuration behavior. No hosted model or API key is needed for them.
+
+## Checked explanation example
+
+The following facts were read through the MCP stdio connection against
+the committed synthetic F1 graph on November 26, 2026:
+
+Diagnosis `dx:f1-fixture:1` ranks `REG_B` with high confidence and resolved
+state. Its stored suspect relationship covers three failed devices with
+zero healthy-device contradictions (`dx:f1-fixture:1`, `REG_B`). The IMU,
+magnetometer, and first sun sensor have missing-reply evidence
+(`imu`, `mag`, `sun1`; events `reading:f1-fixture:23`,
+`reading:f1-fixture:25`, and `reading:f1-fixture:29`). The monitor's voltage
+reading is 0.16 V and classified `UNDERVOLTAGE`
+(`eps.regb.voltage`, `reading:f1-fixture:26`).
+
+The linked failure mode is regulator dropout (`regulator-dropout`). Its
+procedure says to inspect the input supply and regulator wiring, then
+reinitialize the affected drivers once output is stable
+(`power-cycle-regulator`). The procedure's recorded risk is interruption
+of the attached devices. Recovery is linked to an OK event
+(`reading:f1-fixture:83`).
+
+This example retains the graph's cause, confidence, evidence, procedure,
+and IDs. The MCP tests independently check the links and that every
+returned citation identifies a node in the graph.

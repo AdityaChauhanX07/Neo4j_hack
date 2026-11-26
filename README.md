@@ -5,6 +5,10 @@ sensors stop responding, it uses their shared power and data paths to rank
 the components that could explain the fault. Healthy devices help rule out
 suspects.
 
+The intended users are student satellite teams investigating correlated
+telemetry faults. A quadcopter example exercises the same schema and
+queries on another system.
+
 The complete demo runs in a browser or on a laptop, using generated
 telemetry with a real Relate graph. No bench equipment is required.
 Physical capture is an optional extension and has not been validated on
@@ -39,17 +43,25 @@ disk. The console accepts read-only graph queries.
 | --- | ---: | ---: | ---: |
 | CubeSat | 9 | 9/9 | 2/9 |
 | Quadcopter | 3 | 3/3 | 1/3 |
+| Recorded virtual bench | 36 | 36/36 | 8/36 |
 
-These counts come from deterministic simulated telemetry. The baseline
+These counts come from simulated telemetry. The baseline
 picks the first device that reports a failure. The combined case also shows
 the second ranked suspect. Use **Download simulated readings** to get the
 JSONL for the selected suite. The [demo walkthrough](docs/demo.md) covers a
-laptop-only run and the commands to reproduce both scores.
+laptop-only run and the commands to reproduce the fixture scores.
+
+The recorded bench uses four repetitions of each modeled fault through
+the live recorder. A separate one-hour healthy virtual capture opened no
+diagnosis; its [resource and cadence report](docs/endurance.md) identifies
+the measured revision and host.
 
 ## Try the F1 replay
 
 From the repository root, use Python 3.9 or later.
 CI tests Python 3.9, 3.11, and 3.13 on x64 Linux, and Python 3.11 on ARM64 Linux.
+Fresh Python 3.11 installs also run on macOS and Windows; see the
+[laptop installation guide](docs/laptop-install.md) for platform commands.
 
 ```sh
 python3 -m venv .venv
@@ -134,9 +146,13 @@ Choose **Open recorded session** in the dashboard to inspect it.
   `COMMONCAUSE_CODE_SHA` to include the revision used to produce the verdicts.
 - **MCP.** `.mcp.json` points a compatible client at the fixture graph with
   `relate serve --mcp stdio --read-only`. The ground agent follows
-  `AGENTS.md` to explain a verdict from its graph evidence.
+  `AGENTS.md` to explain a verdict from its graph evidence. The
+  [MCP guide](docs/mcp.md) gives the setup and checked example.
 
 The shared queries live in `queries/`.
+
+The [live-store guide](docs/live-store.md) covers concurrent inspection
+and downlink while the recorder remains active.
 
 | Query | Parameters | Returned columns |
 | --- | --- | --- |
@@ -223,5 +239,8 @@ synthetic fault replays, register conversions, and capture behavior with
 simulated I/O on x64 and ARM64 Linux.
 
 The [hardware-free bench assessment](docs/hardware-without-equipment.md)
-compares local transport models with Wokwi, QEMU, Renode, and Linux I2C
-stubs, and proposes an interactive virtual bench as the next extension.
+compares the implemented virtual bench with Wokwi, QEMU, Renode, and Linux
+I2C stubs. The [original-plan status](docs/plan-status.md) records completed
+software work, the hardware promises that remain unverified, and optional
+stretch goals. See the [endurance guide](docs/endurance.md) for sustained
+capture and resource measurements.

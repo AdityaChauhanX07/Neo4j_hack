@@ -1,0 +1,23 @@
+{
+  "simulated": true,
+  "code_sha": "73be4a8461afae16be4e3daf762d425ab5513701",
+  "runner_sha256": "ee51e270218302150d36c263e730b92fe7331cb99c5d16bb9a915403ed01ee27",
+  "files": {
+    "recordings/virtual-healthy-hour.jsonl.gz": {
+      "bytes": 476757,
+      "sha256": "173328ca19b421f59e013a91699df66ea2f35059e26cd809aeeba111ba8490de"
+    },
+    "recordings/virtual-healthy-ten-minute.jsonl.gz": {
+      "bytes": 80029,
+      "sha256": "7462b651a07c9744c1f96418ba2ed831a6366d497c4ea4f67dee2e46f9c53dbd"
+    },
+    "docs/endurance-results.json": {
+      "bytes": 11856,
+      "sha256": "bda5d665ac4dfa4fabaa622082d27b5c880078bfacddf9f7ccedfe1e610c1156"
+    },
+    "docs/ten-minute-health.json": {
+      "bytes": 3514,
+      "sha256": "7044be0514b0438dc2f268936128209ff0312e912339099f03a50a7942d7f3a7"
+    }
+  }
+}

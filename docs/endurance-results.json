@@ -1,0 +1,526 @@
+{
+  "simulated": true,
+  "code_sha": "73be4a8461afae16be4e3daf762d425ab5513701",
+  "runner_sha256": "ee51e270218302150d36c263e730b92fe7331cb99c5d16bb9a915403ed01ee27",
+  "topology_sha256": "32946fc1cc25cd6e4a3dae4a80d69c64280344710959536802e750cdb68ebe45",
+  "started_utc": "2026-11-26T09:02:46.080233+00:00",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.11.18",
+  "requested_seconds": 3600.0,
+  "checkpoints": [
+    {
+      "seconds": 60.058,
+      "peak_rss_bytes": 41787392,
+      "store_bytes": 478375,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 120.058,
+      "peak_rss_bytes": 43229184,
+      "store_bytes": 933946,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 180.058,
+      "peak_rss_bytes": 43884544,
+      "store_bytes": 1377182,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 240.058,
+      "peak_rss_bytes": 45498368,
+      "store_bytes": 1836460,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 300.055,
+      "peak_rss_bytes": 50663424,
+      "store_bytes": 148654,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 360.055,
+      "peak_rss_bytes": 51712000,
+      "store_bytes": 612595,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 420.059,
+      "peak_rss_bytes": 53723136,
+      "store_bytes": 1101881,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 480.059,
+      "peak_rss_bytes": 54448128,
+      "store_bytes": 1539178,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 540.055,
+      "peak_rss_bytes": 55365632,
+      "store_bytes": 1998612,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 600.055,
+      "peak_rss_bytes": 56475648,
+      "store_bytes": 2479578,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 660.061,
+      "peak_rss_bytes": 58494976,
+      "store_bytes": 760396,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 720.059,
+      "peak_rss_bytes": 59543552,
+      "store_bytes": 1237225,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 780.055,
+      "peak_rss_bytes": 63401984,
+      "store_bytes": 1690927,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 840.061,
+      "peak_rss_bytes": 63541248,
+      "store_bytes": 2157039,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 900.058,
+      "peak_rss_bytes": 64196608,
+      "store_bytes": 2611163,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 960.055,
+      "peak_rss_bytes": 65114112,
+      "store_bytes": 856542,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1020.058,
+      "peak_rss_bytes": 66031616,
+      "store_bytes": 1321008,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1080.055,
+      "peak_rss_bytes": 67080192,
+      "store_bytes": 1783468,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1140.055,
+      "peak_rss_bytes": 67997696,
+      "store_bytes": 2234176,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1200.058,
+      "peak_rss_bytes": 69046272,
+      "store_bytes": 2688450,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1260.057,
+      "peak_rss_bytes": 69963776,
+      "store_bytes": 1013595,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1320.058,
+      "peak_rss_bytes": 70881280,
+      "store_bytes": 1482590,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1380.055,
+      "peak_rss_bytes": 71798784,
+      "store_bytes": 1962433,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1440.055,
+      "peak_rss_bytes": 72847360,
+      "store_bytes": 2435975,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1500.055,
+      "peak_rss_bytes": 73764864,
+      "store_bytes": 2885767,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1560.056,
+      "peak_rss_bytes": 80461824,
+      "store_bytes": 1123607,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1620.059,
+      "peak_rss_bytes": 80461824,
+      "store_bytes": 1576681,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1680.057,
+      "peak_rss_bytes": 80609280,
+      "store_bytes": 2059482,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1740.055,
+      "peak_rss_bytes": 81657856,
+      "store_bytes": 2515770,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1800.054,
+      "peak_rss_bytes": 82837504,
+      "store_bytes": 2959647,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1860.058,
+      "peak_rss_bytes": 83886080,
+      "store_bytes": 1257928,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1920.058,
+      "peak_rss_bytes": 84934656,
+      "store_bytes": 1739095,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 1980.055,
+      "peak_rss_bytes": 85852160,
+      "store_bytes": 2202073,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2040.058,
+      "peak_rss_bytes": 86769664,
+      "store_bytes": 2659503,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2100.058,
+      "peak_rss_bytes": 87687168,
+      "store_bytes": 3132993,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2160.055,
+      "peak_rss_bytes": 88473600,
+      "store_bytes": 1407189,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2220.055,
+      "peak_rss_bytes": 88473600,
+      "store_bytes": 1887371,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2280.059,
+      "peak_rss_bytes": 88473600,
+      "store_bytes": 2373935,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2340.055,
+      "peak_rss_bytes": 88473600,
+      "store_bytes": 2845368,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2400.068,
+      "peak_rss_bytes": 88473600,
+      "store_bytes": 3330122,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2460.055,
+      "peak_rss_bytes": 89128960,
+      "store_bytes": 1538899,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2520.058,
+      "peak_rss_bytes": 90046464,
+      "store_bytes": 2004358,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2580.058,
+      "peak_rss_bytes": 90963968,
+      "store_bytes": 2483344,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2640.057,
+      "peak_rss_bytes": 92012544,
+      "store_bytes": 2943893,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2700.057,
+      "peak_rss_bytes": 93061120,
+      "store_bytes": 3416340,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2760.058,
+      "peak_rss_bytes": 93978624,
+      "store_bytes": 1677131,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2820.059,
+      "peak_rss_bytes": 94896128,
+      "store_bytes": 2160287,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2880.058,
+      "peak_rss_bytes": 95944704,
+      "store_bytes": 2636312,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 2940.058,
+      "peak_rss_bytes": 96993280,
+      "store_bytes": 3111903,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3000.058,
+      "peak_rss_bytes": 97779712,
+      "store_bytes": 3575646,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3060.054,
+      "peak_rss_bytes": 111222784,
+      "store_bytes": 1826257,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3120.057,
+      "peak_rss_bytes": 111222784,
+      "store_bytes": 2307051,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3180.055,
+      "peak_rss_bytes": 111222784,
+      "store_bytes": 2786473,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3240.055,
+      "peak_rss_bytes": 111222784,
+      "store_bytes": 3252186,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3300.058,
+      "peak_rss_bytes": 111222784,
+      "store_bytes": 3715461,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3360.055,
+      "peak_rss_bytes": 111779840,
+      "store_bytes": 1933696,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3420.057,
+      "peak_rss_bytes": 112828416,
+      "store_bytes": 2392080,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3480.058,
+      "peak_rss_bytes": 113876992,
+      "store_bytes": 2867377,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3540.058,
+      "peak_rss_bytes": 115843072,
+      "store_bytes": 3366177,
+      "diagnoses": 0
+    },
+    {
+      "seconds": 3600.062,
+      "peak_rss_bytes": 116236288,
+      "store_bytes": 3831629,
+      "diagnoses": 0
+    }
+  ],
+  "diagnoses": 0,
+  "events": 33772,
+  "peak_rss_bytes": 116236288,
+  "elapsed_seconds": 3600.445,
+  "store_bytes": 1615808,
+  "recording_bytes": 10539384,
+  "capture_health": {
+    "healthy": true,
+    "runs": [
+      {
+        "run": "virtual-soak",
+        "seconds": 3599.504,
+        "min_seconds": 3599.0,
+        "min_rate": 0.9,
+        "healthy": true,
+        "channels": [
+          {
+            "id": "eps.regb.current",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 706,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          },
+          {
+            "id": "eps.regb.voltage",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 706,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          },
+          {
+            "id": "imu.accel",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 530,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          },
+          {
+            "id": "imu.gyro",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 530,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          },
+          {
+            "id": "mag.field",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 608,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          },
+          {
+            "id": "payload.pressure",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 824,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          },
+          {
+            "id": "payload.temp",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 824,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          },
+          {
+            "id": "radio.heartbeat",
+            "readings": 3600,
+            "expected_hz": 1.0,
+            "observed_hz": 1.0,
+            "cadence_ok": true,
+            "max_gap_ms": 1104,
+            "statuses": {
+              "OK": 3600
+            },
+            "healthy": true
+          },
+          {
+            "id": "sun1.lux",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 825,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          },
+          {
+            "id": "sun2.lux",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 825,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          },
+          {
+            "id": "thermal.temp",
+            "readings": 7200,
+            "expected_hz": 2.0,
+            "observed_hz": 2.0,
+            "cadence_ok": true,
+            "max_gap_ms": 806,
+            "statuses": {
+              "OK": 7200
+            },
+            "healthy": true
+          }
+        ]
+      }
+    ]
+  },
+  "recording_sha256": "5f888f3c982ff17a35944b745a3ec7be95ed8d9c780a5e2eb37372f65916bf3e",
+  "passed": true
+}

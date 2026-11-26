@@ -1,244 +1,151 @@
 # Software validation
 
-All inputs in these checks are simulated. They exercise the real Relate
-database, shared Cypher queries, and diagnosis code. They do not establish
-physical sensor accuracy, wiring safety, or Raspberry Pi performance.
+All telemetry in these checks is simulated. The tests exercise the actual
+Relate database, shared Cypher, recorder, and diagnosis pipeline. They do
+not establish sensor accuracy, wiring safety, or Raspberry Pi performance.
+The [original-plan status](plan-status.md) maps the delivered software to
+that plan and identifies deferred physical work.
 
-## Python compatibility
+## Current checks
 
-On November 26, 2026, non-editable package installs passed all 40 tests on
-Python 3.9.25, 3.11.18, and 3.13.5 on x64 Linux. CI tests those three
-interpreter versions and Python 3.11 on ARM64 Linux. The Python 3.9 job uses
-Ubuntu 24.04 because the Ubuntu 26.04 runner has no setup-python 3.9 build.
+The Python suite contains 90 test cases. CI runs Python 3.9, 3.11, and
+3.13 on x64 Linux and Python 3.11 on ARM64 Linux. Fresh non-editable Python
+3.11 installs also run on hosted macOS ARM64 and Windows x64, without board
+extras. Platform-specific errno and PTY tests are skipped where unavailable.
 
-## Clean laptop install
+Four integration tests require the Relate CLI. Python-only jobs skip them;
+the Linux Ground view job and the Mac integration step run them with the
+installed CLI. Six WASM tests and nine browser checks cover the dashboard,
+including a newly exported capture, the published 36-episode graph, episode
+switching, loading races, rejected writes, and small-screen layout.
 
-A fresh checkout at `3d5ef2f` used Python 3.9.25 and `pip install '.[test]'`,
-without the board extras. All 40 Python tests passed. The installed wheel's
-queries and catalogue also worked through the CLI commands below.
-
-```sh
-commoncause diagnose --last
-commoncause explain dx:f1-fixture:1
-commoncause impact REG_B
-commoncause replay recordings/f1-fixture.jsonl \
-  --topology topologies/cubesat-bench.yaml --db board/store
-commoncause matrix recordings/f1-fixture.jsonl
-commoncause downlink --db board/store --out board/clean-downlink
-python -m sim.demo
-commoncause matrix ground/public/simulations/cubesat.jsonl \
-  --expect-count 9 --min-top-one 1
-commoncause matrix ground/public/simulations/quadcopter.jsonl \
-  --topology topologies/quadcopter.yaml --expect-count 3 --min-top-one 1
-commoncause benchmark --db board/store --samples 100
-```
-
-Relate CLI 1.3.0 exported the replay store and its JSON using the pinned
-`relate-db==1.0.1` Python package. The fresh export contained 108 nodes and
-206 relationships. Install the CLI before the downlink command.
-
-| Check | Result |
+| Area | Evidence |
 | --- | --- |
-| F1 replay | `REG_B`, resolved, high confidence |
-| CubeSat matrix | 9/9 top cause and full cause set; baseline 2/9 |
-| Quadcopter matrix | 3/3 top cause and full cause set; baseline 1/3 |
-| CubeSat first correct verdict | Recorded-time p50 1,000 ms; p95 2,500 ms |
-| Native rank query, 100 samples | Wall-time p50 1.779 ms; p95 2.057 ms |
-| Replay store | 20,382 bytes on this x64 Linux host |
+| Independent ranking | A plain Python dependency-set specification agrees with every candidate's order, score, coverage, and contradictions across F1–F9, early/final windows, exclusion passes, the quadcopter, unknown devices, and run/time boundaries |
+| Live virtual bench | Actual drivers and recorder cover F1–F9, both F9 causes, heartbeat delay, healthy startup, simulation provenance, and recovery |
+| Uncertainty | Unlabelled delayed failures, missing telemetry, ambiguous power evidence, and stuck-sensor recordings |
+| MCP | Actual stdio initialization, schema/tool discovery, linked facts, valid citation IDs, preserved medium confidence, and refused mutations with an unchanged snapshot hash |
+| Concurrent readers | A live MCP follower sees later commits while cloning produces matching, frozen `.rl` and JSON content beside an active recorder |
+| Detection config | Shared packaged defaults, rejected invalid values, custom settle timing, and a config hash on new Run nodes |
+| Published matrix | Raw recording replays to the published scores/times; every persisted ranking agrees with the independent scorer; hashes and export content match |
 
-The latency and size are one laptop-style run, not Pi measurements or
-hardware guarantees. Native query time measures computation; the matrix's
-recorded time also includes the configured detection and heartbeat waits.
+Reproduce the Python checks with `python -m pytest -q` after installing
+`.[test]`. See the [laptop guide](laptop-install.md), [MCP guide](mcp.md),
+[live-store guide](live-store.md), and [detection guide](detection.md) for
+the corresponding commands and platform limits.
 
-The clean browser build used Node.js 24.22.3. `npm ci`, all five WASM tests,
-and `npm run build` passed. The Ground view workflow additionally replays
-the F1 input into a new store, exports it, and passes that new JSON to the
-browser import checks. The seven browser checks cover queries, imports,
-case switching, healthy-device contradictions, loading races, and a small
-screen layout.
+## Recorded virtual matrix
 
-## Varied simulations
+The [published bundle](virtual-matrix.md) contains four live repetitions of
+all nine modeled faults: 36 correct full cause sets, 36 recoveries, and an
+8/36 first-failed-device baseline. It retains raw JSONL, an inspectable
+persistent `.rl`, matching browser JSON, scoring, query benchmarks, and a
+[file-hash manifest](virtual-matrix-manifest.json). The browser loads this
+larger graph on demand through **Open recorded session**.
 
-The expanded suite has 47 Python tests. It checks seeded reproducibility,
-all nine fault types with varied readings, recovery after clearing faults,
-and healthy controls. Replaying the varied recordings without injection
-labels must produce the same causes. This keeps the expected answers out
-of the diagnosis path.
+The manifest identifies the capture's source revision, topology, config,
+interpreter, and host. The report distinguishes the first verdict from the
+first fully correct ranking. F5 can initially name the regulator and only
+identify the upstream rail after heartbeat-loss evidence arrives. Report
+those separate times; a first verdict is not necessarily a correct one.
 
-The seeded generator uses these fixed bounds:
+The native query benchmark uses the 36-episode graph on this shared x64
+Linux host. It is a different workload from the earlier F1 fixture timing
+below, and neither result measures Pi performance.
 
-- Fault start: 1,000 to 2,500 ms, in 500 ms steps.
-- Fault duration: 4,000 to 8,000 ms, in 500 ms steps.
-- Recovery observation: 3,000 to 5,000 ms after clearing the fault.
-- Frame timestamps: up to 75 ms early or late, preserving time order.
-- Sensor values: uniform noise of up to 2% of `max(abs(value), 1)`.
-- Heartbeat: an increasing counter at a nominal 1 Hz, with frame jitter.
+## Bounded varied simulations
+
+Three seeds with four repeats each produced 108 generated fault trials.
+All 108 reached the correct full cause set and resolved. Twelve separate
+healthy generated runs produced no diagnosis. Replaying without injection
+labels must preserve the causes, keeping expected answers outside the
+diagnosis path.
+
+The generator bounds are:
+
+- Fault start: 1,000 to 2,500 ms in 500 ms steps.
+- Fault duration: 4,000 to 8,000 ms in 500 ms steps.
+- Recovery observation: 3,000 to 5,000 ms after clearing.
+- Frame timestamp jitter: up to 75 ms, preserving order.
+- Sensor noise: uniform, up to 2% of `max(abs(value), 1)`.
+- Heartbeat: increasing counter at nominal 1 Hz with frame jitter.
 - Sample order: shuffled within each frame.
 
-Three seeds with four repeats each produced 108 fault trials. All 108
-reached the correct full cause set and resolved by the end of their
-recording. Twelve separate healthy runs produced no diagnosis. These are
-results for bounded synthetic scenarios, not an estimate of real-world
-accuracy or performance under arbitrary noise and packet loss.
+| Seed | Full cause set | Resolved | First correct p50 | First correct p95 |
+| --- | ---: | ---: | ---: | ---: |
+| 7 | 36/36 | 36/36 | 1,457 ms | 2,643 ms |
+| 42 | 36/36 | 36/36 | 1,133 ms | 2,089 ms |
+| 2026 | 36/36 | 36/36 | 1,110 ms | 2,530 ms |
 
-| Seed | Top cause | Full cause set | Resolved | First correct p50 | First correct p95 |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| 7 | 36/36 | 36/36 | 36/36 | 1,457 ms | 2,643 ms |
-| 42 | 36/36 | 36/36 | 36/36 | 1,133 ms | 2,089 ms |
-| 2026 | 36/36 | 36/36 | 36/36 | 1,110 ms | 2,530 ms |
-
-Each seed's first-failed-device baseline scored 8/36. Times in this table
-are elapsed recording time from the first anomaly. The
-[result summary](simulation-results.json) includes recording, generator,
-and topology hashes. Reproduce each seed with the Python version recorded
-in that summary:
+Each seed's baseline scored 8/36. These are historical bounded-simulation
+measurements, not an estimate of arbitrary real-world accuracy. The
+[seed summary](simulation-results.json) pins their generator, recording,
+topology, and source hashes. Reproduce using that recorded version:
 
 ```sh
-python sim/bench.py --seed 7 --repeats 4 > /tmp/commoncause-seed-7.jsonl
-commoncause matrix /tmp/commoncause-seed-7.jsonl \
-  --bench-repeats 4 --min-top-one 1 --json
+python sim/bench.py --seed 42 --repeats 4 > /tmp/commoncause-varied.jsonl
+commoncause matrix /tmp/commoncause-varied.jsonl --bench-repeats 4 --min-top-one 1 --json
 ```
 
-Repeat with seeds 42 and 2026. CI also saves the seed-42 JSONL and matrix
-report as the `simulated-fault-matrix` artifact on its Python 3.11 x64 job.
+Current CI reruns seed 42 and retains its JSONL/report as the
+`simulated-fault-matrix` artifact. Healthy controls and label-free replay
+are covered in `tests/test_simulation.py`.
 
-For a healthy control, use a new store path for each replay:
+## Earlier clean F1 measurement
 
-```sh
-python sim/bench.py --fault healthy --seed 42 --repeats 4 > /tmp/commoncause-healthy.jsonl
-commoncause replay /tmp/commoncause-healthy.jsonl \
-  --topology topologies/cubesat-bench.yaml --db /tmp/commoncause-healthy-store
-relate --database /tmp/commoncause-healthy-store --read-only \
-  'MATCH (d:Diagnosis) RETURN count(d) AS diagnoses'
-```
+A fresh checkout at `3d5ef2f` used Python 3.9.25, a non-editable install,
+Relate CLI 1.3.0, and `relate-db==1.0.1`, without board packages. Its F1
+replay named `REG_B`, resolved at high confidence, and exported 108 nodes
+and 206 relationships.
 
-The expected diagnosis count is zero. Recovery and the same control for
-all three seeds are checked in `tests/test_simulation.py`.
-
-## Live virtual bench
-
-The suite now has 61 Python tests. Full CI runs on Python 3.9, 3.11, and
-3.13 x64 Linux and Python 3.11 ARM64 Linux. The Python 3.9 job installs only
-the laptop test dependencies, so it also exercises the virtual mode without
-`smbus2` or `pyserial`. Six WASM tests and eight browser checks cover the
-ground view, including import of a freshly captured, replayed, and exported
-virtual episode.
-
-The [virtual bench guide](virtual-bench.md) gives the commands. A local
-one-minute session through the actual sensor drivers and recorder yielded:
-
-| Check | Result |
+| Historical check | Result |
 | --- | --- |
-| Fault injections | F1 through F9, one each |
-| Top cause and complete cause set | 9/9 each |
-| First-failed-device baseline | 2/9 |
-| First correct verdict reached | 9/9 |
-| Resolved after clear | 9/9 |
-| First correct verdict, recorded-time p50 / p95 | 1,001 / 2,508 ms |
-| F5 first verdict / first correct verdict | 1,000 / 2,508 ms |
+| Deterministic CubeSat fixtures | 9/9 cause sets; baseline 2/9 |
+| Deterministic quadcopter fixtures | 3/3 cause sets; baseline 1/3 |
+| CubeSat first correct, recorded-time p50 / p95 | 1,000 / 2,500 ms |
+| Warm F1 rank query, 100 samples, p50 / p95 | 1.779 / 2.057 ms |
+| F1 directory store on that host | 20,382 bytes |
 
-Those timestamps come from one x64 Linux run. Live host scheduling varies;
-replay uses the captured timestamps. CI publishes its own full session and
-matrix report as `virtual-bench-session`.
+These figures belong to that small input and revision. Later suite sizes
+and larger graph benchmarks do not replace their measurement context.
 
-Additional independent, unlabelled cases check delayed correlated sensor
-failures, a temporarily unobserved radio, and a missing driver channel.
-The ambiguous power case begins at medium confidence and becomes high only
-after healthy radio evidence distinguishes the regulator from its upstream
-rail. A new healthy device now refreshes the existing diagnosis. Missing
-driver readings remain `STALE` evidence with medium confidence, rather than
-being reported as explicit bus errors.
+## Issues found by validation
 
-An isolated installed wheel also completed the eight-second F1 scenario,
-scored its cause correctly, replayed the capture, and exported a downlink
-without board packages installed. Simulation provenance is retained in raw
-JSONL, Run nodes, diagnosis output, benchmark reports, and the ground view.
+New healthy-device evidence originally left an existing diagnosis's
+confidence unchanged. The engine now refreshes the verdict when that
+context rules out a competing dependency. Unlabelled regression recordings
+cover both a previously unseen radio and one seen before the fault.
 
-## Independent ranking specification
+The first Mac matrix run exposed aliasing between the intermittent model's
+half-second transitions and the 2 Hz polling boundary. A regression case
+covers three affected boundaries; virtual reply windows now alternate
+every 0.75 seconds.
 
-`tests/reference_rank.py` computes dependency sets, failed and healthy
-devices, coverage, contradictions, scores, and tie breaks in plain Python.
-It reads topology YAML and classified event facts without calling the
-production topology loader, ranking function, or Cypher engine.
+A later Mac run exposed a Relate 1.0.1 native panic when a delayed frame
+caused several verdict replacements inside one transaction. A small local
+reproduction confirmed deletion of relationships created earlier in the
+same transaction triggered it. Ingestion now applies all gap and sample
+evidence before writing one verdict for the observed frame. The regression
+case preserves each gap's timestamp while committing its verdict at the
+actual observation time. No native exception is swallowed or retried.
 
-Eleven comparison tests check every returned candidate, including its
-position, score, covered devices, and contradicted count. They cover F1 to
-F9 at the initial and final windows, exclusion passes for combined faults,
-all three quadcopter faults, unknown devices, other runs, and inclusive
-window boundaries. The hand-built regulator test remains separate.
+## Sustained operation
 
-```sh
-python -m pytest -q tests/test_rank.py tests/test_rank_reference.py
-```
+The [endurance runner](endurance.md) measures a real-clock healthy virtual
+capture with minute memory/store checkpoints, channel cadence checks, raw
+recordings, and source hashes. Its result is specific to the measured
+revision and host. A generated hour of timestamps is not equivalent to an
+hour of live acquisition.
 
-The checks pass on Python 3.11 x64 Linux. The full suite now contains 72
-tests; CI also runs them on the other supported Linux interpreter and
-architecture combinations.
+The ten-minute recording verifies 2 Hz sensor channels and a 1 Hz radio
+with no diagnosis. The completed one-hour report records peak RSS and
+store growth separately from the compact downlink size. Physical power
+loss, electrical isolation, and Pi resource figures remain unmeasured.
 
-## MCP transport
-
-Relate CLI 1.3.0 passes three sessions through the checked-in `.mcp.json`
-command: linked F1 facts and citation IDs, refused mutations with an
-unchanged snapshot hash, and preserved medium confidence for intermittent
-evidence. The stdio server exposes `get_schema` and `read_cypher` only.
-The [MCP guide](mcp.md) documents the client setup and exact checks.
-
-The suite now contains 75 tests. The three MCP checks require the Relate
-CLI and run in the Ground view workflow after installation. Other jobs
-skip them when the binary is absent. This verifies the protocol path;
-LLM-host configuration and narrative answer quality are separate concerns.
-
-## Concurrent readers and downlink
-
-A five-second live virtual capture passes with a second process following
-the directory over read-only MCP. A downlink made while the recorder is
-still running produces matching `.rl` and JSON content. The same follower
-observes later committed events, while the snapshot remains unchanged.
-See [live-store.md](live-store.md) for the process model and commands.
-
-The suite now contains 77 tests, including four CLI integration checks.
-Ground-view CI supplies the Relate CLI for those checks; Python-only jobs
-skip them when it is absent.
-
-## Mac and Windows installs
-
-Fresh, non-editable installs on hosted macOS ARM64 and Windows x64 passed
-their Python 3.11 suites and the virtual F1 CLI workflow on November 26,
-2026. The Mac job also passed CLI export and the MCP protocol checks.
-Linux-only errno checks and unavailable CLI/PTY integrations are skipped
-explicitly on the relevant platforms. The [laptop guide](laptop-install.md)
-documents commands and coverage.
-
-The first Mac matrix run found an extra episode caused by intermittent
-reply transitions aligning with the 2 Hz polling boundary. A regression
-test reproduces that alias, and the virtual reply windows now alternate
-every 0.75 seconds. The complete matrix then passed on both platforms.
-
-## Shared thresholds and stuck-sensor evidence
-
-The seven timing, classification, recovery, and retention defaults now
-come from one packaged [detection config](detection.md). A subprocess check
-changes the settle interval to 500 ms and verifies both the earlier
-verdict and the Run's config hash. Invalid count and ratio values are
-rejected. Default values retain the existing behavior.
-
-An additional unlabelled end-to-end recording enables stuck detection on
-the gyro channel. Ten repeated values identify the IMU with `STUCK`
-evidence, and changing readings resolve the episode. This is an opt-in
-channel policy; the default constant virtual registers do not enable it.
-
-The suite now contains 86 tests, including four CLI integration checks.
-
-## Published 36-injection virtual bundle
-
-The [recorded matrix](virtual-matrix.md) retains four live repetitions of
-all nine modeled faults. All 36 reach their full expected cause set and
-resolve; the naive baseline scores 8/36. Recorded-time first-correct p50
-and p95 are 1,000 and 2,503 ms. The 192,512-byte persistent `.rl` and its
-JSON export are checked against the raw recording and file-hash manifest.
-
-Two bundle tests verify replayed per-injection times, persistence, hashes,
-and agreement with the independent scorer across every saved episode.
-The suite now contains 88 tests. Six WASM tests and nine browser checks
-cover the dashboard, including the full recorded graph and episode
-switching. The graph loads on demand when the operator opens the session.
+The recorded hour completed in 3,600.445 seconds, retained 33,772 events,
+and opened no diagnosis. Peak acquisition RSS was 110.85 MiB; the closed
+directory store was 1.54 MiB. The [report](endurance-results.json) identifies
+the measured source revision, which predates the later fault-path fix.
+Compressed raw inputs and their [manifest](endurance-manifest.json) are
+committed, and the current suite rechecks both their hashes and channel
+health without waiting another hour.
