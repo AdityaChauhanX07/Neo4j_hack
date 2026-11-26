@@ -6,3 +6,5 @@ recordings/*.jsonl text eol=lf
 downlink/*.json text eol=lf
 docs/*.json text eol=lf
 sim/scenarios/*.json text eol=lf
+scripts/*.py text eol=lf
+scripts/*.mjs text eol=lf
