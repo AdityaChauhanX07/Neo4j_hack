@@ -1,6 +1,6 @@
 {
   "simulated": true,
-  "code_sha": "fd58fe8f1b69ef7bb12bdf5e443a46052d0a9660",
+  "code_sha": "a3ec013fea1c87df8668617b055b4634df6ed2d1",
   "topology_sha": "32946fc1cc25cd6e4a3dae4a80d69c64280344710959536802e750cdb68ebe45",
   "detection_sha": "8335972416aafa011018c68a6124142c4c465bf73a7ecf004a191ac464404e27",
   "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
@@ -8,24 +8,24 @@
   "setting": "Live virtual transports on a shared x64 Linux host; no physical hardware",
   "files": {
     "recordings/virtual-matrix.jsonl": {
-      "bytes": 717174,
-      "sha256": "ea75e0cc8b255071a527010eb217d01a2e2824d410061dde3b66074b33c5285a"
+      "bytes": 717407,
+      "sha256": "45b3f678bf19605f1e21a0edb3940101e06dd64470dcedaa80635d81a6a24a1d"
     },
     "data/virtual-matrix.rl": {
-      "bytes": 192512,
-      "sha256": "b39b6c47e483f27e45185386358af35ca1ee4cd0621a6cf96992da0fb0ee7d56"
+      "bytes": 188416,
+      "sha256": "9fa3241014f35ccd9e216db42fa77457746554cf4684f6ce1f0ef16bd8102c8b"
     },
     "downlink/virtual-matrix.json": {
-      "bytes": 1384098,
-      "sha256": "fa5d3dba3dcdb38f545edc3828a06bbe426e9cd7bf92160de275ba62c0184fb6"
+      "bytes": 1349183,
+      "sha256": "63717fa43ada939901866e68f30c599b2ced6e3e0f006e39e8ac675ad723e898"
     },
     "docs/virtual-matrix-results.json": {
-      "bytes": 6905,
-      "sha256": "4033cd21a270cef8512f4a100a49dd2ef113b72c7f1cc180d2d462d40408705f"
+      "bytes": 6894,
+      "sha256": "e5191819b1757db917b7eed692a4534e2ad7132f58b4c125d424d71af8ceb713"
     },
     "docs/virtual-matrix-benchmark.json": {
-      "bytes": 263,
-      "sha256": "fa3fdaf431f51b26361037a19811b797217a879c4b60651e1ebab6a082284e29"
+      "bytes": 262,
+      "sha256": "555a30fedf758e24eea644c61e6490e2b886faf364f5b6a0d881d4af1cf35f00"
     },
     "sim/scenarios/matrix-36.json": {
       "bytes": 2796,

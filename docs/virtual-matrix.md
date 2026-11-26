@@ -31,8 +31,8 @@ is the combined regulator/bus fault. File import supports the same JSON.
 | Reached the first fully correct verdict | 36/36 |
 | Resolved after clearing | 36/36 |
 | Recorded time to first correct verdict, p50 / p95 | 1,000 / 2,503 ms |
-| Warm rank query, 100 samples, p50 / p95 | 7.136 / 11.378 ms |
-| Persistent `.rl` bundle | 192,512 bytes |
+| Warm rank query, 100 samples, p50 / p95 | 9.160 / 11.749 ms |
+| Persistent `.rl` bundle | 188,416 bytes |
 
 These are results for the defined software models on a shared x64 Linux
 host running Python 3.11.18. Scheduling and recording order vary between
