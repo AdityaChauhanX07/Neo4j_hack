@@ -126,12 +126,28 @@ commoncause downlink --db board/store --out downlink
 ```
 
 The scorer reports top-1, the first-failed-device baseline, and coverage of
-all expected causes. For F9, inspect both ranked causes. The recorded
-time to verdict uses the timestamps in the JSONL replay.
+all expected causes. Those accuracy counts use the final stored ranking.
+For F9, inspect both ranked causes.
+
+The scorer also reports `first_correct_ms` for each injection and p50/p95
+across injections that reach a correct verdict. Correct means that the
+first-ranked component matches the first expected cause and the set of
+suspects exactly matches the expected causes. A missing correct verdict is
+reported as `null` in JSON or `never` in text and is excluded from the latency
+percentiles. The `First correct verdicts` count shows the sample coverage.
+
+`decision_ms` measures the first verdict's logical timestamp relative to
+the first anomaly. `first_correct_ms` uses the recording timestamp of the
+first replay frame that commits a fully correct ranking, relative to that
+same anomaly. Later injections end the timing window. In the synthetic F5
+case the first verdict takes 1000 ms, and the first correct verdict takes
+2500 ms because the heartbeat timeout is observed on a later polling frame.
+These recorded times can be reproduced from a JSONL file.
 
 Direct Pi capture also records the elapsed time from the first observed
 anomaly through the first committed verdict. The benchmark reports
 p50 and p95 for those live episodes in the selected diagnosis's run.
+This measures the first committed verdict regardless of its correctness.
 It times the warm native rank query separately on the machine running the
 benchmark and reports the store size. Use `--id` to select a diagnosis
 from a specific run. Run the benchmark on the Pi for Pi query timings.

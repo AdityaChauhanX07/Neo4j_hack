@@ -230,9 +230,11 @@ def show_matrix(rows, as_json):
     baseline = sum(row["baseline"] == row["expected"][0] for row in rows)
     all_causes = sum(set(row["ranked"]) == set(row["expected"]) for row in rows)
     recorded = percentiles(row["decision_ms"] for row in rows if row["decision_ms"] is not None)
+    correct = percentiles(row["first_correct_ms"] for row in rows if row["first_correct_ms"] is not None)
     totals = {
         "injections": len(rows), "top_one": top_one, "baseline": baseline,
         "all_causes": all_causes, "recorded_decision_ms": recorded,
+        "recorded_first_correct_ms": correct,
     }
     if as_json:
         print(json.dumps({"totals": totals, "injections": rows}))
@@ -240,9 +242,15 @@ def show_matrix(rows, as_json):
     for row in rows:
         ranked = ", ".join(row["ranked"]) or "none"
         expected = ", ".join(row["expected"])
-        print(f"{row['run']} {row['fault']}  expected {expected}  ranked {ranked}  baseline {row['baseline']}")
+        elapsed = row["first_correct_ms"]
+        timing = f"{elapsed} ms" if elapsed is not None else "never"
+        print(f"{row['run']} {row['fault']}  expected {expected}  ranked {ranked}  "
+              f"baseline {row['baseline']}  first correct {timing}")
     count = len(rows)
     print(f"Top-1 {top_one}/{count}  baseline {baseline}/{count}  all causes {all_causes}/{count}")
     if recorded["samples"]:
-        print(f"Recorded time to verdict  p50 {recorded['p50']} ms  p95 {recorded['p95']} ms")
+        print(f"Recorded time to first verdict  p50 {recorded['p50']} ms  p95 {recorded['p95']} ms")
+    print(f"First correct verdicts {correct['samples']}/{count}")
+    if correct["samples"]:
+        print(f"Recorded time to first correct verdict  p50 {correct['p50']} ms  p95 {correct['p95']} ms")
     return top_one
