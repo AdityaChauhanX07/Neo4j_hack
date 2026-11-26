@@ -49,6 +49,7 @@ laptop-only run and the commands to reproduce both scores.
 ## Try the F1 replay
 
 From the repository root, use Python 3.9 or later.
+CI tests Python 3.9, 3.11, and 3.13 on x64 Linux, and Python 3.11 on ARM64 Linux.
 
 ```sh
 python3 -m venv .venv
@@ -66,6 +67,9 @@ failures with zero healthy devices downstream. Read the diagnosis, its original
 telemetry, and its recovery procedure with the commands above.
 
 To build the graph again from the raw readings, use a new store path.
+For the export command, first install the
+[Relate CLI](https://relatedb.ai/docs/get-started/install/) and check that
+`relate --version` runs in the same shell.
 
 ```sh
 commoncause replay recordings/f1-fixture.jsonl \
@@ -74,8 +78,7 @@ commoncause matrix recordings/f1-fixture.jsonl
 commoncause downlink --db board/store --out downlink
 ```
 
-Downlink uses the [Relate CLI](https://relatedb.ai/docs/get-started/install/).
-The writer uses a directory store on the board. The downlink command clones an
+Replay writes a directory store. The downlink command clones an
 inspectable `.rl` file and exports JSON from the same snapshot. The repository
 includes a fixture bundle at `data/common-cause.rl` and its JSON export at
 `downlink/common-cause.json`.
@@ -145,10 +148,25 @@ python sim/quad.py > /tmp/commoncause-quad.jsonl
 commoncause matrix /tmp/commoncause-quad.jsonl --topology topologies/quadcopter.yaml
 ```
 
+## Vary the simulated faults
+
+Use a seed to vary fault timing, frame jitter, reading noise, and recovery
+time. Each repeat includes all nine CubeSat faults. The default generator
+still produces the fixed demo recordings.
+
+```sh
+python sim/bench.py --seed 42 --repeats 4 > /tmp/commoncause-varied.jsonl
+commoncause matrix /tmp/commoncause-varied.jsonl --bench-repeats 4 --min-top-one 1 --json
+```
+
+With `--seed`, `--fault healthy` generates a control with noise and jitter but no injected
+faults. The [validation notes](docs/validation.md) record the parameter
+bounds, accuracy, first-correct timing, recovery checks, and limitations.
+
 ## Ground view
 
-With the Python environment set up, build the simulated downlinks before
-starting Vite.
+Use Node.js 24 and npm. With the Python environment set up, build the
+simulated downlinks before starting Vite.
 
 ```sh
 python -m sim.demo
@@ -174,3 +192,7 @@ records time through the first committed verdict, which
 `commoncause benchmark` reports alongside native query latency. CI checks
 synthetic fault replays, register conversions, and capture behavior with
 simulated I/O on x64 and ARM64 Linux.
+
+The [hardware-free bench assessment](docs/hardware-without-equipment.md)
+compares local transport models with Wokwi, QEMU, Renode, and Linux I2C
+stubs, and proposes an interactive virtual bench as the next extension.

@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { fileURLToPath } from "node:url";
 
-const fixture = fileURLToPath(new URL("../../downlink/common-cause.json", import.meta.url));
+const fixture = process.env.COMMONCAUSE_DOWNLINK
+  || fileURLToPath(new URL("../../downlink/common-cause.json", import.meta.url));
 
 test("inspect an episode and run the shared query", async ({ page }, info) => {
   await page.goto("./");
