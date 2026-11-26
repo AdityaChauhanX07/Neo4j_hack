@@ -15,6 +15,13 @@ export function createTour({ selectCase, inspect }) {
   let facts;
   let system;
   let busy = true;
+  let choosing = false;
+
+  function setBusy(value) {
+    busy = value;
+    [...cases, ...steps, ui["tour-next"], ui["tour-reset"]].forEach(button => { button.disabled = value; });
+    ui.tour.setAttribute("aria-busy", String(value));
+  }
 
   function proof(label, detail) {
     const row = element("div", null, "proof-row");
@@ -139,10 +146,12 @@ export function createTour({ selectCase, inspect }) {
 
   async function choose(caseKey) {
     if (busy) return;
-    busy = true;
-    cases.forEach(button => { button.disabled = true; });
+    choosing = true;
+    setBusy(true);
+    ui["tour-loading"].textContent = "Loading this scenario…";
+    ui["tour-loading"].hidden = false;
     try { await selectCase(caseKey); }
-    finally { busy = false; cases.forEach(button => { button.disabled = false; }); }
+    finally { choosing = false; setBusy(false); }
   }
   cases.forEach(button => button.addEventListener("click", () => choose(button.dataset.case)));
   steps.forEach(button => button.addEventListener("click", () => { stage = Number(button.dataset.stage); render(); }));
@@ -158,6 +167,7 @@ export function createTour({ selectCase, inspect }) {
   document.querySelectorAll("[data-open-workspace]").forEach(button => button.addEventListener("click", inspect));
   const observer = new ResizeObserver(drawConnections);
   observer.observe(ui["tour-map"]);
+  setBusy(true);
   return {
     set(fresh, context) {
       if (!context.guided) {
@@ -166,20 +176,20 @@ export function createTour({ selectCase, inspect }) {
         ui["tour-loading"].textContent = "Your selected recording is open in the evidence workspace. Use ‘Try a fault’ to return to the walkthrough.";
         facts = null;
         key = null;
-        busy = false;
+        if (!choosing) setBusy(false);
         return;
       }
       if (key !== context.key) stage = 0;
       facts = fresh;
       key = context.key;
       system = context.system;
-      busy = false;
+      if (!choosing) setBusy(false);
       render();
     },
     fail(message) {
       ui["tour-loading"].hidden = false;
       ui["tour-loading"].textContent = message;
-      busy = false;
+      setBusy(false);
     },
   };
 }
