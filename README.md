@@ -49,6 +49,7 @@ laptop-only run and the commands to reproduce both scores.
 ## Try the F1 replay
 
 From the repository root, use Python 3.9 or later.
+CI tests Python 3.9, 3.11, and 3.13 on x64 Linux, and Python 3.11 on ARM64 Linux.
 
 ```sh
 python3 -m venv .venv
