@@ -60,9 +60,14 @@ against its own schematic. [Raspberry Pi GPIO and header guide](https://www.rasp
 | `payload` | BME280 | I2C-3 `0x77` | `REG_A` |
 | `radio` | Pico | UART0 at 115200 baud | `RAIL_5V` |
 
-If the magnetometer is an HMC5883L, choose `hmc5883l` and its
-`0x1E` address in the hardware map, then update the part in the topology.
-The graph keeps the same `mag.field` channel.
+If the magnetometer is an HMC5883L, confirm its ID (`H43` at register
+`0x0A`) as well as its `0x1E` address. Then set `hmc5883l` and `0x1E` in the
+hardware map and the `HMC5883L` part in the topology in one change. The
+recorder rejects a hardware map whose chip differs from the topology part.
+The graph keeps the same `mag` device and `mag.field` channel. Start from a
+fresh store after the change. The
+[bring-up checklist](bring-up-checklist.md#swapping-the-magnetometer) has
+the steps.
 
 Keep the INA219 logic supply on `REG_A`. Put its shunt in series between
 the `REG_B` output and its loads, with `IN+` toward the regulator. The bus

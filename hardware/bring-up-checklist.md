@@ -29,9 +29,10 @@ below.
 
 - [ ] Flash **Raspberry Pi OS (64-bit)**, the release based on Debian 13
   (trixie), with Raspberry Pi Imager. Enable SSH in the Imager settings.
-  The bookworm release also runs the recorder, but the `relate` CLI does
-  not run there (it needs glibc 2.39), so downlink would have to run on a
-  laptop.
+  Trixie is the current official 64-bit image and the only release that
+  runs the whole workflow, downlink included, on the Pi. Fallback: bookworm
+  runs capture and diagnosis, but not the `relate` CLI (it needs glibc
+  2.39), so downlink runs on a laptop from a copied `board/store`.
 - [ ] Clone and run the setup script as your normal user:
 
   ```sh
@@ -121,7 +122,7 @@ If an address is wrong:
 
 | You see | Likely cause | Fix |
 | --- | --- | --- |
-| `1e` instead of `0d` | An HMC5883L, not a QMC5883L | Set `mag` to `chip: hmc5883l`, `address: 0x1e` in `hardware/cubesat-pi4.yaml`. The part name in the topology also changes, so ask Adi first (see the open question in the PR) |
+| `1e` instead of `0d` | Probably an HMC5883L, not a QMC5883L | Confirm the chip ID first (section 4). Then follow [Swapping the magnetometer](#swapping-the-magnetometer) |
 | `69` instead of `68` | MPU-6050 AD0 is high | Tie AD0 to GND |
 | `77` on bus 1 or `76` on bus 3 | BME280 SDO strap is the wrong way round | `thermal` needs SDO to GND (`0x76`) and `payload` needs SDO to 3.3 V (`0x77`) |
 | `23` twice, or no `5c` | `sun2` ADDR is low | Tie `sun2` ADDR to its own VCC for `0x5c` |
@@ -165,10 +166,26 @@ error name, so read the ID register yourself:
 | --- | --- | --- | --- |
 | `imu` | `i2cget -y 1 0x68 0x75` | `0x68` | `0x70`: an MPU-6500 |
 | `mag` | `i2cget -y 1 0x0d 0x0d` | `0xff` | |
+| `mag` (HMC5883L) | `i2cget -y 1 0x1e 0x0a; i2cget -y 1 0x1e 0x0b; i2cget -y 1 0x1e 0x0c` | `0x48 0x34 0x33` (`H43`) | |
 | `thermal` | `i2cget -y 1 0x76 0xd0` | `0x60` | `0x58`: a BMP280 |
 | `payload` | `i2cget -y 3 0x77 0xd0` | `0x60` | `0x58`: a BMP280 |
 
 Swap a wrong part, or ask Adi about the driver.
+
+### Swapping the magnetometer
+
+Change the chip only when both the address (`0x1e`) and the ID (`H43`)
+say HMC5883L. Make both edits in the same commit:
+
+1. In `hardware/cubesat-pi4.yaml`, set `mag` to `chip: hmc5883l` and
+   `address: 0x1e`.
+2. In `topologies/cubesat-bench.yaml`, set the `mag` part to `HMC5883L`.
+   Keep the device ID `mag` and the channel `mag.field`.
+
+`commoncause record` and `commoncause run` refuse to start if the chip and
+the part disagree.
+Start from a fresh store after the change (`rm -rf board/store`), so the
+graph is not mixing topology versions.
 
 ## 5. Back-powering check (the plan's "Check by day 3", row #8)
 
