@@ -128,7 +128,7 @@ virtual injections, their raw recording, an inspectable `.rl` graph, and
 the matching browser export. It reached all 36 correct cause sets and
 resolved every episode; the first-failed-device baseline scored 8/36.
 Use **Inspect the 36-fault recording**, or open **Evidence workspace** and
-choose **Open recorded session**, to inspect it.
+choose **Open 36-fault session**, to inspect it.
 
 ## Board and ground interfaces
 

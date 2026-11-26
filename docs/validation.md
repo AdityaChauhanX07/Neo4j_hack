@@ -46,7 +46,7 @@ all nine modeled faults: 36 correct full cause sets, 36 recoveries, and an
 8/36 first-failed-device baseline. It retains raw JSONL, an inspectable
 persistent `.rl`, matching browser JSON, scoring, query benchmarks, and a
 [file-hash manifest](virtual-matrix-manifest.json). The browser loads this
-larger graph on demand through **Open recorded session**.
+larger graph on demand through **Open 36-fault session**.
 
 The manifest identifies the capture's source revision, topology, config,
 interpreter, and host. The report distinguishes the first verdict from the

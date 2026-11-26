@@ -6,7 +6,7 @@ recorder with software I2C and UART transports. It is entirely simulated.
 The default F1 fixture remains the small starting example; this separate
 bundle retains the complete 36-injection session.
 
-Open the browser dashboard and choose **Open recorded session**. It loads
+Open **Evidence workspace** in the browser and choose **Open 36-fault session**. It loads
 the committed JSON export on demand. The source is **Simulated bench**;
 the episode selector contains all 36 resolved episodes. The latest episode
 is the combined regulator/bus fault. File import supports the same JSON.
