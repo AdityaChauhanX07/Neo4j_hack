@@ -114,3 +114,42 @@ relate --database /tmp/commoncause-healthy-store --read-only \
 
 The expected diagnosis count is zero. Recovery and the same control for
 all three seeds are checked in `tests/test_simulation.py`.
+
+## Live virtual bench
+
+The suite now has 61 Python tests. Full CI runs on Python 3.9, 3.11, and
+3.13 x64 Linux and Python 3.11 ARM64 Linux. The Python 3.9 job installs only
+the laptop test dependencies, so it also exercises the virtual mode without
+`smbus2` or `pyserial`. Six WASM tests and eight browser checks cover the
+ground view, including import of a freshly captured, replayed, and exported
+virtual episode.
+
+The [virtual bench guide](virtual-bench.md) gives the commands. A local
+one-minute session through the actual sensor drivers and recorder yielded:
+
+| Check | Result |
+| --- | --- |
+| Fault injections | F1 through F9, one each |
+| Top cause and complete cause set | 9/9 each |
+| First-failed-device baseline | 2/9 |
+| First correct verdict reached | 9/9 |
+| Resolved after clear | 9/9 |
+| First correct verdict, recorded-time p50 / p95 | 1,001 / 2,508 ms |
+| F5 first verdict / first correct verdict | 1,000 / 2,508 ms |
+
+Those timestamps come from one x64 Linux run. Live host scheduling varies;
+replay uses the captured timestamps. CI publishes its own full session and
+matrix report as `virtual-bench-session`.
+
+Additional independent, unlabelled cases check delayed correlated sensor
+failures, a temporarily unobserved radio, and a missing driver channel.
+The ambiguous power case begins at medium confidence and becomes high only
+after healthy radio evidence distinguishes the regulator from its upstream
+rail. A new healthy device now refreshes the existing diagnosis. Missing
+driver readings remain `STALE` evidence with medium confidence, rather than
+being reported as explicit bus errors.
+
+An isolated installed wheel also completed the eight-second F1 scenario,
+scored its cause correctly, replayed the capture, and exported a downlink
+without board packages installed. Simulation provenance is retained in raw
+JSONL, Run nodes, diagnosis output, benchmark reports, and the ground view.

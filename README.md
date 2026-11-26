@@ -88,6 +88,25 @@ relate --database data/common-cause.rl --read-only \
   'MATCH (d:Diagnosis)-[s:SUSPECTS]->(c) RETURN d.id, c.id, s.score ORDER BY s.rank'
 ```
 
+## Run the virtual bench
+
+The laptop can run the recorder and sensor drivers against simulated I2C
+registers and UART bytes. This eight-second scenario injects and clears a
+regulator fault, then leaves a recording and a resolved diagnosis.
+
+```sh
+commoncause run --virtual-bench --scenario sim/scenarios/f1.json \
+  --run virtual-f1 --db board/virtual-f1/store \
+  --recording board/virtual-f1/capture.jsonl --tui
+commoncause matrix board/virtual-f1/capture.jsonl --expect-count 1 --min-top-one 1
+```
+
+Use `--interactive` in place of `--scenario` to type fault controls, or use
+`sim/scenarios/f1-f9.json` for the full matrix. The
+[virtual bench guide](docs/virtual-bench.md) covers live controls, raw
+recording, replay, export, and dashboard import. All virtual recordings
+and their exported graphs retain an explicit simulation label.
+
 ## Board and ground interfaces
 
 - **Wiring.** `topologies/cubesat-bench.yaml` describes the bench model. A device
