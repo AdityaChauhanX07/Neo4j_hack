@@ -35,7 +35,6 @@ function mountWiring(container, snapshot, onSelect) {
   const wires = snapshot.rels.filter(rel => (
     wireTypes.has(rel.type) && partIds.has(rel.from) && partIds.has(rel.to)
   ));
-  const choices = [...parts].sort((a, b) => partName(a).localeCompare(partName(b)));
   const buses = new Map(wires.filter(rel => rel.type === "ON_BUS").map(rel => [rel.from, rel.to]));
   const layers = tiers.map(tier => parts.filter(node => node.label === tier).sort((a, b) => (
     (buses.get(a.id) ?? "").localeCompare(buses.get(b.id) ?? "") ||
@@ -170,7 +169,6 @@ function mountWiring(container, snapshot, onSelect) {
   }
 
   return {
-    choices,
     fit,
     highlight,
     focus(id) {
