@@ -118,7 +118,7 @@ commoncause replay board/virtual-f1/capture.jsonl \
 commoncause downlink --db board/virtual-f1/replayed --out board/virtual-f1/downlink
 ```
 
-Open the [ground view](https://adityachauhanx07.github.io/Neo4j_hack/) and
+Open the [ground view](https://adityachauhanx07.github.io/common-cause/) and
 choose the exported `board/virtual-f1/downlink/common-cause.json` file.
 Its source label reads **Simulated bench**. The diagnosis, timeline,
 dependency paths, healthy-device contradictions, and Cypher console use
