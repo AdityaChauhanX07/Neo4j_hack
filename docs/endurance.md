@@ -64,8 +64,10 @@ One of the sampling interruptions coincided with an independently running
 Shared-host scheduling is a plausible explanation, not an established cause.
 The result demonstrates sensitivity to delayed acquisition. It does not
 establish a component failure or justify a current zero-false-alarm claim.
-The current engine can attribute symptoms caused by an acquisition delay to
-a device dependency; separating those possibilities needs further validation.
+That measured version attributed timing symptoms to device dependencies.
+The [current confirmation policy](sampling-gaps.md) now replays this input
+with no component diagnoses and all 19 gap events retained. Its cadence
+check remains unhealthy; this does not establish a new clean live hour.
 No detection threshold was relaxed and no failed interval was discarded.
 
 The older successful measurement below remains a historical result of its
@@ -77,9 +79,9 @@ python -c "import gzip; from pathlib import Path; p=Path('board/current-hour.jso
 commoncause check-capture board/current-hour.jsonl --min-seconds 3599 --min-rate 0.9
 ```
 
-That command should report unhealthy input. Tests preserve the result and
-replay its diagnoses; a passing bundle-consistency test is not a passing
-healthy-operation gate. The [runtime profile](runtime-profile.md) separately
+That command should report unhealthy input. Tests preserve the historical result and verify that current replay retains
+the missing-reading evidence without repeating the component diagnoses.
+A passing regression test is not a passing healthy-operation gate. The [runtime profile](runtime-profile.md) separately
 measures live-reader CPU, recovery-policy overhead, and recovery attempts.
 
 ## Earlier measured revision: `73be4a8`

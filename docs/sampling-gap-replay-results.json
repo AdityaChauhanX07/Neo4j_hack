@@ -1,0 +1,567 @@
+{
+  "kind": "replay_of_retained_inputs",
+  "simulated": true,
+  "replay_source": {
+    "base_sha": "b96842d39dba93d82928c40e257733914dcd832d",
+    "utf8_lf_sha256": {
+      "commoncause/replay.py": "ee937ca87b5ca33bc304867c0b7ac7e7adc6bbbefb5ba1476d9e230956ab206c",
+      "commoncause/classify.py": "08b457f9a3b6117053884b48223512ba3fbd6e0c9a242d176d1226e276699c11",
+      "queries/rank.cypher": "9af8d104dfd0c7d405fb83e5e2485088fc27a77e5901525dfdd324c8d59d64f5"
+    },
+    "note": "Base revision plus these source contents identifies the measured working tree before commit."
+  },
+  "replayed_utc": "2026-11-27T03:10:27.854103+00:00",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.11.18",
+  "relate_python": "1.0.1",
+  "topology_sha256": "32946fc1cc25cd6e4a3dae4a80d69c64280344710959536802e750cdb68ebe45",
+  "hour": {
+    "recording": "recordings/runtime-profile/hour-current.jsonl.gz",
+    "compressed_sha256": "6e37925f75e6c0fa920988296c2a61a64e09bbf0207b770a8a552b10d8b67756",
+    "raw_sha256": "ee7a54e155a1a72d74258f9cc5bd676d69e988effd4b079015996fb6d86dddf4",
+    "capture_code_sha": "0dcf7e96b2e3f5528b45b87f9a8f4facabebec4f",
+    "original_diagnoses": 3,
+    "replay_diagnoses": 0,
+    "capture_healthy": false,
+    "gap_events": 19,
+    "confirmation_ms": 1000,
+    "gaps": [
+      {
+        "status": "STALE",
+        "diagnostic": false,
+        "events": 19
+      }
+    ]
+  },
+  "matrix": {
+    "recording": "recordings/virtual-matrix.jsonl",
+    "recording_sha256": "45b3f678bf19605f1e21a0edb3940101e06dd64470dcedaa80635d81a6a24a1d",
+    "injections": 36,
+    "complete_cause_sets": 36,
+    "first_correct_ms": {
+      "samples": 36,
+      "p50": 1000,
+      "p95": 2503
+    },
+    "episode_states": [
+      {
+        "state": "resolved",
+        "episodes": 36
+      }
+    ],
+    "scores": [
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F1",
+        "expected": [
+          "REG_B"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "REG_B"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F2",
+        "expected": [
+          "I2C-1"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "I2C-1"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F3",
+        "expected": [
+          "I2C-3"
+        ],
+        "decision_ms": 1494,
+        "latest_verdict_ms": 1494,
+        "first_correct_ms": 1494,
+        "ranked": [
+          "I2C-3"
+        ],
+        "baseline": "sun1"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F4",
+        "expected": [
+          "sun2"
+        ],
+        "decision_ms": 1001,
+        "latest_verdict_ms": 1001,
+        "first_correct_ms": 1001,
+        "ranked": [
+          "sun2"
+        ],
+        "baseline": "sun2"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F5",
+        "expected": [
+          "RAIL_5V"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1504,
+        "first_correct_ms": 1504,
+        "ranked": [
+          "RAIL_5V"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F6",
+        "expected": [
+          "UART0"
+        ],
+        "decision_ms": 1488,
+        "latest_verdict_ms": 1503,
+        "first_correct_ms": 1488,
+        "ranked": [
+          "UART0"
+        ],
+        "baseline": "radio"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F7",
+        "expected": [
+          "drv.imu"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1510,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "drv.imu"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F8",
+        "expected": [
+          "sun2"
+        ],
+        "decision_ms": 1001,
+        "latest_verdict_ms": 1504,
+        "first_correct_ms": 1001,
+        "ranked": [
+          "sun2"
+        ],
+        "baseline": "sun2"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F9",
+        "expected": [
+          "REG_B",
+          "I2C-3"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "REG_B",
+          "I2C-3"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F1",
+        "expected": [
+          "REG_B"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "REG_B"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F2",
+        "expected": [
+          "I2C-1"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "I2C-1"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F3",
+        "expected": [
+          "I2C-3"
+        ],
+        "decision_ms": 1496,
+        "latest_verdict_ms": 1496,
+        "first_correct_ms": 1496,
+        "ranked": [
+          "I2C-3"
+        ],
+        "baseline": "sun1"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F4",
+        "expected": [
+          "sun2"
+        ],
+        "decision_ms": 1001,
+        "latest_verdict_ms": 1001,
+        "first_correct_ms": 1001,
+        "ranked": [
+          "sun2"
+        ],
+        "baseline": "sun2"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F5",
+        "expected": [
+          "RAIL_5V"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1505,
+        "first_correct_ms": 1505,
+        "ranked": [
+          "RAIL_5V"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F6",
+        "expected": [
+          "UART0"
+        ],
+        "decision_ms": 1001,
+        "latest_verdict_ms": 1492,
+        "first_correct_ms": 1001,
+        "ranked": [
+          "UART0"
+        ],
+        "baseline": "radio"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F7",
+        "expected": [
+          "drv.imu"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1504,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "drv.imu"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F8",
+        "expected": [
+          "sun2"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1505,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "sun2"
+        ],
+        "baseline": "sun2"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F9",
+        "expected": [
+          "REG_B",
+          "I2C-3"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "REG_B",
+          "I2C-3"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F1",
+        "expected": [
+          "REG_B"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "REG_B"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F2",
+        "expected": [
+          "I2C-1"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "I2C-1"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F3",
+        "expected": [
+          "I2C-3"
+        ],
+        "decision_ms": 1497,
+        "latest_verdict_ms": 1497,
+        "first_correct_ms": 1497,
+        "ranked": [
+          "I2C-3"
+        ],
+        "baseline": "sun1"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F4",
+        "expected": [
+          "sun2"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "sun2"
+        ],
+        "baseline": "sun2"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F5",
+        "expected": [
+          "RAIL_5V"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 2503,
+        "first_correct_ms": 2503,
+        "ranked": [
+          "RAIL_5V"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F6",
+        "expected": [
+          "UART0"
+        ],
+        "decision_ms": 1494,
+        "latest_verdict_ms": 1506,
+        "first_correct_ms": 1494,
+        "ranked": [
+          "UART0"
+        ],
+        "baseline": "radio"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F7",
+        "expected": [
+          "drv.imu"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1503,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "drv.imu"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F8",
+        "expected": [
+          "sun2"
+        ],
+        "decision_ms": 1002,
+        "latest_verdict_ms": 1506,
+        "first_correct_ms": 1002,
+        "ranked": [
+          "sun2"
+        ],
+        "baseline": "sun2"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F9",
+        "expected": [
+          "REG_B",
+          "I2C-3"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "REG_B",
+          "I2C-3"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F1",
+        "expected": [
+          "REG_B"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "REG_B"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F2",
+        "expected": [
+          "I2C-1"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "I2C-1"
+        ],
+        "baseline": "mag"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F3",
+        "expected": [
+          "I2C-3"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "I2C-3"
+        ],
+        "baseline": "sun1"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F4",
+        "expected": [
+          "sun2"
+        ],
+        "decision_ms": 1001,
+        "latest_verdict_ms": 1001,
+        "first_correct_ms": 1001,
+        "ranked": [
+          "sun2"
+        ],
+        "baseline": "sun2"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F5",
+        "expected": [
+          "RAIL_5V"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 2512,
+        "first_correct_ms": 2512,
+        "ranked": [
+          "RAIL_5V"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F6",
+        "expected": [
+          "UART0"
+        ],
+        "decision_ms": 1486,
+        "latest_verdict_ms": 1516,
+        "first_correct_ms": 1486,
+        "ranked": [
+          "UART0"
+        ],
+        "baseline": "radio"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F7",
+        "expected": [
+          "drv.imu"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1511,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "drv.imu"
+        ],
+        "baseline": "imu"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F8",
+        "expected": [
+          "sun2"
+        ],
+        "decision_ms": 1491,
+        "latest_verdict_ms": 1512,
+        "first_correct_ms": 1491,
+        "ranked": [
+          "sun2"
+        ],
+        "baseline": "sun2"
+      },
+      {
+        "run": "virtual-matrix-36",
+        "fault": "F9",
+        "expected": [
+          "REG_B",
+          "I2C-3"
+        ],
+        "decision_ms": 1000,
+        "latest_verdict_ms": 1000,
+        "first_correct_ms": 1000,
+        "ranked": [
+          "REG_B",
+          "I2C-3"
+        ],
+        "baseline": "imu"
+      }
+    ]
+  }
+}

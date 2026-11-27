@@ -69,6 +69,22 @@ class Run:
         if existing.fetchone():
             raise ValueError(f"Run {run_id} already exists")
         self.states = {}
+        self.pending_gaps = {}
+        self.resumed_at = None
+        self.stream_timeout = min(
+            DETECTION.heartbeat_timeout_ms if channel.heartbeat else channel.period_ms * DETECTION.stale_periods
+            for channel in self.channels.values()
+        )
+        self.gap_count = 0
+        self.heartbeat_monitors = {
+            row["channel"]: row["monitors"] for row in db.execute("""
+                MATCH (voltage:TelemetryChannel)-[:MONITORS]->(:Regulator)-[:FED_BY*1..4]->(rail:PowerRail)
+                MATCH (device:Device)-[:POWERED_BY|FED_BY*1..4]->(rail)
+                MATCH (heartbeat:TelemetryChannel)-[:READS]->(device)
+                WHERE heartbeat.heartbeat = true
+                RETURN heartbeat.id AS channel, collect(DISTINCT voltage.id) AS monitors
+            """).fetchall()
+        }
         self.last_ts = None
         self.last_seq = -1
         self.simulated = None
@@ -100,22 +116,33 @@ class Run:
                     "topology_sha": self.topology["sha"],
                     "code_sha": os.environ.get("COMMONCAUSE_CODE_SHA"),
                     "detection_sha": DETECTION_SHA,
+                    "gap_events": 0,
+                    "gap_confirmation_ms": DETECTION.settle_ms,
                 }
                 if simulated is not None:
                     provenance["simulated"] = simulated
                 merge_nodes(self.db, "Run", [provenance])
                 self.states = {key: ChannelState(now) for key in self.channels}
 
+            if self.last_ts is not None and now - self.last_ts > self.stream_timeout:
+                self.resumed_at = now
             gaps = [
                 self.states[key].gap(channel, self.id, now)
                 for key, channel in self.channels.items()
             ]
-            gaps = sorted((event for event in gaps if event), key=lambda event: (event.ts, event.channel))
+            gaps = sorted((replace(event, diagnostic=False, observed_ts=now) for event in gaps if event),
+                          key=lambda event: (event.ts, event.channel))
+            self.pending_gaps.update((event.channel, event) for event in gaps)
+            if gaps:
+                self.gap_count += len(gaps)
+                self.db.execute("MATCH (r:Run {id: $run}) SET r.gap_events = $count",
+                                {"run": self.id, "count": self.gap_count})
             self._apply(gaps)
-            samples = (
+            samples = [
                 self.states[item.channel].measure(self.channels[item.channel], item)
                 for item in readings
-            )
+            ]
+            self._confirm_gaps(now, samples)
             self._apply(samples)
             # Gap and sample changes share one committed observation frame.
             created = self._update_episode(now)
@@ -134,11 +161,8 @@ class Run:
         previous = []
         for event in events:
             self.latest[event.channel] = event
-            if event.status != "OK" and self.episode is None:
-                self.episode_count += 1
-                self.episode = Episode(f"dx:{self.id}:{self.episode_count}", event.ts)
-            if self.episode is not None:
-                self.episode.observe(event, self.channels[event.channel].device)
+            if event.diagnostic:
+                self._observe(event)
             prior = self.saved.get(event.channel)
             closing = self.episode is not None and self.episode.resolved_at is event
             if self._keep(event, prior) or closing:
@@ -159,6 +183,47 @@ class Run:
             merge_links(self.db, "Event", "SHOWS", "Symptom", [
                 [event.id, event.status] for event in kept if event.status != "OK"
             ])
+
+    def _observe(self, event):
+        if event.status != "OK" and self.episode is None:
+            self.episode_count += 1
+            self.episode = Episode(f"dx:{self.id}:{self.episode_count}", event.ts)
+        if self.episode is not None:
+            if event.status != "OK" and event.ts < self.episode.opened:
+                self.episode.opened = event.ts
+                self.episode.dirty = True
+            self.episode.observe(event, self.channels[event.channel].device)
+
+    def _confirm_gaps(self, now, samples):
+        confirmed = []
+        latest = {**self.latest, **{event.channel: event for event in samples}}
+        for channel, event in list(self.pending_gaps.items()):
+            if not self.states[channel].missing:
+                del self.pending_gaps[channel]
+                continue
+            power_loss = event.status == "HEARTBEAT_LOST" and any(
+                latest.get(monitor) is not None and latest[monitor].status == "UNDERVOLTAGE"
+                for monitor in self.heartbeat_monitors.get(channel, ())
+            )
+            ready = event.ts + (0 if power_loss else DETECTION.settle_ms)
+            if self.resumed_at is not None:
+                ready = max(ready, self.resumed_at + DETECTION.settle_ms)
+            if now >= ready:
+                confirmed.append(replace(event, diagnostic=True, confirmed_ts=now))
+                del self.pending_gaps[channel]
+        if not confirmed:
+            return
+        # A stopped stream cannot settle a fault before absence is observed.
+        self.db.execute("""
+            UNWIND $ids AS id MATCH (e:Event {id: id})
+            SET e.diagnostic = true, e.confirmed_ts = $now
+        """, {"ids": [event.id for event in confirmed], "now": now})
+        for event in sorted(confirmed, key=lambda event: (event.ts, event.channel)):
+            if self.latest[event.channel].id == event.id:
+                self.latest[event.channel] = event
+            if self.saved[event.channel].id == event.id:
+                self.saved[event.channel] = event
+            self._observe(event)
 
     def _update_episode(self, now):
         first_verdict = None

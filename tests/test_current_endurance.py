@@ -37,14 +37,23 @@ def test_current_endurance_bundle_preserves_full_input_and_prefix_health():
     assert hour["passed"] == (hour["capture_health"]["healthy"] and hour["diagnoses"] == 0)
 
 
-def test_current_hour_replays_the_recorded_diagnoses():
+def test_saved_hour_retains_gaps_without_repeating_historical_diagnoses():
     report = json.loads((ROOT / "docs" / "final-endurance-results.json").read_text())
     evidence = json.loads((ROOT / "docs" / "final-endurance-diagnoses.json").read_text())
+    updated = json.loads((ROOT / "docs" / "sampling-gap-replay-results.json").read_text())["hour"]
+    assert updated["raw_sha256"] == report["recording_sha256"]
+    assert updated["capture_code_sha"] == report["code_sha"]
     with gzip.open(ROOT / "recordings" / "runtime-profile" / "hour-current.jsonl.gz", "rt", encoding="utf-8") as feed:
         with relate.connect() as db:
             load_topology(db, TOPOLOGY)
             replay(db, feed)
             count = db.execute("MATCH (d:Diagnosis) RETURN count(d) AS n").fetchone()["n"]
-            rows = db.execute(evidence["query"]).fetchall()
-    assert count == report["diagnoses"]
-    assert rows == evidence["rows"]
+            gaps = db.execute("""
+                MATCH (e:Event) WHERE e.status IN ['STALE', 'HEARTBEAT_LOST']
+                RETURN e.diagnostic AS diagnostic, e.observed_ts AS observed, e.ts AS ts
+            """).fetchall()
+    assert report["diagnoses"] == 3 and len({row["id"] for row in evidence["rows"]}) == 3
+    assert count == updated["replay_diagnoses"] == 0
+    assert updated["capture_healthy"] is False
+    assert len(gaps) == updated["gap_events"] == 19
+    assert gaps and all(row["diagnostic"] is False and row["observed"] > row["ts"] for row in gaps)
