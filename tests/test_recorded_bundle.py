@@ -60,6 +60,8 @@ def test_recorded_bundle_hashes_export_and_persisted_results_agree():
 def test_the_committed_raw_matrix_preserves_causes_after_gap_confirmation():
     scores = matrix(ROOT / "recordings" / "virtual-matrix.jsonl", TOPOLOGY)
     report = json.loads((ROOT / "docs" / "virtual-matrix-results.json").read_text())
+    updated = json.loads((ROOT / "docs" / "sampling-gap-replay-results.json").read_text())
+    assert scores == updated["matrix"]["scores"]
     for current, recorded in zip(scores, report["injections"]):
         assert {key: current[key] for key in ("run", "fault", "expected", "ranked", "baseline")} == {
             key: recorded[key] for key in ("run", "fault", "expected", "ranked", "baseline")

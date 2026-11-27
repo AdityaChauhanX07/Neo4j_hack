@@ -36,6 +36,9 @@ An unconfirmed gap inside an episode is marked separately in the timeline.
 
 ## Regression coverage
 
+The [replay report](sampling-gap-replay-results.json) pins the tested fix
+revision and retained inputs, with the current matrix scores and timings.
+
 The complete [retained hour](final-endurance-manifest.json) now replays to
 zero component diagnoses while preserving all 19 `STALE` events as
 non-diagnostic missing-reading evidence. Its cadence check remains unhealthy.
