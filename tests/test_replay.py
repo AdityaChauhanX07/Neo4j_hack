@@ -70,7 +70,7 @@ def test_scoring_nine_bench_faults(tmp_path):
     assert sum(row["baseline"] == row["expected"][0] for row in scores) == 2
     rail_loss = scores[4]
     assert rail_loss["decision_ms"] == 1000
-    assert rail_loss["first_correct_ms"] == 2500
+    assert rail_loss["first_correct_ms"] == 3500
     assert rail_loss["latest_verdict_ms"] > rail_loss["decision_ms"]
 
 

@@ -25,6 +25,7 @@ const ids = [
   "live-toggle", "live-panel", "live-form", "live-url", "live-credential", "live-connect",
   "live-disconnect", "live-follow", "live-status",
   "recovery-attempts", "recovery-history",
+  "capture-quality",
 ];
 const ui = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 const workspace = document.getElementById("workspace");
@@ -142,6 +143,10 @@ async function loadEpisode(episode, { refresh = false } = {}) {
   const inspected = partId;
   const session = current;
   session.episode = episode;
+  const runs = episode ? [session.runs.get(episode.run)] : [...session.runs.values()];
+  const gaps = runs.reduce((count, run) => count + (run?.gap_events ?? 0), 0);
+  ui["capture-quality"].hidden = !gaps;
+  ui["capture-quality"].textContent = `${gaps} missing-reading ${gaps === 1 ? "event was" : "events were"} recorded. Missing data alone does not identify a failed component.`;
   if (!refresh) {
     session.events = [];
     session.first = null;
@@ -314,6 +319,7 @@ function renderTimeline() {
     if (key === "status") {
       cell.className = row.status === "OK" ? "event-status" : "event-status warning";
       if (row.id === first?.id) cell.append(element("span", "First fault", "event-marker"));
+      if (row.diagnostic === false) cell.append(element("span", "Unconfirmed gap", "event-marker"));
     }
     if (key === "value" && row.error) cell.textContent = row.error;
   }, "No readings in this episode.", row => row.id === first?.id ? "first-event" : "");

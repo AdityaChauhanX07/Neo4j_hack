@@ -45,6 +45,11 @@ heartbeat loss takes longer to observe. The report retains the first
 verdict and first-correct times separately. No blanket under-two-second
 claim is made for all fault types.
 
+The [current confirmation policy](sampling-gaps.md) preserves all 36 cause
+sets on replay but can increase missing-telemetry verdict times. Current
+replay first-correct p50/p95 is 1,001/3,503 ms; the table above belongs to
+the original capture and source revision.
+
 ## Reproduce or inspect
 
 With the Python package installed:

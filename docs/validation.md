@@ -8,15 +8,15 @@ that plan and identifies deferred physical work.
 
 ## Current checks
 
-The Python suite contains 104 test cases. CI runs Python 3.9, 3.11, and
+The Python suite contains 110 test cases. CI runs Python 3.9, 3.11, and
 3.13 on x64 Linux and Python 3.11 on ARM64 Linux. Fresh non-editable Python
 3.11 installs also run on hosted macOS ARM64 and Windows x64, without board
 extras. Platform-specific errno and PTY tests are skipped where unavailable.
 
 Four integration tests require the Relate CLI. Python-only jobs skip them;
 the Linux Ground view job and the Mac integration step run them with the
-installed CLI. Six WASM tests, three HTTP-client tests, three walkthrough-data
-tests, and fourteen browser checks cover the ground view,
+installed CLI. Seven WASM tests, three HTTP-client tests, three walkthrough-data
+tests, and fifteen browser checks cover the ground view,
 including a newly exported capture, the published 36-episode graph, episode
 switching, loading races, rejected writes, the guided fault-to-recovery flow,
 keyboard controls, and small-screen layout.
@@ -31,7 +31,7 @@ keyboard controls, and small-screen layout.
 | Live browser | An authenticated HTTP follower observes a real Python writer through healthy telemetry, F1, recovery, rejected mutations, connection loss, and disconnect |
 | Simulated automatic recovery | Both I2C buses, ineffective recovery, incomplete verification, unsafe-candidate refusal, physical-mode rejection, and retained graph evidence |
 | Detection config | Shared packaged defaults, rejected invalid values, custom settle timing, and a config hash on new Run nodes |
-| Published matrix | Raw recording replays to the published scores/times; every persisted ranking agrees with the independent scorer; hashes and export content match |
+| Published matrix | Raw recording preserves published causes, with timing changes documented; every persisted ranking agrees with the independent scorer; hashes and export content match |
 | Runtime profile | Eight balanced healthy captures, six recovery attempts, native query timing, and a retained failed pilot; source and recording hashes with raw-input reclassification |
 
 Reproduce the Python checks with `python -m pytest -q` after installing
@@ -171,5 +171,13 @@ Its first 601-second prefix is healthy. Peak acquisition RSS was
 121.07 MiB and the closed store was 1.54 MiB.
 The [current report](final-endurance-results.json) and
 [retained-input manifest](final-endurance-manifest.json) preserve that failure;
-current tests reproduce its classifications and diagnoses. The older clean
+current tests preserve its classifications and verify corrected attribution. The older clean
 hour is not evidence that this new full-hour gate passed.
+
+The [sampling-gap fix](sampling-gaps.md) now keeps inferred missing readings
+out of component ranking until they remain missing through an observation
+confirmation interval. The saved hour replays with no component diagnosis
+and all 19 gap events retained; its cadence check remains unhealthy.
+Replaying the 36-injection matrix still reaches all expected cause sets,
+with first-correct p50/p95 of 1,001/3,503 ms under the new policy. The
+original capture timings and its failed hour report remain historical facts.

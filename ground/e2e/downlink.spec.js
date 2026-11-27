@@ -1,8 +1,26 @@
 import { expect, test } from "@playwright/test";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const fixture = process.env.COMMONCAUSE_DOWNLINK
   || fileURLToPath(new URL("../../downlink/common-cause.json", import.meta.url));
+
+test("keep missing-reading warnings visible without inventing a component diagnosis", async ({ page }) => {
+  const root = fileURLToPath(new URL("../../", import.meta.url));
+  const snapshot = execFileSync(process.env.COMMONCAUSE_PYTHON || "python", ["ground/e2e/gap-export.py"], {
+    cwd: root, env: { ...process.env, PYTHONPATH: root },
+  });
+  await page.goto("./");
+  await page.locator("#workspace > summary").click();
+  await expect(page.locator("#diagnosis .component-title")).toHaveText("REG_B");
+  await page.locator("#file").setInputFiles({ name: "late-readings.json", mimeType: "application/json", buffer: snapshot });
+  await expect(page.locator("#source")).toHaveText("Simulated bench");
+  await expect(page.locator("#diagnosis .component-title")).toHaveCount(0);
+  await expect(page.locator("#capture-quality")).toContainText("Missing data alone does not identify a failed component");
+  await expect(page.locator("#capture-quality")).toContainText("11 missing-reading events");
+  await page.getByRole("button", { name: "Restore fixture" }).click();
+  await expect(page.locator("#capture-quality")).toBeHidden();
+});
 
 test("inspect an episode and run the shared query", async ({ page }, info) => {
   await page.goto("./");

@@ -38,6 +38,8 @@ def reference_rank(topology, events, *, run, start, stop, excluded=()):
     for event in events:
         if event["run"] != run or not start <= event["ts"] <= stop:
             continue
+        if event.get("diagnostic") is False or (event.get("confirmed_ts") or 0) > stop:
+            continue
         observations[channels[event["channel"]]].append(event)
         if event["status"] == "UNDERVOLTAGE" and event["channel"] in monitors:
             voltage.add(monitors[event["channel"]])

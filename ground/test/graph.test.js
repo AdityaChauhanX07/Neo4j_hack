@@ -49,6 +49,29 @@ test("console refuses writes even when they start with MATCH", () => {
   }
 });
 
+test("WASM ranking waits for missing-reading confirmation at the requested time", async () => {
+  const snapshot = structuredClone(fixture);
+  const end = Math.max(...snapshot.nodes.filter(node => node.label === "Event").map(node => node.props.ts));
+  const faults = snapshot.nodes.filter(node => node.label === "Event" && deviceFaults.includes(node.props.status));
+  const db = new RelateDb();
+  try {
+    for (const event of faults) {
+      event.props.diagnostic = false;
+      event.props.confirmed_ts = end + 1000;
+    }
+    loadSnapshot(db, snapshot);
+    const rank = await shared("rank");
+    const run = snapshot.nodes.find(node => node.label === "Run").props.id;
+    const scope = { run, from: 0, to: end, device_faults: deviceFaults, exclude_devices: [] };
+    assert.deepEqual(querySnapshot(db, rank, scope).rows, []);
+    db.execute("MATCH (e:Event) WHERE e.diagnostic = false SET e.diagnostic = true");
+    assert.deepEqual(querySnapshot(db, rank, scope).rows, []);
+    assert.equal(querySnapshot(db, rank, { ...scope, to: end + 1000 }).rows[0].suspect, "REG_B");
+  } finally {
+    db.free();
+  }
+});
+
 test("simulation provenance survives a downlink import into Relate WASM", () => {
   const snapshot = structuredClone(fixture);
   const run = snapshot.nodes.find(node => node.label === "Run");

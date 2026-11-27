@@ -57,10 +57,13 @@ laptop-only run and the commands to reproduce the fixture scores.
 
 The recorded bench uses four repetitions of each modeled fault through
 the live recorder. An earlier one-hour healthy virtual capture opened no
-diagnosis. The current-backend repeat opened 3 diagnoses after sampling
+diagnosis. A later repeat opened 3 diagnoses after sampling
 gaps and failed its full-hour healthy gate; its first ten-minute prefix
-passed. The [resource and cadence report](docs/endurance.md) retains both
-measurements and identifies each source revision and host.
+passed. The [current gap-confirmation policy](docs/sampling-gaps.md) replays
+that input without component diagnoses while retaining all missing-reading
+evidence. Its cadence check still fails. The
+[resource and cadence report](docs/endurance.md) retains both measurements
+and identifies each source revision and host.
 
 ## Try the F1 replay
 

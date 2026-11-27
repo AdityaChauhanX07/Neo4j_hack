@@ -21,6 +21,8 @@ export function precursorCutoff(observed, episode) {
 export const contradictions = `
 MATCH (e:Event)-[:ON]->(:TelemetryChannel)-[:READS]->(d:Device)
 WHERE e.run = $run AND e.ts >= $from AND e.ts <= $to
+  AND coalesce(e.diagnostic, true)
+  AND (e.confirmed_ts IS NULL OR e.confirmed_ts <= $to)
 WITH d, collect(DISTINCT e.status) AS statuses
 WHERE none(s IN statuses WHERE s IN $device_faults)
   AND any(s IN statuses WHERE s IN ['OK', 'UNDERVOLTAGE'])

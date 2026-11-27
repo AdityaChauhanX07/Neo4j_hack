@@ -53,6 +53,9 @@ class Event:
     seq: Optional[int] = None
     value: object = None
     error: Optional[str] = None
+    diagnostic: bool = True
+    observed_ts: Optional[int] = None
+    confirmed_ts: Optional[int] = None
 
 
 @dataclass

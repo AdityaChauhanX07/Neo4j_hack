@@ -45,7 +45,8 @@ def test_reference_agrees_for_every_bench_fault_and_reranking_window(fault):
         replay(db, io.StringIO("\n".join(map(json.dumps, records(fault)))))
         events = db.execute("""
             MATCH (e:Event)-[:ON]->(ch:TelemetryChannel)
-            RETURN e.run AS run, e.ts AS ts, e.status AS status, ch.id AS channel
+            RETURN e.run AS run, e.ts AS ts, e.status AS status, ch.id AS channel,
+                   e.diagnostic AS diagnostic, e.confirmed_ts AS confirmed_ts
         """).fetchall()
         episode = db.execute("""
             MATCH (dx:Diagnosis)
@@ -64,7 +65,8 @@ def test_reference_agrees_on_the_second_topology():
         replay(db, io.StringIO("\n".join(map(json.dumps, quad_records()))))
         events = db.execute("""
             MATCH (e:Event)-[:ON]->(ch:TelemetryChannel)
-            RETURN e.run AS run, e.ts AS ts, e.status AS status, ch.id AS channel
+            RETURN e.run AS run, e.ts AS ts, e.status AS status, ch.id AS channel,
+                   e.diagnostic AS diagnostic, e.confirmed_ts AS confirmed_ts
         """).fetchall()
         for episode in db.execute("""
             MATCH (dx:Diagnosis)

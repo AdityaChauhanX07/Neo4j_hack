@@ -21,7 +21,7 @@ export const events = `
 MATCH (e:Event {run: $run})-[:ON]->(ch:TelemetryChannel)-[:READS]->(device:Device)
 WHERE e.ts >= $start AND e.ts <= $end
 RETURN e.id AS id, e.ts AS ts, e.status AS status, ch.id AS channel,
-       device.id AS device, e.value AS value, e.error AS error
+       device.id AS device, e.value AS value, e.error AS error, e.diagnostic AS diagnostic
 ORDER BY e.ts, e.seq, e.id
 `.trim();
 

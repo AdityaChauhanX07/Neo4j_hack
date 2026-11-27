@@ -11,12 +11,12 @@ topology YAML.
 | `stale_periods` | 3 | Missing-reading timeout in channel periods |
 | `heartbeat_timeout_ms` | 3000 | Missing heartbeat timeout |
 | `undervoltage_ratio` | 0.9 | Minimum fraction of the monitored regulator's nominal voltage |
-| `settle_ms` | 1000 | Wait after the first anomaly before ranking |
+| `settle_ms` | 1000 | Wait after an explicit anomaly; confirm inferred gaps from their observation time |
 | `recovery_samples` | 3 | Consecutive OK samples needed on every affected channel |
 | `ok_interval_ms` | 1000 | Interval for retaining steady OK events in the graph |
 
-Defaults preserve the existing behavior. To use another complete config,
-copy the file, edit its values, and start a new process with its path:
+To use another complete config, copy the file, edit its values, and start
+a new process with its path:
 
 ```sh
 COMMONCAUSE_DETECTION_CONFIG=/absolute/path/detection.yaml commoncause replay \
@@ -35,6 +35,31 @@ All counts and times must be positive integers. The undervoltage ratio
 must be finite, greater than zero, and no greater than one. The whole
 seven-field config is required so a partial override cannot silently
 inherit an unexpected threshold.
+
+## Missing readings
+
+The classifier still records `STALE` after three sample periods and
+`HEARTBEAT_LOST` after three seconds. The event timestamp is the missed
+deadline. `check-capture` reports the gap as unhealthy even if later
+readings are normal.
+
+Component attribution is a separate decision. New inferred gaps start
+with `diagnostic: false` and an `observed_ts` timestamp. A gap becomes
+eligible fault evidence only if the channel remains missing for `settle_ms`
+after that observation. Confirmation sets `diagnostic: true` and
+`confirmed_ts`. A new reading is processed before confirmation at that
+timestamp, so a reading arriving on the boundary can clear the pending gap.
+Explicit read errors and abnormal values follow their normal episode path.
+
+Ranking ignores unconfirmed gaps and confirmations later than its `$to`
+window. Older graphs without these properties retain their original
+interpretation. Replay raw telemetry to apply the new policy; importing an
+old snapshot does not reclassify it or erase its recorded diagnoses.
+
+New Run nodes store `gap_events` and `gap_confirmation_ms`. The evidence
+workspace shows a missing-reading notice even when no component diagnosis
+was established. The [sampling-gap notes](sampling-gaps.md) explain the
+regression input and timing implications.
 
 ## Stuck readings
 

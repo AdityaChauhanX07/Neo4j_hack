@@ -1,5 +1,7 @@
 MATCH (e:Event)-[:ON]->(:TelemetryChannel)-[:READS]->(d:Device)
 WHERE e.run = $run AND e.ts >= $from AND e.ts <= $to
+  AND coalesce(e.diagnostic, true)
+  AND (e.confirmed_ts IS NULL OR e.confirmed_ts <= $to)
 WITH d,
      min(CASE WHEN e.status IN $device_faults THEN e.ts END) AS first_fault,
      collect(DISTINCT e.status) AS statuses

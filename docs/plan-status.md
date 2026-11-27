@@ -27,11 +27,12 @@ application and reports.
 The [validation notes](validation.md) identify the measured versions,
 inputs, results, and limitations. The [recorded matrix](virtual-matrix.md)
 and [endurance guide](endurance.md) provide the reproducible inputs and
-commands. The planned software features are implemented. The latest
-endurance measurement exposes an operating limit: delayed acquisition can
-open diagnoses without an injected fault. It is not evidence of a clean
-current-backend hour. Each measurement identifies its actual source revision
-and host. The [runtime profile](runtime-profile.md) distinguishes healthy
+commands. The planned software features are implemented. The retained
+endurance measurement exposed diagnoses caused by delayed acquisition. The
+[current confirmation policy](sampling-gaps.md) replays that input without
+component diagnoses while keeping its gap evidence. The recording remains
+unhealthy by cadence checks; this is not a new clean live-hour measurement.
+Each measurement identifies its actual source revision and host. The [runtime profile](runtime-profile.md) distinguishes healthy
 reader/policy overhead from recovery-action timing and retains a failed pilot.
 
 ## Excluded physical work
