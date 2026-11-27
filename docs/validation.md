@@ -8,7 +8,7 @@ that plan and identifies deferred physical work.
 
 ## Current checks
 
-The Python suite contains 110 test cases. CI runs Python 3.9, 3.11, and
+The Python suite contains 113 test cases. CI runs Python 3.9, 3.11, and
 3.13 on x64 Linux and Python 3.11 on ARM64 Linux. Fresh non-editable Python
 3.11 installs also run on hosted macOS ARM64 and Windows x64, without board
 extras. Platform-specific errno and PTY tests are skipped where unavailable.
@@ -175,9 +175,9 @@ current tests preserve its classifications and verify corrected attribution. The
 hour is not evidence that this new full-hour gate passed.
 
 The [sampling-gap fix](sampling-gaps.md) now keeps inferred missing readings
-out of component ranking until they remain missing through an observation
-confirmation interval. The saved hour replays with no component diagnosis
+out of component ranking until they remain missing through a settling window, restarted after
+whole-stream silence. The saved hour replays with no component diagnosis
 and all 19 gap events retained; its cadence check remains unhealthy.
 Replaying the 36-injection matrix still reaches all expected cause sets,
-with first-correct p50/p95 of 1,001/3,503 ms under the new policy. The
-original capture timings and its failed hour report remain historical facts.
+with final replay timings pinned in the replay report. The original
+capture timings and its failed hour report remain historical facts.

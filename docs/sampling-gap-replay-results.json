@@ -1,8 +1,16 @@
 {
   "kind": "replay_of_retained_inputs",
   "simulated": true,
-  "replay_code_sha": "f98a43e15e48b2c15442fdbe535ed12308975834",
-  "replayed_utc": "2026-11-27T02:47:29.981783+00:00",
+  "replay_source": {
+    "base_sha": "b96842d39dba93d82928c40e257733914dcd832d",
+    "utf8_lf_sha256": {
+      "commoncause/replay.py": "ee937ca87b5ca33bc304867c0b7ac7e7adc6bbbefb5ba1476d9e230956ab206c",
+      "commoncause/classify.py": "08b457f9a3b6117053884b48223512ba3fbd6e0c9a242d176d1226e276699c11",
+      "queries/rank.cypher": "9af8d104dfd0c7d405fb83e5e2485088fc27a77e5901525dfdd324c8d59d64f5"
+    },
+    "note": "Base revision plus these source contents identifies the measured working tree before commit."
+  },
+  "replayed_utc": "2026-11-27T03:10:27.854103+00:00",
   "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
   "python": "3.11.18",
   "relate_python": "1.0.1",
@@ -32,8 +40,8 @@
     "complete_cause_sets": 36,
     "first_correct_ms": {
       "samples": 36,
-      "p50": 1001,
-      "p95": 3503
+      "p50": 1000,
+      "p95": 2503
     },
     "episode_states": [
       {
@@ -105,8 +113,8 @@
           "RAIL_5V"
         ],
         "decision_ms": 1000,
-        "latest_verdict_ms": 2505,
-        "first_correct_ms": 2505,
+        "latest_verdict_ms": 1504,
+        "first_correct_ms": 1504,
         "ranked": [
           "RAIL_5V"
         ],
@@ -132,9 +140,9 @@
         "expected": [
           "drv.imu"
         ],
-        "decision_ms": 1003,
+        "decision_ms": 1000,
         "latest_verdict_ms": 1510,
-        "first_correct_ms": 1003,
+        "first_correct_ms": 1000,
         "ranked": [
           "drv.imu"
         ],
@@ -233,8 +241,8 @@
           "RAIL_5V"
         ],
         "decision_ms": 1000,
-        "latest_verdict_ms": 2506,
-        "first_correct_ms": 2506,
+        "latest_verdict_ms": 1505,
+        "first_correct_ms": 1505,
         "ranked": [
           "RAIL_5V"
         ],
@@ -246,9 +254,9 @@
         "expected": [
           "UART0"
         ],
-        "decision_ms": 1002,
+        "decision_ms": 1001,
         "latest_verdict_ms": 1492,
-        "first_correct_ms": 1002,
+        "first_correct_ms": 1001,
         "ranked": [
           "UART0"
         ],
@@ -260,9 +268,9 @@
         "expected": [
           "drv.imu"
         ],
-        "decision_ms": 1014,
+        "decision_ms": 1000,
         "latest_verdict_ms": 1504,
-        "first_correct_ms": 1014,
+        "first_correct_ms": 1000,
         "ranked": [
           "drv.imu"
         ],
@@ -361,8 +369,8 @@
           "RAIL_5V"
         ],
         "decision_ms": 1000,
-        "latest_verdict_ms": 3503,
-        "first_correct_ms": 3503,
+        "latest_verdict_ms": 2503,
+        "first_correct_ms": 2503,
         "ranked": [
           "RAIL_5V"
         ],
@@ -388,9 +396,9 @@
         "expected": [
           "drv.imu"
         ],
-        "decision_ms": 1011,
+        "decision_ms": 1000,
         "latest_verdict_ms": 1503,
-        "first_correct_ms": 1011,
+        "first_correct_ms": 1000,
         "ranked": [
           "drv.imu"
         ],
@@ -489,8 +497,8 @@
           "RAIL_5V"
         ],
         "decision_ms": 1000,
-        "latest_verdict_ms": 4000,
-        "first_correct_ms": 4000,
+        "latest_verdict_ms": 2512,
+        "first_correct_ms": 2512,
         "ranked": [
           "RAIL_5V"
         ],
@@ -516,9 +524,9 @@
         "expected": [
           "drv.imu"
         ],
-        "decision_ms": 1015,
+        "decision_ms": 1000,
         "latest_verdict_ms": 1511,
-        "first_correct_ms": 1015,
+        "first_correct_ms": 1000,
         "ranked": [
           "drv.imu"
         ],

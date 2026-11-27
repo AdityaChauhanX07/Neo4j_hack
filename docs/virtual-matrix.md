@@ -47,8 +47,8 @@ claim is made for all fault types.
 
 The [current confirmation policy](sampling-gaps.md) preserves all 36 cause
 sets on replay but can increase missing-telemetry verdict times. Current
-replay first-correct p50/p95 is 1,001/3,503 ms; the table above belongs to
-the original capture and source revision.
+replay timings are pinned in the replay report; the table above belongs
+to the original capture and source revision.
 
 ## Reproduce or inspect
 

@@ -11,7 +11,7 @@ topology YAML.
 | `stale_periods` | 3 | Missing-reading timeout in channel periods |
 | `heartbeat_timeout_ms` | 3000 | Missing heartbeat timeout |
 | `undervoltage_ratio` | 0.9 | Minimum fraction of the monitored regulator's nominal voltage |
-| `settle_ms` | 1000 | Wait after an explicit anomaly; confirm inferred gaps from their observation time |
+| `settle_ms` | 1000 | Settle candidate faults; restart confirmation after whole-stream silence |
 | `recovery_samples` | 3 | Consecutive OK samples needed on every affected channel |
 | `ok_interval_ms` | 1000 | Interval for retaining steady OK events in the graph |
 
@@ -44,12 +44,19 @@ deadline. `check-capture` reports the gap as unhealthy even if later
 readings are normal.
 
 Component attribution is a separate decision. New inferred gaps start
-with `diagnostic: false` and an `observed_ts` timestamp. A gap becomes
-eligible fault evidence only if the channel remains missing for `settle_ms`
-after that observation. Confirmation sets `diagnostic: true` and
-`confirmed_ts`. A new reading is processed before confirmation at that
-timestamp, so a reading arriving on the boundary can clear the pending gap.
-Explicit read errors and abnormal values follow their normal episode path.
+with `diagnostic: false` and an `observed_ts` timestamp. While acquisition
+continues, a gap must remain missing through the normal settle interval
+after its deadline. If the entire stream goes quiet longer than the
+shortest channel timeout, confirmation restarts when telemetry resumes.
+Readings arriving on the confirmation boundary are processed first.
+
+Heartbeat loss can update an already settled power-fault diagnosis without
+another settle interval when current undervoltage evidence is on a shared
+upstream power path. This uses graph connections and observed values, not
+injection labels. Voltage loss on another rail does not corroborate it.
+The whole-stream resumption interval still applies. Confirmation sets
+`diagnostic: true` and `confirmed_ts`. Explicit errors and abnormal values
+follow their normal episode path.
 
 Ranking ignores unconfirmed gaps and confirmations later than its `$to`
 window. Older graphs without these properties retain their original

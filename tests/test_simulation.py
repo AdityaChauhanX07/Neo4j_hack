@@ -21,13 +21,13 @@ def test_seed_reproduces_the_recording():
 
 @pytest.mark.parametrize("seed", [7, 42, 2026])
 def test_varied_faults_keep_their_causes_and_recover(seed, tmp_path):
-    rows = list(records(seed=seed, repeats=2))
+    rows = list(records(seed=seed, repeats=4))
     recording = tmp_path / "varied.jsonl"
     recording.write_text("\n".join(map(json.dumps, rows)))
 
     scores = matrix(recording, TOPOLOGY)
 
-    assert Counter(score["fault"] for score in scores) == {f"F{i}": 2 for i in range(1, 10)}
+    assert Counter(score["fault"] for score in scores) == {f"F{i}": 4 for i in range(1, 10)}
     for score in scores:
         assert score["ranked"][:1] == score["expected"][:1], score
         assert set(score["ranked"]) == set(score["expected"]), score

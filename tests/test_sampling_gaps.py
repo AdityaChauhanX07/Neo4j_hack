@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 
 import relate
+import pytest
+import yaml
 
 from commoncause.diagnose import rank
 from commoncause.replay import replay
@@ -58,13 +60,30 @@ def test_a_reading_at_the_confirmation_boundary_clears_the_pending_gap():
     rows = list(records("healthy"))
     start = rows[0]["ts"]
     rows = [row for row in rows if row["channel"] != "imu.gyro"
-            or not 1000 <= row["ts"] - start < 3500]
+            or not 1000 <= row["ts"] - start < 3000]
     with relate.connect() as db:
         load_topology(db, TOPOLOGY)
         replay(db, map(json.dumps, rows))
         assert db.execute("MATCH (d:Diagnosis) RETURN count(d) AS n").fetchone()["n"] == 0
         gap, = db.execute("MATCH (e:Event {status: 'STALE'}) RETURN e.diagnostic AS diagnostic").fetchall()
         assert gap["diagnostic"] is False
+
+
+def test_whole_stream_pause_restarts_confirmation_for_an_already_pending_gap():
+    rows = list(records("healthy"))
+    start = rows[0]["ts"]
+    rows = [row for row in rows if not 2500 <= row["ts"] - start < 6000
+            and (row["channel"] != "imu.gyro" or not 500 <= row["ts"] - start < 6000)]
+    for row in rows:
+        if row["channel"] == "imu.gyro" and row["ts"] == start + 6000:
+            row["ts"] += 100
+    rows.sort(key=lambda row: row["ts"])
+    for seq, row in enumerate(rows, 1):
+        row["seq"] = seq
+    with relate.connect() as db:
+        load_topology(db, TOPOLOGY)
+        replay(db, map(json.dumps, rows))
+        assert db.execute("MATCH (d:Diagnosis) RETURN count(d) AS n").fetchone()["n"] == 0
 
 
 def test_a_transient_gap_does_not_add_a_suspect_to_an_existing_fault():
@@ -119,3 +138,22 @@ def test_confirmed_missing_telemetry_can_extend_an_existing_fault_window():
         """).fetchall()
         assert {row["suspect"] for row in diagnoses} == {"drv.imu", "sun2"}
         assert all(row["opened"] == start + 1500 for row in diagnoses)
+
+
+@pytest.mark.parametrize("monitor,confirmed", [("REG_B", 3500), ("REG_A", 4000)])
+def test_heartbeat_confirmation_uses_voltage_only_on_its_shared_power_path(tmp_path, monitor, confirmed):
+    topology = yaml.safe_load(TOPOLOGY.read_text())
+    power = next(device for device in topology["devices"] if device["id"] == "epsmon")
+    next(channel for channel in power["channels"] if channel["id"] == "eps.regb.voltage")["monitors"] = monitor
+    path = tmp_path / "wiring.yaml"
+    path.write_text(yaml.safe_dump(topology))
+    rows = list(records("F5"))
+    start = rows[0]["ts"]
+    with relate.connect() as db:
+        load_topology(db, path)
+        replay(db, map(json.dumps, rows))
+        gap, = db.execute("""
+            MATCH (e:Event {status: 'HEARTBEAT_LOST'})
+            RETURN e.confirmed_ts AS confirmed
+        """).fetchall()
+        assert gap["confirmed"] == start + confirmed
