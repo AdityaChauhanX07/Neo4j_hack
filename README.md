@@ -3,7 +3,7 @@
 Find the shared cause behind several sensor alarms, using their power and
 data dependencies in an embedded Relate graph.
 
-**[Try the browser demo](https://adityachauhanx07.github.io/Neo4j_hack/)** ·
+**[Try the browser demo](https://adityachauhanx07.github.io/common-cause/)** ·
 [Data and query interfaces](docs/interfaces.md) · [Validation](docs/validation.md)
 
 ## Use case
@@ -20,7 +20,7 @@ example uses the same diagnosis engine with a different topology.
 
 ## Try the browser demo
 
-1. Open the [deployed site](https://adityachauhanx07.github.io/Neo4j_hack/)
+1. Open the [deployed site](https://adityachauhanx07.github.io/common-cause/)
    and select **Try a fault**.
 2. Follow **All healthy → The fault → The cause → Recovery**. The first
    scenario identifies Regulator B and shows why healthy sensors weaken
@@ -35,6 +35,10 @@ larger retained virtual-bench session; **Connect live** supports a running
 laptop capture through a separate read-only Relate HTTP follower.
 
 ## How it uses Relate
+
+**Submission mode: single file.** Judges can inspect the committed graph at
+`data/common-cause.rl` immediately. Capture and browser inspection also use
+the modes described below.
 
 - **Writable mode: directory store.** Python embeds Relate for ingestion,
   classification, diagnosis, and recovery history. A directory such as
@@ -60,8 +64,8 @@ Use Git and Python 3.9 or newer; Python 3.11 is the tested laptop setup.
 From a terminal on Linux or macOS:
 
 ```sh
-git clone https://github.com/AdityaChauhanX07/Neo4j_hack.git
-cd Neo4j_hack
+git clone https://github.com/AdityaChauhanX07/common-cause.git
+cd common-cause
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install .
