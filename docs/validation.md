@@ -4,7 +4,7 @@ All telemetry in these checks is simulated. The tests exercise the actual
 Relate database, shared Cypher, recorder, and diagnosis pipeline. They do
 not establish sensor accuracy, wiring safety, or Raspberry Pi performance.
 The [original-plan status](plan-status.md) maps the delivered software to
-that plan and identifies deferred physical work.
+that plan and identifies excluded physical work.
 
 ## Current checks
 
@@ -175,9 +175,10 @@ current tests preserve its classifications and verify corrected attribution. The
 hour is not evidence that this new full-hour gate passed.
 
 The [sampling-gap fix](sampling-gaps.md) now keeps inferred missing readings
-out of component ranking until they remain missing through a settling window, restarted after
-whole-stream silence. The saved hour replays with no component diagnosis
-and all 19 gap events retained; its cadence check remains unhealthy.
+out of component ranking until they remain missing through a settling
+window, restarted after whole-stream silence. The saved hour replays with
+no component diagnosis and all 19 gap events retained; its cadence check
+remains unhealthy.
 Replaying the 36-injection matrix still reaches all expected cause sets,
 with final replay timings pinned in the replay report. The original
 capture timings and its failed hour report remain historical facts.

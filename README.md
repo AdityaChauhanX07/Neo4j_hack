@@ -1,119 +1,102 @@
 # Common Cause
 
-Common Cause is a fault diagnosis demo for a simulated CubeSat. When several
-sensors stop responding, it uses their shared power and data paths to rank
-the components that could explain the fault. Healthy devices help rule out
-suspects.
+Find the shared cause behind several sensor alarms, using their power and
+data dependencies in an embedded Relate graph.
+
+**[Try the browser demo](https://adityachauhanx07.github.io/Neo4j_hack/)** ·
+[Data and query interfaces](docs/interfaces.md) · [Validation](docs/validation.md)
+
+## Use case
+
+Three satellite sensors stop responding. They use two different data buses,
+but share one regulator. Common Cause follows those connections and checks
+the healthy devices, too, to distinguish a shared supply failure from a bus
+problem or an individual sensor fault.
 
 The intended users are student satellite teams investigating correlated
-telemetry faults. A quadcopter example exercises the same schema and
-queries on another system.
-
-The complete demo runs in a browser or on a laptop, using generated
-telemetry with a real Relate graph. No bench equipment is required.
-Physical capture is an optional extension and has not been validated on
-hardware.
-
-## How it uses Relate
-
-The graph connects devices to their power rails, regulators, buses, and
-drivers. Telemetry events link to channels and devices. Diagnoses link to
-the events behind each verdict and to matching recovery procedures.
-Cypher traversals rank shared dependencies by the failed devices they
-explain and the healthy devices that contradict them.
-
-Python embeds Relate for ingestion and replay. A directory store keeps
-the writable graph between runs, and a single-file snapshot at
-`data/common-cause.rl` lets judges inspect the bundled F1 replay. The browser
-loads an exported graph into in-memory Relate WASM so the ground view can
-run Cypher locally. The same loader and query files support both the
-CubeSat and quadcopter examples.
+telemetry faults. This submission is a working **simulation**: the browser
+and laptop paths need no hardware, API key, or cloud database. A quadcopter
+example uses the same diagnosis engine with a different topology.
 
 ## Try the browser demo
 
-Open the [live ground view](https://adityachauhanx07.github.io/Neo4j_hack/)
-and select **Try a fault**. Follow four stages: healthy readings, the fault,
-the cause, and recovery. The first example explains why three sensor alarms
-point to one shared regulator. The ground view reconstructs the graph with
-embedded Relate WASM and runs the shared Cypher queries locally.
-Then try the blocked-bus example or the
-[combined regulator and bus fault](https://adityachauhanx07.github.io/Neo4j_hack/?case=cubesat%3AF9)
-to see a diagnosis with two suspects. Open **Evidence workspace** for the
-full wiring, readings, other cases, saved JSON downlinks, live connection,
-and read-only query console. The walkthrough identifies its input as a
-recorded simulation; advancing a stage does not inject a live hardware fault.
+1. Open the [deployed site](https://adityachauhanx07.github.io/Neo4j_hack/)
+   and select **Try a fault**.
+2. Follow **All healthy → The fault → The cause → Recovery**. The first
+   scenario identifies Regulator B and shows why healthy sensors weaken
+   the alternative bus explanation.
+3. Try **A blocked data bus** or **Two faults at once**. Open **Evidence
+   workspace** to inspect the full wiring, readings, candidate rankings,
+   recovery guidance, and read-only Cypher console.
 
-| Simulation | Cases | Correct cause set | First failed device |
-| --- | ---: | ---: | ---: |
-| CubeSat | 9 | 9/9 | 2/9 |
-| Quadcopter | 3 | 3/3 | 1/3 |
-| Recorded virtual bench | 36 | 36/36 | 8/36 |
+The walkthrough advances through recorded simulated telemetry. It does
+not inject a new live fault. **Inspect the 36-fault recording** opens the
+larger retained virtual-bench session; **Connect live** supports a running
+laptop capture through a separate read-only Relate HTTP follower.
 
-These counts come from simulated telemetry. The baseline
-picks the first device that reports a failure. The combined case also shows
-the second ranked suspect. Use **Download simulated readings** to get the
-JSONL for the selected suite. The [demo walkthrough](docs/demo.md) covers a
-laptop-only run and the commands to reproduce the fixture scores.
+## How it uses Relate
 
-The recorded bench uses four repetitions of each modeled fault through
-the live recorder. An earlier one-hour healthy virtual capture opened no
-diagnosis. A later repeat opened 3 diagnoses after sampling
-gaps and failed its full-hour healthy gate; its first ten-minute prefix
-passed. The [current gap-confirmation policy](docs/sampling-gaps.md) replays
-that input without component diagnoses while retaining all missing-reading
-evidence. Its cadence check still fails. The
-[resource and cadence report](docs/endurance.md) retains both measurements
-and identifies each source revision and host.
+- **Writable mode: directory store.** Python embeds Relate for ingestion,
+  classification, diagnosis, and recovery history. A directory such as
+  `board/f1-replay/store` preserves the graph while a recorder writes and
+  separate readers inspect committed observations.
+- **Distribution mode: single file.** The committed snapshots at
+  `data/common-cause.rl` and `data/virtual-matrix.rl` let judges inspect
+  persistent graphs immediately, without rerunning a capture.
+- **Browser mode: in memory.** Relate WASM reconstructs a JSON downlink in
+  a worker and runs Cypher locally. The source JSON and persistent native
+  snapshots remain available after the tab closes.
+
+The graph models power rails, regulators, buses, drivers, devices, telemetry
+channels, events, diagnoses, failure modes, and recovery procedures.
+Shared [Cypher queries](queries/) rank upstream components by the failed
+devices they explain and the healthy devices that contradict them. Another
+pass can identify a second cause for failures left unexplained by the first.
+The default diagnosis is deterministic graph reasoning and needs no LLM.
 
 ## Try the F1 replay
 
-From the repository root, use Python 3.9 or later.
-CI tests Python 3.9, 3.11, and 3.13 on x64 Linux, and Python 3.11 on ARM64 Linux.
-Fresh Python 3.11 installs also run on macOS and Windows; see the
-[laptop installation guide](docs/laptop-install.md) for platform commands.
+Use Git and Python 3.9 or newer; Python 3.11 is the tested laptop setup.
+From a terminal on Linux or macOS:
 
 ```sh
+git clone https://github.com/AdityaChauhanX07/Neo4j_hack.git
+cd Neo4j_hack
 python3 -m venv .venv
 . .venv/bin/activate
-python -m pip install '.[test]'
+python -m pip install .
 commoncause diagnose --last
 commoncause explain dx:f1-fixture:1
 commoncause impact REG_B
-python -m pytest -q
 ```
 
-The checked-in graph is built from `recordings/f1-fixture.jsonl`, a synthetic
-regulator dropout. Its verdict points to `REG_B`, which covers three sensor
-failures with zero healthy devices downstream. Read the diagnosis, its original
-telemetry, and its recovery procedure with the commands above.
+The bundled F1 diagnosis names `REG_B`, covers three failed devices, has
+zero healthy-device contradictions, and is resolved. `explain` includes
+the recorded evidence IDs and linked recovery procedure. See the
+[laptop guide](docs/laptop-install.md) for Windows PowerShell commands.
+Run all commands below from the repository root with this environment active.
 
-To build the graph again from the raw readings, use a new store path.
-For the export command, first install the
-[Relate CLI](https://relatedb.ai/docs/get-started/install/) and check that
-`relate --version` runs in the same shell.
+Rebuild the graph from raw readings into a **new** store path:
 
 ```sh
 commoncause replay recordings/f1-fixture.jsonl \
-  --topology topologies/cubesat-bench.yaml --db board/store
-commoncause matrix recordings/f1-fixture.jsonl
-commoncause downlink --db board/store --out downlink
+  --topology topologies/cubesat-bench.yaml --db board/f1-replay/store
+commoncause diagnose --db board/f1-replay/store --last
+commoncause matrix recordings/virtual-matrix.jsonl \
+  --bench-repeats 4 --expect-count 36 --min-top-one 1 --json
 ```
 
-Replay writes a directory store. The downlink command clones an
-inspectable `.rl` file and exports JSON from the same snapshot. The repository
-includes a fixture bundle at `data/common-cause.rl` and its JSON export at
-`downlink/common-cause.json`.
-
-```sh
-relate --database data/common-cause.rl --read-only \
-  'MATCH (d:Diagnosis)-[s:SUSPECTS]->(c) RETURN d.id, c.id, s.score ORDER BY s.rank'
-```
+The matrix should report `top_one: 36`, `all_causes: 36`, and `baseline: 8`.
+It replays the recording with the current code; retained capture reports
+identify their original source revisions. Replaying the same run into an
+existing store is rejected, so choose a fresh path when repeating it.
 
 ## Run the virtual bench
 
-The laptop can run the recorder and sensor drivers against simulated I2C
-registers and UART bytes. This eight-second scenario injects and clears a
-regulator fault, then leaves a recording and a resolved diagnosis.
+This eight-second scenario uses the actual recorder and sensor drivers
+with software I2C registers and UART heartbeat bytes. It injects and clears
+a modeled regulator fault, then leaves raw telemetry and a persistent graph.
+No board dependencies are needed.
 
 ```sh
 commoncause run --virtual-bench --scenario sim/scenarios/f1.json \
@@ -122,106 +105,66 @@ commoncause run --virtual-bench --scenario sim/scenarios/f1.json \
 commoncause matrix board/virtual-f1/capture.jsonl --expect-count 1 --min-top-one 1
 ```
 
-Use `--interactive` in place of `--scenario` to type fault controls, or use
-`sim/scenarios/f1-f9.json` for the full matrix. The
-[virtual bench guide](docs/virtual-bench.md) covers live controls, raw
-recording, replay, export, and dashboard import. All virtual recordings
-and their exported graphs retain an explicit simulation label.
+Use new output paths for another capture. The [virtual bench guide](docs/virtual-bench.md)
+covers interactive F1–F9 controls and the full matrix. The
+[live browser guide](docs/live-browser.md) adds a read-only HTTP connection;
+the [recovery guide](docs/virtual-recovery.md) demonstrates simulated bus
+clear, fresh-telemetry verification, and an ineffective recovery attempt.
 
-The [recorded virtual matrix](docs/virtual-matrix.md) includes 36 live
-virtual injections, their raw recording, an inspectable `.rl` graph, and
-the matching browser export. It reached all 36 correct cause sets and
-resolved every episode; the first-failed-device baseline scored 8/36.
-Use **Inspect the 36-fault recording**, or open **Evidence workspace** and
-choose **Open 36-fault session**, to inspect it.
+## Where the data lives
 
-## Board and ground interfaces
+| Input or graph | Purpose |
+| --- | --- |
+| [recordings/f1-fixture.jsonl](recordings/f1-fixture.jsonl) | Small synthetic regulator dropout |
+| [data/common-cause.rl](data/common-cause.rl) | Persistent F1 graph used by the default CLI and MCP configuration |
+| [downlink/common-cause.json](downlink/common-cause.json) | Matching F1 graph for browser import |
+| [recordings/virtual-matrix.jsonl](recordings/virtual-matrix.jsonl) | Raw readings and markers from 36 live virtual injections |
+| [data/virtual-matrix.rl](data/virtual-matrix.rl) | Persistent graph with all 36 resolved episodes |
+| [downlink/virtual-matrix.json](downlink/virtual-matrix.json) | Matching recorded-session browser export |
 
-- **Wiring.** `topologies/cubesat-bench.yaml` describes the bench model. A device
-  can declare a driver with an `id`, `module`, and optional `version`. Set
-  `heartbeat: true` on a heartbeat channel. Pass the same topology file when
-  reopening a store. Use a fresh store for a changed wiring file.
-- **Telemetry.** `commoncause run --hardware hardware/cubesat-pi4.yaml
-  --db board/store --tui` captures and diagnoses on the Pi. Give it
-  `--recording` to save the raw stream. A reading has `run`, `seq`, `ts`,
-  `channel`, `value`, `ok` and optional `error`. The timestamp is epoch milliseconds.
-  Group readings by run and emit them with increasing sequence numbers and
-  nondecreasing timestamps. The terminal view shows device status and paths
-  from affected devices to each suspect. The matrix scorer uses `type: "fault"` injection
-  markers. Use `expected` on a marker when the expected part varies by test.
-- **Export.** Nodes contain `id`, `label`, and `props`. Relationships contain
-  `type`, `from`, `to`, and `props`. Endpoints reference exported node IDs.
-  For display or Cypher lookups, use the original `props.id` or `props.code`.
-- **Provenance.** Each run stores its topology SHA-256. Set
-  `COMMONCAUSE_CODE_SHA` to include the revision used to produce the verdicts.
-- **MCP.** `.mcp.json` points a compatible client at the fixture graph with
-  `relate serve --mcp stdio --read-only`. The ground agent follows
-  `AGENTS.md` to explain a verdict from its graph evidence. The
-  [MCP guide](docs/mcp.md) gives the setup and checked example.
-
-The shared queries live in `queries/`.
-
-The [live-store guide](docs/live-store.md) covers concurrent inspection
-and downlink while the recorder remains active.
-
-| Query | Parameters | Returned columns |
-| --- | --- | --- |
-| `rank` | `run`, `from`, `to`, `device_faults`, `exclude_devices` | `suspect`, `kind`, `covered`, `contradicted`, `score`, `covered_devices` |
-| `impact` | `part` | `device`, `channels_lost` |
-| `before` | `run`, `t0` | `channel`, `before`, `after`, `at` |
-| `recovery` | `id` | `suspect`, `mode_id`, `failure_mode`, `procedure_id`, `procedure`, `steps`, `risk` |
-
-Use an empty `exclude_devices` list for a full ranking. The verdict writer
-reranks with covered devices excluded when a second fault may explain the
-remaining failures.
-
-The recorder's clock drives detection. The daemon waits 1 second after the
-first anomaly, records every anomaly and status change, and keeps steady OK
-samples at 1 Hz. A noisy channel becomes stuck after 10 identical readings.
-Stale samples are detected after three periods, heartbeat loss after 3
-seconds, and undervoltage below 90% of nominal. Recovery takes three
-consecutive OK readings on each affected channel.
-
-Those defaults come from [config/detection.yaml](config/detection.yaml).
-The [detection guide](docs/detection.md) covers overrides, per-channel stuck
-detection, and the config hash recorded on new runs.
-
-`commoncause matrix` reports the final ranking and the time to the first
-fully correct verdict separately. Its `first_correct_ms` field uses elapsed
-recording time from the first anomaly, with `null` for an injection that
-never reaches the expected ranking. The [bench run guide](hardware/bench-run.md)
-defines the timing fields and the optional measurements to collect on the Pi.
-
-## Try another topology
-
-The quadcopter fixture uses the same loader and queries for the battery,
-distribution rail, BEC, ESCs, motors, and sensor buses. Its generated telemetry
-covers a BEC brownout, compass bus failure, and ESC 3 dropout.
+With the optional [Relate CLI](https://relatedb.ai/docs/get-started/install/)
+installed, inspect the committed graph directly:
 
 ```sh
-python sim/quad.py > /tmp/commoncause-quad.jsonl
-commoncause matrix /tmp/commoncause-quad.jsonl --topology topologies/quadcopter.yaml
+relate --database data/common-cause.rl --read-only \
+  'MATCH (d:Diagnosis)-[s:SUSPECTS]->(c) RETURN d.id, c.id, s.score ORDER BY s.rank'
 ```
 
-## Vary the simulated faults
+`commoncause downlink --db board/f1-replay/store --out board/f1-downlink`
+also requires that CLI on `PATH`. It clones a frozen `.rl` and exports JSON
+from that same snapshot, including while the source recorder remains active.
+Raw recordings, historical snapshots, and result manifests are retained
+for reproducibility; rebuilding does not overwrite them.
 
-Use a seed to vary fault timing, frame jitter, reading noise, and recovery
-time. Each repeat includes all nine CubeSat faults. The default generator
-still produces the fixed demo recordings.
+## Results and limits
 
-```sh
-python sim/bench.py --seed 42 --repeats 4 > /tmp/commoncause-varied.jsonl
-commoncause matrix /tmp/commoncause-varied.jsonl --bench-repeats 4 --min-top-one 1 --json
-```
+| Simulated input | Correct complete cause set | First-failed-device baseline |
+| --- | ---: | ---: |
+| Deterministic CubeSat F1–F9 | 9/9 | 2/9 |
+| Deterministic quadcopter faults | 3/3 | 1/3 |
+| Recorded virtual bench, four repeats of F1–F9 | 36/36 | 8/36 |
 
-With `--seed`, `--fault healthy` generates a control with noise and jitter but no injected
-faults. The [validation notes](docs/validation.md) record the parameter
-bounds, accuracy, first-correct timing, recovery checks, and limitations.
+The [current replay report](docs/sampling-gap-replay-results.json) retains
+all 36 correct cause sets and recoveries, with first-correct recorded-time
+p50/p95 of **1,000/2,503 ms**. F5 initially names a regulator, then identifies
+the upstream rail after heartbeat-loss evidence arrives. First verdict,
+first correct verdict, native query latency, and browser rendering are
+different measurements.
+
+These are defined software models, not a general accuracy estimate. Three
+seeds with four repeats exercise 108 additional bounded trials in CI.
+Physical sensor behavior, electrical isolation, flight operation, and Pi
+performance are unvalidated and outside this submission's scope.
+
+The retained full-hour capture failed its healthy gate after sampling
+gaps. The corrected attribution policy replays it with **zero component
+diagnoses and all 19 gap events preserved**; its cadence check still fails.
+This is not a new clean live-hour measurement. See
+[endurance](docs/endurance.md) and [sampling-gap handling](docs/sampling-gaps.md).
 
 ## Ground view
 
-Use Node.js 24 and npm. With the Python environment set up, build the
-simulated downlinks before starting Vite.
+Use Node.js 24 and npm, in addition to the Python setup above:
 
 ```sh
 python -m sim.demo
@@ -229,42 +172,33 @@ npm ci --prefix ground
 npm run dev --prefix ground
 ```
 
-GitHub Actions builds a downloadable `ground-preview` artifact on ground-view
-pull requests. A push to `main` with changes to the demo or its inputs builds
-and deploys the site through GitHub Pages.
+Open the local URL printed by Vite. For a production build, run
+`npm run build --prefix ground`. GitHub Actions builds and deploys the
+existing Pages site when frontend code or its inputs change on `main`.
 
-## Live view and hardware reference
+To run the checks locally:
 
-The [live browser guide](docs/live-browser.md) connects the ground view to a
-running virtual capture through Relate's read-only HTTP follower. New
-diagnoses and recovery appear without exporting or reopening a downlink.
-The [simulated recovery controller](docs/virtual-recovery.md) can attempt an
-I2C bus clear and verify the result from fresh telemetry, with a persistent
-fault mode that exercises unsuccessful recovery.
+```sh
+python -m pip install '.[test]'
+python -m pytest -q
+npm test --prefix ground
+```
 
-The demo and both simulation suites run on a laptop. The
-[bench wiring guide](hardware/bench-wiring.md) describes the Pi 4 hardware
-map and Pico heartbeat as reference material. Physical tasks are excluded
-from our active scope. The
-[bench run guide](hardware/bench-run.md) covers the recorder and procedures
-for collecting a healthy capture, an F1 episode, and a physical fault matrix.
+CI covers Linux x64/ARM64, fresh Mac/Windows installs, Relate CLI/MCP and
+concurrent-reader integration, native/WASM query agreement, and Playwright
+browser flows. CLI integration cases skip locally if `relate` is unavailable.
+See [validation](docs/validation.md) for the workloads and platform limits.
 
-Install `.[board]` to use the Pi recorder. `commoncause check-capture` checks
-channel health and sampling cadence before an injection. Direct capture
-records time through the first committed verdict, which
-`commoncause benchmark` reports alongside native query latency. CI checks
-synthetic fault replays, register conversions, and capture behavior with
-simulated I/O on x64 and ARM64 Linux.
+## Further reading
 
-The [hardware-free bench assessment](docs/hardware-without-equipment.md)
-compares the implemented virtual bench with Wokwi, QEMU, Renode, and Linux
-I2C stubs. The [original-plan status](docs/plan-status.md) records completed
-software work, the excluded hardware promises, and optional
-stretch goals. See the [endurance guide](docs/endurance.md) for sustained
-capture and resource measurements.
+| Topic | Guide |
+| --- | --- |
+| Topology, JSONL, downlink, and query contracts | [Interfaces](docs/interfaces.md) |
+| Thresholds and missing-data confirmation | [Detection](docs/detection.md) |
+| Agent inspection and concurrent reads | [MCP](docs/mcp.md), [live store](docs/live-store.md) |
+| Retained measurements | [Virtual matrix](docs/virtual-matrix.md), [runtime profile](docs/runtime-profile.md) |
+| Delivered scope and excluded physical work | [Plan status](docs/plan-status.md) |
+| Unvalidated physical reference | [Wiring](hardware/bench-wiring.md), [bring-up](hardware/bring-up-checklist.md) |
 
-The [runtime profile](docs/runtime-profile.md) compares acquisition alone,
-live HTTP reading, and simulated recovery policy on the same backend. It
-also retains successful and ineffective recovery timings and an unhealthy
-pilot recording. The [field recheck](docs/field-recheck.md) compares the
-project's diagnostic workflow with nearby public projects.
+Licensed under [Apache-2.0](LICENSE). Browser builds include third-party
+license files under `licenses/`.
